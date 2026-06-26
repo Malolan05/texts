@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mālola Digitized Text Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    /* ── tokens ── */
+    :root {
+      --night:     #0d1117;
+      --night-mid: #161b22;
+      --night-rim: #21262d;
+      --parchment: #f0ebe0;
+      --parchment-dim: #e4ddd0;
+      --ink:       #1c1917;
+      --ink-soft:  #57534e;
+      --saffron:   #e8a020;
+      --saffron-lt:#fef3c7;
+      --sage:      #4d7c5f;
+      --sage-lt:   #dcf5e5;
+      --star:      #c9d1d9;
+
+      --cinzel: 'Cinzel', Georgia, serif;
+      --lora:   'Lora', Georgia, serif;
+      --mono:   'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--parchment);
+      color: var(--ink);
+      font-family: var(--lora);
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--night);
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 48px 64px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-canvas {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glyph {
+      position: absolute;
+      font-family: serif;
+      color: rgba(232,160,32,0.07);
+      animation: drift linear infinite;
+      user-select: none;
+      line-height: 1;
+    }
+    @keyframes drift {
+      0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+      5%   { opacity: 1; }
+      95%  { opacity: 0.6; }
+      100% { transform: translateY(-20vh) rotate(15deg); opacity: 0; }
+    }
+
+    .hero-rule {
+      width: 64px;
+      height: 2px;
+      background: var(--saffron);
+      margin-bottom: 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--saffron);
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-name {
+      font-family: var(--cinzel);
+      font-size: clamp(2.6rem, 8vw, 6rem);
+      font-weight: 700;
+      line-height: 0.98;
+      letter-spacing: 0.02em;
+      color: var(--parchment);
+      position: relative;
+      z-index: 1;
+      margin-bottom: 32px;
+    }
+    .hero-name .accent { color: var(--saffron); }
+
+    .hero-tagline {
+      font-family: var(--lora);
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      font-style: italic;
+      color: var(--star);
+      max-width: 560px;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 36px;
+    }
+
+    .hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 3px;
+      padding: 8px 16px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--star);
+      letter-spacing: 0.04em;
+    }
+    .hero-pill .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--saffron);
+      flex-shrink: 0;
+    }
+
+    .scroll-nudge {
+      position: absolute;
+      bottom: 24px;
+      right: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.2);
+      text-transform: uppercase;
+      z-index: 1;
+      animation: nudge 2.4s ease-in-out infinite;
+    }
+    @keyframes nudge {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(6px); }
+    }
+    .scroll-nudge svg { opacity: 0.4; }
+
+    /* ── body wrapper ── */
+    .body-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 80px 40px 120px;
+    }
+
+    /* ── section label ── */
+    .sec-label {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--saffron);
+      margin-bottom: 32px;
+    }
+    .sec-label::before {
+      content: '';
+      width: 28px;
+      height: 1.5px;
+      background: var(--saffron);
+      flex-shrink: 0;
+    }
+    .sec-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--parchment-dim);
+    }
+
+    section { margin-bottom: 72px; }
+
+    /* ── about / lede ── */
+    .lede {
+      font-size: 1.05rem;
+      color: var(--ink-soft);
+      max-width: 680px;
+      margin-bottom: 0;
+    }
+    .lede strong { color: var(--ink); font-weight: 600; }
+
+    /* ── projects (collections) ── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .project-card {
+      background: var(--night);
+      border-radius: 6px;
+      padding: 22px 22px 18px;
+      text-decoration: none;
+      color: var(--star);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .project-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--saffron);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.28s ease;
+    }
+    .project-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.25); }
+    .project-card:hover::after { transform: scaleX(1); }
+    .project-icon {
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+    .project-name {
+      font-family: var(--cinzel);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--parchment);
+    }
+    .project-tag {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--sage-lt);
+      opacity: 0.75;
+    }
+    .project-desc {
+      font-family: var(--lora);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      color: rgba(201,209,217,0.78);
+      flex: 1;
+    }
+    .project-url {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--saffron);
+      opacity: 0.85;
+      margin-top: 4px;
+    }
+
+    /* ── methodology ── */
+    .method-list {
+      position: relative;
+      padding-left: 32px;
+    }
+    .method-list::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 1.5px;
+      background: linear-gradient(to bottom, var(--saffron), transparent);
+    }
+    .method-item {
+      position: relative;
+      margin-bottom: 32px;
+    }
+    .method-item:last-child { margin-bottom: 0; }
+    .method-item::before {
+      content: '';
+      position: absolute;
+      left: -38px;
+      top: 7px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--parchment);
+      border: 2px solid var(--saffron);
+    }
+    .method-step {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--saffron);
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    .method-title {
+      font-family: var(--cinzel);
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .method-desc {
+      font-size: 0.92rem;
+      color: var(--ink-soft);
+      max-width: 560px;
+    }
+
+    /* ── scripts / languages ── */
+    .lang-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 10px;
+    }
+    .lang-card {
+      background: white;
+      border: 1px solid var(--parchment-dim);
+      border-radius: 4px;
+      padding: 12px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px 8px;
+      transition: border-color 0.18s, background 0.18s;
+    }
+    .lang-card:hover {
+      border-color: var(--sage);
+      background: var(--sage-lt);
+    }
+    .lang-name {
+      font-family: var(--cinzel);
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--ink);
+    }
+    .lang-level {
+      font-family: var(--lora);
+      font-size: 0.75rem;
+      font-style: italic;
+      color: var(--ink-soft);
+      background: var(--parchment);
+      padding: 0 6px;
+      border-radius: 2px;
+    }
+
+    /* ── contact ── */
+    .contact-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .contact-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 20px;
+      border: 1.5px solid var(--parchment-dim);
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--ink-soft);
+      text-decoration: none;
+      background: white;
+      transition: border-color 0.18s, color 0.18s, background 0.18s;
+    }
+    .contact-link:hover {
+      border-color: var(--night);
+      color: var(--night);
+      background: var(--parchment-dim);
+    }
+    .contact-link svg { flex-shrink: 0; }
+
+    footer {
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--ink-soft);
+      opacity: 0.5;
+      padding-top: 32px;
+      border-top: 1px solid var(--parchment-dim);
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 0 24px 48px; }
+      .body-wrap { padding: 56px 24px 80px; }
+      .scroll-nudge { right: 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<header class="hero" role="banner">
+  <div class="hero-canvas" aria-hidden="true" id="glyphCanvas"></div>
+
+  <div class="hero-rule"></div>
+  <p class="hero-eyebrow">A Living Repository</p>
+
+  <h1 class="hero-name">
+    Mālola<br/>
+    <span class="accent">Digitized Text</span> Archive
+  </h1>
+
+  <p class="hero-tagline">
+    Manuscripts, melodies, and scripture — recovered line by line<br/>
+    through OCR, correction, and careful re-typesetting on the web.
+  </p>
+
+  <div class="hero-pills">
+    <span class="hero-pill"><span class="dot"></span>Sanskrit · Tamil · Telugu</span>
+    <span class="hero-pill"><span class="dot"></span>OCR + Manual Correction</span>
+    <span class="hero-pill"><span class="dot"></span>3 Open Collections</span>
+  </div>
+
+  <div class="scroll-nudge" aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+    scroll
+  </div>
+</header>
+
+<!-- ═══ MAIN ═══ -->
+<main class="body-wrap">
+
+  <!-- About -->
+  <section aria-labelledby="about-label">
+    <p class="sec-label" id="about-label">About the Archive</p>
+    <p class="lede">
+      The <strong>Mālola Digitized Text Archive</strong> gathers Sanskrit and Tamil
+      manuscripts that survive only as scans, photocopies, or faded prints, and
+      brings them back as clean, searchable, citable text. Each collection below
+      began the same way: a stack of source images, an imperfect OCR pass, and a
+      slow line-by-line correction against the original — until the text could
+      stand on its own on the web.
+    </p>
+  </section>
+
+  <!-- Collections / Projects -->
+  <section aria-labelledby="proj-label">
+    <p class="sec-label" id="proj-label">Collections</p>
+    <div class="projects-grid">
+      <a class="project-card" href="https://malolan05.github.io/texts/sAmam/index.html" target="_blank" rel="noopener">
+        <div class="project-icon">𝄞</div>
+        <div class="project-tag">Sāmaveda</div>
+        <div class="project-name">sAmam</div>
+        <p class="project-desc">An interactive table exploring the Sāmaveda — its hymns, melodies, and structure, built as a living web project.</p>
+        <span class="project-url">malolan05.github.io/sAmam</span>
+      </a>
+      <a class="project-card" href="https://malolan05.github.io/texts/Agama" target="_blank" rel="noopener">
+        <div class="project-icon">📜</div>
+        <div class="project-tag">Vaiṣṇava Āgama</div>
+        <div class="project-name">Āgama</div>
+        <p class="project-desc">A repository of Vaiṣṇava Āgama texts, assembled by digitising and correcting OCR outputs of Sanskrit manuscripts.</p>
+        <span class="project-url">malolan05.github.io/Agama</span>
+      </a>
+      <a class="project-card" href="https://malolan05.github.io/texts/srivaishnavam" target="_blank" rel="noopener">
+        <div class="project-icon">📜</div>
+        <div class="project-tag">Śrīvaiṣṇava</div>
+        <div class="project-name">Śrīvaiṣṇava</div>
+        <p class="project-desc">A repository of ŚrīVaiṣṇava texts, assembled by digitising and correcting OCR outputs of Sanskrit texts.</p>
+        <span class="project-url">malolan05.github.io/srivaishnavam</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Scripts & Languages -->
+  <section aria-labelledby="lang-label">
+    <p class="sec-label" id="lang-label">Scripts &amp; Languages Covered</p>
+    <div class="lang-grid">
+      <div class="lang-card"><span class="lang-name">Sanskrit</span><span class="lang-level">Devanāgarī source texts</span></div>
+      <div class="lang-card"><span class="lang-name">Tamil</span><span class="lang-level">Maṇipravāḻam &amp; commentary</span></div>
+      <div class="lang-card"><span class="lang-name">Telugu</span><span class="lang-level">Grantha-derived editions</span></div>
+      <div class="lang-card"><span class="lang-name">English</span><span class="lang-level">Working &amp; reference text</span></div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section aria-labelledby="contact-label">
+    <p class="sec-label" id="contact-label">Contact the Archivist</p>
+    <div class="contact-grid">
+      <a class="contact-link" href="https://github.com/malolan05" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17 5.1 18 5.4 18 5.4c.7 1.6.2 2.8.1 3.1.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/>
+        </svg>
+        github.com/malolan05
+      </a>
+      <a class="contact-link" href="https://www.linkedin.com/in/sunder-malolan-t-9423bb179/" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M4.98 3.5C4.98 4.88 3.86 6 2.48 6S0 4.88 0 3.5 1.12 1 2.48 1s2.5 1.12 2.5 2.5zM0 8h5v16H0zM8 8h4.8v2.2h.1c.7-1.3 2.3-2.7 4.8-2.7 5.1 0 6.1 3.4 6.1 7.8V24h-5v-7.2c0-1.7 0-3.9-2.4-3.9-2.4 0-2.8 1.9-2.8 3.8V24H8z"/>
+        </svg>
+        LinkedIn
+      </a>
+      <a class="contact-link" href="mailto:tsmalolan@gmail.com">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <path d="M2 7l10 7 10-7"/>
+        </svg>
+        tsmalolan@gmail.com
+      </a>
+      <a class="contact-link" href="mailto:tsunderamalolan@gmail.com">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <path d="M2 7l10 7 10-7"/>
+        </svg>
+        tsunderamalolan@gmail.com
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Mālola Digitized Text Archive · malolan05.github.io · Built with HTML &amp; GitHub Pages
+</footer>
+
+<script>
+  /* ── drifting glyphs ── */
+  (function () {
+    const symbols = [
+      'ॐ','अ','क','ग','ण','त','न','జ్క','म','र','ल','व','श','క్ష','హ్రీ','க்ஷ','ஹ','ஸ்ரீ','ह',
+      'श्री','नमः','तत् सत्'
+    ];
+    const canvas = document.getElementById('glyphCanvas');
+    if (!canvas) return;
+    const W = window.innerWidth;
+    const count = Math.min(30, Math.floor(W / 40));
+
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('span');
+      el.className = 'glyph';
+      el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      el.style.cssText = [
+        `left: ${Math.random() * 100}%`,
+        `font-size: ${18 + Math.random() * 36}px`,
+        `animation-duration: ${12 + Math.random() * 24}s`,
+        `animation-delay: ${-(Math.random() * 30)}s`,
+        `opacity: 0`
+      ].join(';');
+      canvas.appendChild(el);
+    }
+  })();
+</script>
+</body>
+</html>
