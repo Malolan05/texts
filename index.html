@@ -8,20 +8,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
   <style>
-    /* ── tokens ── */
     :root {
-      --night:     #0d1117;
-      --night-mid: #161b22;
-      --night-rim: #21262d;
-      --parchment: #f0ebe0;
-      --parchment-dim: #e4ddd0;
-      --ink:       #1c1917;
-      --ink-soft:  #57534e;
-      --saffron:   #e8a020;
-      --saffron-lt:#fef3c7;
-      --sage:      #4d7c5f;
-      --sage-lt:   #dcf5e5;
-      --star:      #c9d1d9;
+      --night:        #0d1117;
+      --night-mid:    #161b22;
+      --parchment:    #f0ebe0;
+      --parchment-dim:#e4ddd0;
+      --ink:          #1c1917;
+      --ink-soft:     #57534e;
+      --saffron:      #e8a020;
+      --sage:         #4d7c5f;
+      --sage-lt:      #dcf5e5;
+      --star:         #c9d1d9;
 
       --cinzel: 'Cinzel', Georgia, serif;
       --lora:   'Lora', Georgia, serif;
@@ -47,30 +44,6 @@
       flex-direction: column;
       justify-content: flex-end;
       padding: 0 48px 64px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-canvas {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .glyph {
-      position: absolute;
-      font-family: serif;
-      color: rgba(232,160,32,0.07);
-      animation: drift linear infinite;
-      user-select: none;
-      line-height: 1;
-    }
-    @keyframes drift {
-      0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
-      5%   { opacity: 1; }
-      95%  { opacity: 0.6; }
-      100% { transform: translateY(-20vh) rotate(15deg); opacity: 0; }
     }
 
     .hero-rule {
@@ -78,8 +51,6 @@
       height: 2px;
       background: var(--saffron);
       margin-bottom: 28px;
-      position: relative;
-      z-index: 1;
     }
 
     .hero-eyebrow {
@@ -89,8 +60,6 @@
       text-transform: uppercase;
       color: var(--saffron);
       margin-bottom: 20px;
-      position: relative;
-      z-index: 1;
     }
 
     .hero-name {
@@ -100,8 +69,6 @@
       line-height: 0.98;
       letter-spacing: 0.02em;
       color: var(--parchment);
-      position: relative;
-      z-index: 1;
       margin-bottom: 32px;
     }
     .hero-name .accent { color: var(--saffron); }
@@ -112,8 +79,6 @@
       font-style: italic;
       color: var(--star);
       max-width: 560px;
-      position: relative;
-      z-index: 1;
       margin-bottom: 36px;
     }
 
@@ -121,8 +86,6 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      position: relative;
-      z-index: 1;
     }
     .hero-pill {
       display: inline-flex;
@@ -143,28 +106,6 @@
       background: var(--saffron);
       flex-shrink: 0;
     }
-
-    .scroll-nudge {
-      position: absolute;
-      bottom: 24px;
-      right: 48px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.15em;
-      color: rgba(255,255,255,0.2);
-      text-transform: uppercase;
-      z-index: 1;
-      animation: nudge 2.4s ease-in-out infinite;
-    }
-    @keyframes nudge {
-      0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(6px); }
-    }
-    .scroll-nudge svg { opacity: 0.4; }
 
     /* ── body wrapper ── */
     .body-wrap {
@@ -201,16 +142,15 @@
 
     section { margin-bottom: 72px; }
 
-    /* ── about / lede ── */
+    /* ── about ── */
     .lede {
       font-size: 1.05rem;
       color: var(--ink-soft);
       max-width: 680px;
-      margin-bottom: 0;
     }
     .lede strong { color: var(--ink); font-weight: 600; }
 
-    /* ── projects (collections) ── */
+    /* ── collections ── */
     .projects-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -225,26 +165,11 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      transition: transform 0.22s ease, box-shadow 0.22s ease;
-      position: relative;
-      overflow: hidden;
     }
-    .project-card::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 2px;
-      background: var(--saffron);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.28s ease;
+    .project-card:hover {
+      outline: 1.5px solid var(--saffron);
     }
-    .project-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.25); }
-    .project-card:hover::after { transform: scaleX(1); }
-    .project-icon {
-      font-size: 1.4rem;
-      line-height: 1;
-    }
+    .project-icon { font-size: 1.4rem; line-height: 1; }
     .project-name {
       font-family: var(--cinzel);
       font-size: 1.05rem;
@@ -274,56 +199,6 @@
       margin-top: 4px;
     }
 
-    /* ── methodology ── */
-    .method-list {
-      position: relative;
-      padding-left: 32px;
-    }
-    .method-list::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 8px;
-      bottom: 8px;
-      width: 1.5px;
-      background: linear-gradient(to bottom, var(--saffron), transparent);
-    }
-    .method-item {
-      position: relative;
-      margin-bottom: 32px;
-    }
-    .method-item:last-child { margin-bottom: 0; }
-    .method-item::before {
-      content: '';
-      position: absolute;
-      left: -38px;
-      top: 7px;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--parchment);
-      border: 2px solid var(--saffron);
-    }
-    .method-step {
-      font-family: var(--mono);
-      font-size: 10.5px;
-      color: var(--saffron);
-      letter-spacing: 0.1em;
-      margin-bottom: 4px;
-    }
-    .method-title {
-      font-family: var(--cinzel);
-      font-size: 1.02rem;
-      font-weight: 600;
-      color: var(--ink);
-      margin-bottom: 4px;
-    }
-    .method-desc {
-      font-size: 0.92rem;
-      color: var(--ink-soft);
-      max-width: 560px;
-    }
-
     /* ── scripts / languages ── */
     .lang-grid {
       display: grid;
@@ -339,7 +214,6 @@
       flex-wrap: wrap;
       align-items: baseline;
       gap: 4px 8px;
-      transition: border-color 0.18s, background 0.18s;
     }
     .lang-card:hover {
       border-color: var(--sage);
@@ -379,7 +253,6 @@
       color: var(--ink-soft);
       text-decoration: none;
       background: white;
-      transition: border-color 0.18s, color 0.18s, background 0.18s;
     }
     .contact-link:hover {
       border-color: var(--night);
@@ -401,20 +274,16 @@
     @media (max-width: 640px) {
       .hero { padding: 0 24px 48px; }
       .body-wrap { padding: 56px 24px 80px; }
-      .scroll-nudge { right: 24px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation: none !important; transition: none !important; }
+      *, *::before, *::after { transition: none !important; }
     }
   </style>
 </head>
 <body>
 
-<!-- ═══ HERO ═══ -->
 <header class="hero" role="banner">
-  <div class="hero-canvas" aria-hidden="true" id="glyphCanvas"></div>
-
   <div class="hero-rule"></div>
   <p class="hero-eyebrow">A Living Repository</p>
 
@@ -424,7 +293,7 @@
   </h1>
 
   <p class="hero-tagline">
-    Manuscripts, melodies, and scripture — recovered line by line<br/>
+    Manuscripts, melodies, and scripture — recovered line by line
     through OCR, correction, and careful re-typesetting on the web.
   </p>
 
@@ -433,19 +302,10 @@
     <span class="hero-pill"><span class="dot"></span>OCR + Manual Correction</span>
     <span class="hero-pill"><span class="dot"></span>3 Open Collections</span>
   </div>
-
-  <div class="scroll-nudge" aria-hidden="true">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <polyline points="6 9 12 15 18 9"/>
-    </svg>
-    scroll
-  </div>
 </header>
 
-<!-- ═══ MAIN ═══ -->
 <main class="body-wrap">
 
-  <!-- About -->
   <section aria-labelledby="about-label">
     <p class="sec-label" id="about-label">About the Archive</p>
     <p class="lede">
@@ -455,7 +315,6 @@
     </p>
   </section>
 
-  <!-- Collections / Projects -->
   <section aria-labelledby="proj-label">
     <p class="sec-label" id="proj-label">Collections</p>
     <div class="projects-grid">
@@ -483,7 +342,6 @@
     </div>
   </section>
 
-  <!-- Scripts & Languages -->
   <section aria-labelledby="lang-label">
     <p class="sec-label" id="lang-label">Scripts &amp; Languages Covered</p>
     <div class="lang-grid">
@@ -494,7 +352,6 @@
     </div>
   </section>
 
-  <!-- Contact -->
   <section aria-labelledby="contact-label">
     <p class="sec-label" id="contact-label">Contact the Archivist</p>
     <div class="contact-grid">
@@ -533,32 +390,5 @@
   Mālola Digitized Text Archive · malolan05.github.io · Built with HTML &amp; GitHub Pages
 </footer>
 
-<script>
-  /* ── drifting glyphs ── */
-  (function () {
-    const symbols = [
-      'ॐ','अ','क','ग','ण','त','न','జ్క','म','र','ल','व','श','క్ష','హ్రీ','க்ஷ','ஹ','ஸ்ரீ','ह',
-      'श्री','नमः','तत् सत्'
-    ];
-    const canvas = document.getElementById('glyphCanvas');
-    if (!canvas) return;
-    const W = window.innerWidth;
-    const count = Math.min(30, Math.floor(W / 40));
-
-    for (let i = 0; i < count; i++) {
-      const el = document.createElement('span');
-      el.className = 'glyph';
-      el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-      el.style.cssText = [
-        `left: ${Math.random() * 100}%`,
-        `font-size: ${18 + Math.random() * 36}px`,
-        `animation-duration: ${12 + Math.random() * 24}s`,
-        `animation-delay: ${-(Math.random() * 30)}s`,
-        `opacity: 0`
-      ].join(';');
-      canvas.appendChild(el);
-    }
-  })();
-</script>
 </body>
 </html>
