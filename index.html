@@ -937,65 +937,79 @@ function parseNestedScriptureJSON(data, repo, filename) {
 /* ═══ Loaders ════════════════════════════════════════════════ */
 
 /**
- * FIX 2: Use the Git Trees API (recursive=1) to list every file in
- * the repo in a single request. This works regardless of which
- * subdirectory the data files live in, and returns a download_url
- * for each blob that we can fetch directly — no raw.githubusercontent
- * URL construction required (avoids casing + rate-limit issues).
+ * THE DEFINITIVE FIX: Use jsDelivr instead of GitHub directly.
  *
- * Returns an array of { name, path, download_url } for all files
- * matching the given extension(s).
+ * Why this works when everything else didn't:
+ *  • raw.githubusercontent.com is DNS-blocked by several Indian ISPs
+ *    (Jio, ACT, Airtel in some regions) — every fetch returns a
+ *    network error regardless of URL casing or path correctness.
+ *  • The GitHub Contents API and Git Trees API both also rely on
+ *    raw.githubusercontent.com for the actual file downloads.
+ *  • jsDelivr (cdn.jsdelivr.net) is a global CDN served over
+ *    Cloudflare + Fastly — it is NOT blocked in India and mirrors
+ *    every public GitHub repo automatically.
+ *
+ * Two jsDelivr surfaces we use:
+ *
+ *  1. FILE LISTING — data.jsdelivr.com API (no auth, no rate limit):
+ *       GET https://data.jsdelivr.com/v1/package/gh/{user}/{repo}@{branch}/flat
+ *     Returns { files: [ { name: '/data/foo.json' }, … ] } — a flat
+ *     list of every file in the repo. We filter for .json / .tsv.
+ *
+ *  2. FILE CONTENT — cdn.jsdelivr.net CDN:
+ *       GET https://cdn.jsdelivr.net/gh/{user}/{repo}@{branch}{path}
+ *     Serves the raw file. `path` is exactly what the listing API
+ *     returns (already slash-prefixed, e.g. '/data/foo.json').
  */
-async function listAllFilesViaTreesAPI(repo, exts) {
-  const url = `https://api.github.com/repos/${repo.owner}/${repo.name}/git/trees/${repo.branch}?recursive=1`;
-  console.log(`[${repo.name}] fetching tree:`, url);
-  const res = await fetch(url, { headers: { Accept: 'application/vnd.github.v3+json' } });
+
+const JSDLVR_LIST  = (owner, repo, branch) =>
+  `https://data.jsdelivr.com/v1/package/gh/${owner}/${repo}@${branch}/flat`;
+
+const JSDLVR_FILE  = (owner, repo, branch, path) =>
+  `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}${path}`;
+
+/** List all .json/.tsv files in a repo using the jsDelivr API */
+async function listFilesViaJsdelivr(repo, exts) {
+  const url = JSDLVR_LIST(repo.owner, repo.name, repo.branch);
+  console.log(`[${repo.name}] jsDelivr list:`, url);
+  const res = await fetch(url);
   if (!res.ok) {
     const body = await res.text().catch(() => '');
-    throw new Error(`Git Trees API ${res.status} for ${repo.name}: ${body.slice(0, 120)}`);
+    throw new Error(`jsDelivr list API ${res.status}: ${body.slice(0, 120)}`);
   }
   const data = await res.json();
-  if (data.truncated) {
-    console.warn(`[${repo.name}] tree response was truncated — some files may be missing`);
-  }
   const extSet = new Set(exts.map(e => e.toLowerCase()));
-  return (data.tree || [])
-    .filter(item => {
-      if (item.type !== 'blob') return false;
-      const ext = item.path.split('.').pop().toLowerCase();
-      return extSet.has(ext);
-    })
-    .map(item => {
-      // Build the download_url ourselves (same format GitHub API returns)
-      // using the path from the tree — this is the canonical raw URL.
-      const download_url =
-        `https://raw.githubusercontent.com/${repo.owner}/${repo.name}/${repo.branch}/${item.path}`;
-      return { name: item.path.split('/').pop(), path: item.path, download_url };
-    });
+  return (data.files || []).filter(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    return extSet.has(ext);
+  });
+  // Each entry: { name: '/data/brahma-sutra-adhyaya-one.json', … }
 }
 
-/** Fetch a file using its download_url (from the Trees API) */
-async function fetchFile(fileEntry) {
-  const res = await fetch(fileEntry.download_url);
-  if (!res.ok) throw new Error(`HTTP ${res.status} — ${fileEntry.download_url}`);
+/** Fetch a single file through the jsDelivr CDN */
+async function fetchViaJsdelivr(repo, filePath) {
+  const url = JSDLVR_FILE(repo.owner, repo.name, repo.branch, filePath);
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`jsDelivr CDN ${res.status}: ${url}`);
   return res.text();
 }
 
 /** 'flat': discover files, parse each as flat TSV or JSON rows */
 async function loadFlatRepo(repo) {
-  const files = await listAllFilesViaTreesAPI(repo, ['tsv', 'json']);
-  console.log(`[${repo.name}] found ${files.length} data file(s):`, files.map(f => f.path));
+  const files = await listFilesViaJsdelivr(repo, ['tsv', 'json']);
+  console.log(`[${repo.name}] found ${files.length} file(s):`, files.map(f => f.name));
 
   const perFile = await Promise.all(files.map(async f => {
     try {
-      const raw = await fetchFile(f);
+      const raw = await fetchViaJsdelivr(repo, f.name);
       const ext = f.name.split('.').pop().toLowerCase();
-      if (ext === 'tsv') return parseTSV(raw, repo, f.name);
+      const basename = f.name.split('/').pop();
+      if (ext === 'tsv') return parseTSV(raw, repo, basename);
       let parsed;
       try { parsed = JSON.parse(raw); } catch { return []; }
-      return parseFlatJSON(parsed, repo, f.name);
+      return parseFlatJSON(parsed, repo, basename);
     } catch (e) {
-      console.warn(`[${repo.name}] skip ${f.path}:`, e.message);
+      console.warn(`[${repo.name}] skip ${f.name}:`, e.message);
       return [];
     }
   }));
@@ -1007,33 +1021,34 @@ async function loadFlatRepo(repo) {
 
 /** 'nested': discover JSON files, parse each as a nested scripture object */
 async function loadNestedRepo(repo) {
-  const files = await listAllFilesViaTreesAPI(repo, ['json']);
-  console.log(`[${repo.name}] found ${files.length} JSON file(s):`, files.map(f => f.path));
+  const files = await listFilesViaJsdelivr(repo, ['json']);
+  console.log(`[${repo.name}] found ${files.length} JSON file(s):`, files.map(f => f.name));
 
   const perFile = await Promise.all(files.map(async f => {
+    const basename = f.name.split('/').pop();
     try {
-      const raw = await fetchFile(f);
+      const raw = await fetchViaJsdelivr(repo, f.name);
       let parsed;
       try { parsed = JSON.parse(raw); } catch (e) {
-        console.warn(`[${repo.name}] JSON parse error in ${f.path}:`, e.message);
+        console.warn(`[${repo.name}] JSON parse error in ${f.name}:`, e.message);
         return [];
       }
-      const recs = parseNestedScriptureJSON(parsed, repo, f.name);
+      const recs = parseNestedScriptureJSON(parsed, repo, basename);
       if (recs.length === 0) {
-        console.info(`[${repo.name}] ${f.path}: nested parse → 0 records, trying flat fallback`);
-        return parseFlatJSON(parsed, repo, f.name);
+        console.info(`[${repo.name}] ${f.name}: nested parse → 0 records, trying flat`);
+        return parseFlatJSON(parsed, repo, basename);
       }
-      console.log(`[${repo.name}] ${f.path}: ${recs.length} record(s)`);
+      console.log(`[${repo.name}] ${f.name}: ${recs.length} record(s)`);
       return recs;
     } catch (e) {
-      console.warn(`[${repo.name}] skip ${f.path}:`, e.message);
+      console.warn(`[${repo.name}] skip ${f.name}:`, e.message);
       return [];
     }
   }));
 
   let count = 0;
   for (const recs of perFile) { allRecords.push(...recs); count += recs.length; }
-  console.log(`[${repo.name}] indexed ${count} record(s) total`);
+  console.log(`[${repo.name}] total: ${count} record(s)`);
   return count;
 }
 
