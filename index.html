@@ -639,59 +639,126 @@
 <script>
 /* ═══════════════════════════════════════════════════════════════
    MĀLOLA ARCHIVE — Cross-Repository Search
-   
-   Strategy:
-   1. Use the GitHub Contents API to list files in each repo's /data folder
-   2. Fetch each .tsv or .json file from raw.githubusercontent.com
-   3. Parse into a flat record list (one object per row/entry)
-   4. On query, filter records and render highlighted results
-   
-   Handles both TSV (tab-separated, first row = headers) and JSON
-   (array of objects). Gracefully degrades if a repo or file fails.
+
+   Per-repo strategies:
+   ┌─────────────────┬────────────────────────────────────────────┐
+   │ sAmam           │ GitHub API → discover TSV files → flat rows│
+   │ Agama           │ GitHub API → discover TSV/JSON → flat rows │
+   │ srivaishnavam   │ Hardcoded file list → nested JSON          │
+   │                 │ { title, sections[{ title, verses[{        │
+   │                 │   num, original, transliteration,          │
+   │                 │   translation, commentaries[{author,body}] │
+   │                 │ }] }] }                                    │
+   └─────────────────┴────────────────────────────────────────────┘
 ═══════════════════════════════════════════════════════════════ */
 
+/* ── Repo configs ─────────────────────────────────────────── */
+
 const REPOS = [
-  { name: 'sAmam',          owner: 'Malolan05', branch: 'content',  label: 'sAmam',       url: 'https://malolan05.github.io/sAmam/index.html' },
-  { name: 'Agama',          owner: 'Malolan05', branch: 'main',     label: 'Āgama',       url: 'https://malolan05.github.io/Agama' },
-  { name: 'srivaishnavam',  owner: 'Malolan05', branch: 'main',     label: 'Śrīvaiṣṇava', url: 'https://malolan05.github.io/srivaishnavam' },
+  {
+    name:     'sAmam',
+    owner:    'Malolan05',
+    branch:   'content',
+    label:    'sAmam',
+    url:      'https://malolan05.github.io/sAmam/index.html',
+    strategy: 'api-flat',   // discover files via GitHub API, parse as flat TSV/JSON
+  },
+  {
+    name:     'Agama',
+    owner:    'Malolan05',
+    branch:   'main',
+    label:    'Āgama',
+    url:      'https://malolan05.github.io/Agama',
+    strategy: 'api-flat',
+  },
+  {
+    name:     'srivaishnavam',
+    owner:    'Malolan05',
+    branch:   'main',
+    label:    'Śrīvaiṣṇava',
+    url:      'https://malolan05.github.io/srivaishnavam',
+    strategy: 'hardcoded-nested', // known file list; each file = nested scripture JSON
+    // File list extracted from the repo's own index.html <script> FILES array
+    files: [
+      "brahma-sutra-adhyaya-one.json",
+      "brahma-sutra-adhyaya-two.json",
+      "brahma-sutra-adhyaya-three.json",
+      "brahma-sutra-adhyaya-four.json",
+      "gitarthasangraha.json",
+      "brihadaranyaka-upanishad.json",
+      "chandogya-upanishad.json",
+      "katha-upanishad.json",
+      "kaushitaki-upanishad.json",
+      "shvetasvatara-upanishad.json",
+      "taittiriya-upanishad.json",
+      "upanishad-one.json",
+      "mimamsa-paribasha.json",
+      "mundaka-upanishad.json",
+      "natvacandrika-pramukhacapetika.json",
+      "purushakara-mimamsa.json",
+      "rahasyatrayasara.json",
+      "rahasyatrayasararthasangraha.json",
+      "shatadushani.json",
+      "smritimuktaphalam.json",
+      "stotraratna.json",
+      "tarkasangraha.json",
+      "tattvamuktakalapam.json",
+      "vedarthasangraha.json",
+    ],
+  },
 ];
 
-// All loaded records: { repo, file, fields:{}, text:'' }
+/* ── State ────────────────────────────────────────────────── */
+
+// record shape: { repo, repoLabel, repoUrl, file, fileTitle, section, verseNum, text, display }
+// display: short human-readable summary shown in the meta pills
 let allRecords = [];
-let loadState = 'loading'; // 'loading' | 'partial' | 'ready' | 'error'
 let activeFilter = 'all';
 let searchDebounce = null;
 const MAX_RESULTS = 60;
-const SNIPPET_WINDOW = 120; // chars around a match
+const SNIPPET_WINDOW = 140;
 
-/* ── DOM refs ── */
-const searchInput    = document.getElementById('search-input');
-const statusDot      = document.getElementById('status-dot');
-const statusText     = document.getElementById('status-text');
-const resultsEl      = document.getElementById('results-container');
-const resultsCount   = document.getElementById('results-count');
-const filterRow      = document.getElementById('filter-row');
+/* ── DOM ──────────────────────────────────────────────────── */
+const searchInput  = document.getElementById('search-input');
+const statusDot    = document.getElementById('status-dot');
+const statusText   = document.getElementById('status-text');
+const resultsEl    = document.getElementById('results-container');
+const resultsCount = document.getElementById('results-count');
+const filterRow    = document.getElementById('filter-row');
 
-/* ═══ Fetching ═══════════════════════════════════════════════ */
+/* ═══ Utilities ══════════════════════════════════════════════ */
 
-async function listDataFiles(repo) {
-  const { owner, name, branch } = repo;
-  const apiUrl = `https://api.github.com/repos/${owner}/${name}/contents/data?ref=${branch}`;
-  const res = await fetch(apiUrl, { headers: { Accept: 'application/vnd.github.v3+json' } });
-  if (!res.ok) throw new Error(`GitHub API ${res.status} for ${name}`);
-  const files = await res.json();
-  return files.filter(f => f.type === 'file' && /\.(tsv|json)$/i.test(f.name));
+function escapeHTML(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-async function fetchRaw(owner, name, branch, path) {
-  const url = `https://raw.githubusercontent.com/${owner}/${name}/${branch}/${path}`;
+function escapeRe(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function setStatus(state, msg) {
+  statusDot.className = `status-dot ${state}`;
+  statusText.textContent = msg;
+}
+
+function updateFilterCount(repoName) {
+  const n = allRecords.filter(r => r.repo === repoName).length;
+  const el = filterRow.querySelector(`[data-repo="${repoName}"] .count`);
+  if (el) el.textContent = n > 0 ? `(${n.toLocaleString()})` : '';
+}
+
+async function fetchRaw(owner, name, branch, filePath) {
+  const url = `https://raw.githubusercontent.com/${owner}/${name}/${branch}/${filePath}`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Raw fetch ${res.status} for ${path}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} for ${filePath}`);
   return res.text();
 }
 
-/* ═══ Parsing ════════════════════════════════════════════════ */
+/* ═══ Parsers ════════════════════════════════════════════════ */
 
+/** Flat TSV → one record per data row */
 function parseTSV(raw, repo, filename) {
   const lines = raw.trim().split('\n');
   if (lines.length < 2) return [];
@@ -703,42 +770,175 @@ function parseTSV(raw, repo, filename) {
     const fields = {};
     headers.forEach((h, idx) => { fields[h] = (cells[idx] || '').trim(); });
     const text = Object.values(fields).join(' ');
-    records.push({ repo: repo.name, repoLabel: repo.label, repoUrl: repo.url, file: filename, fields, text });
+    const display = Object.entries(fields)
+      .filter(([, v]) => v).slice(0, 4)
+      .map(([k, v]) => `${k}: ${String(v).slice(0, 60)}`);
+    records.push({
+      repo: repo.name, repoLabel: repo.label, repoUrl: repo.url,
+      file: filename, fileTitle: filename.replace(/\.[^.]+$/, ''),
+      section: '', verseNum: '', text, display,
+    });
   }
   return records;
 }
 
-function parseJSON(raw, repo, filename) {
-  let data;
-  try { data = JSON.parse(raw); } catch { return []; }
+/** Flat JSON (array of objects) → one record per object */
+function parseFlatJSON(data, repo, filename) {
   if (!Array.isArray(data)) {
-    // Try common wrapper keys
-    for (const key of ['data', 'records', 'items', 'texts', 'verses', 'entries']) {
+    for (const key of ['data','records','items','texts','verses','entries','hymns']) {
       if (Array.isArray(data[key])) { data = data[key]; break; }
     }
-    if (!Array.isArray(data)) return [];
   }
+  if (!Array.isArray(data)) return [];
   return data.map(item => {
-    const fields = typeof item === 'object' && item !== null ? item : { value: String(item) };
-    const text = Object.values(fields).map(v => (typeof v === 'string' ? v : JSON.stringify(v))).join(' ');
-    return { repo: repo.name, repoLabel: repo.label, repoUrl: repo.url, file: filename, fields, text };
+    const fields = (typeof item === 'object' && item !== null) ? item : { value: String(item) };
+    const text = Object.values(fields)
+      .map(v => typeof v === 'string' ? v : (Array.isArray(v) ? v.join(' ') : ''))
+      .join(' ');
+    const display = Object.entries(fields)
+      .filter(([, v]) => v && typeof v === 'string').slice(0, 4)
+      .map(([k, v]) => `${k}: ${v.slice(0, 60)}`);
+    return {
+      repo: repo.name, repoLabel: repo.label, repoUrl: repo.url,
+      file: filename, fileTitle: filename.replace(/\.[^.]+$/, ''),
+      section: '', verseNum: '', text, display,
+    };
   });
 }
 
-/* ═══ Load all repos ════════════════════════════════════════ */
+/**
+ * Nested srivaishnavam JSON → one record per verse.
+ *
+ * Expected shape (based on the repo's own index.html rendering code):
+ * {
+ *   title: string,
+ *   sections: [{
+ *     title: string,
+ *     verses: [{
+ *       num: string|number,
+ *       original: string,
+ *       transliteration?: string,
+ *       translation?: string,
+ *       commentaries?: [{ author: string, lang?: string, body: string }]
+ *     }]
+ *   }]
+ * }
+ *
+ * We also handle flat verses at the root level, and various alternate
+ * key names, to be robust against small schema variations.
+ */
+function parseNestedScriptureJSON(data, repo, filename) {
+  const records = [];
+  const fileTitle = data.title || filename.replace(/\.json$/, '').replace(/-/g, ' ');
+  const repoUrl = `${repo.url}/?file=${encodeURIComponent(filename)}`;
 
-async function loadRepo(repo) {
-  const files = await listDataFiles(repo);
+  // Normalise: collect sections from wherever they live
+  const sections = [];
+
+  if (Array.isArray(data.sections)) {
+    sections.push(...data.sections);
+  } else if (Array.isArray(data.chapters)) {
+    sections.push(...data.chapters);
+  } else {
+    // Possibly the file IS a flat verse array
+    const flatVerses = data.verses || data.hymns || (Array.isArray(data) ? data : null);
+    if (flatVerses) {
+      sections.push({ title: fileTitle, verses: flatVerses });
+    }
+  }
+
+  for (const sec of sections) {
+    const secTitle = sec.title || sec.name || '';
+    const verses   = sec.verses || sec.hymns || sec.items || [];
+
+    for (const verse of verses) {
+      if (!verse || typeof verse !== 'object') continue;
+
+      const num          = String(verse.num ?? verse.number ?? verse.id ?? '');
+      const original     = String(verse.original     ?? verse.text ?? verse.sanskrit ?? '');
+      const translit     = String(verse.transliteration ?? verse.iast ?? '');
+      const translation  = String(verse.translation  ?? verse.meaning ?? verse.english ?? '');
+
+      // Flatten commentaries into one searchable string
+      let commentaryText = '';
+      const comms = verse.commentaries || verse.commentary || [];
+      if (Array.isArray(comms)) {
+        commentaryText = comms
+          .map(c => [c.author || '', c.body || c.text || ''].join(' '))
+          .join(' ');
+      } else if (typeof comms === 'string') {
+        commentaryText = comms;
+      }
+
+      const text = [original, translit, translation, commentaryText]
+        .filter(Boolean).join(' ');
+
+      if (!text.trim()) continue;
+
+      // Build display meta
+      const display = [];
+      if (fileTitle) display.push(fileTitle);
+      if (secTitle)  display.push(secTitle);
+      if (num)       display.push(`verse ${num}`);
+
+      records.push({
+        repo: repo.name, repoLabel: repo.label, repoUrl,
+        file: filename, fileTitle,
+        section: secTitle, verseNum: num,
+        text, display,
+      });
+    }
+  }
+
+  return records;
+}
+
+/* ═══ Loaders ════════════════════════════════════════════════ */
+
+async function listDataFilesViaAPI(repo) {
+  const url = `https://api.github.com/repos/${repo.owner}/${repo.name}/contents/data?ref=${repo.branch}`;
+  const res = await fetch(url, { headers: { Accept: 'application/vnd.github.v3+json' } });
+  if (!res.ok) throw new Error(`GitHub API ${res.status} for ${repo.name}`);
+  const files = await res.json();
+  return files.filter(f => f.type === 'file' && /\.(tsv|json)$/i.test(f.name));
+}
+
+async function loadFlatRepo(repo) {
+  const files = await listDataFilesViaAPI(repo);
   let count = 0;
   for (const f of files) {
     try {
       const raw = await fetchRaw(repo.owner, repo.name, repo.branch, f.path);
       const ext = f.name.split('.').pop().toLowerCase();
-      const recs = ext === 'json' ? parseJSON(raw, repo, f.name) : parseTSV(raw, repo, f.name);
+      let recs;
+      if (ext === 'tsv') {
+        recs = parseTSV(raw, repo, f.name);
+      } else {
+        let parsed;
+        try { parsed = JSON.parse(raw); } catch { continue; }
+        recs = parseFlatJSON(parsed, repo, f.name);
+      }
       allRecords.push(...recs);
       count += recs.length;
     } catch (e) {
-      console.warn(`Could not load ${repo.name}/${f.name}:`, e.message);
+      console.warn(`Skip ${repo.name}/${f.name}:`, e.message);
+    }
+  }
+  return count;
+}
+
+async function loadNestedRepo(repo) {
+  let count = 0;
+  for (const filename of repo.files) {
+    try {
+      const raw = await fetchRaw(repo.owner, repo.name, repo.branch, `data/${filename}`);
+      let parsed;
+      try { parsed = JSON.parse(raw); } catch { continue; }
+      const recs = parseNestedScriptureJSON(parsed, repo, filename);
+      allRecords.push(...recs);
+      count += recs.length;
+    } catch (e) {
+      console.warn(`Skip ${repo.name}/${filename}:`, e.message);
     }
   }
   return count;
@@ -747,87 +947,50 @@ async function loadRepo(repo) {
 async function loadAll() {
   setStatus('loading', 'Loading data files…');
 
-  const results = await Promise.allSettled(REPOS.map(r => loadRepo(r)));
+  const results = await Promise.allSettled(REPOS.map(repo => {
+    if (repo.strategy === 'hardcoded-nested') return loadNestedRepo(repo);
+    return loadFlatRepo(repo);
+  }));
 
   let loaded = 0, failed = 0;
   results.forEach((r, i) => {
-    if (r.status === 'fulfilled') {
-      loaded++;
-      updateFilterCount(REPOS[i].name);
-    } else {
-      failed++;
-      console.warn(`Repo ${REPOS[i].name} failed:`, r.reason?.message);
-    }
+    if (r.status === 'fulfilled') { loaded++; updateFilterCount(REPOS[i].name); }
+    else { failed++; console.warn(`Repo ${REPOS[i].name} failed:`, r.reason?.message); }
   });
 
   const total = allRecords.length;
   if (total === 0 && failed === REPOS.length) {
-    setStatus('error', 'Could not load any data — check network / CORS settings.');
+    setStatus('error', 'Could not load any data — check network / CORS.');
   } else if (failed > 0) {
     setStatus('ready', `${total.toLocaleString()} records loaded (${failed} collection${failed > 1 ? 's' : ''} unavailable)`);
   } else {
     setStatus('ready', `${total.toLocaleString()} records indexed across ${loaded} collection${loaded !== 1 ? 's' : ''}`);
   }
 
-  // Trigger search if user already typed something
   if (searchInput.value.trim().length >= 2) runSearch();
 }
 
-function updateFilterCount(repoName) {
-  const count = allRecords.filter(r => r.repo === repoName).length;
-  const btn = filterRow.querySelector(`[data-repo="${repoName}"] .count`);
-  if (btn) btn.textContent = count > 0 ? `(${count.toLocaleString()})` : '';
-}
-
-function setStatus(state, message) {
-  loadState = state;
-  statusDot.className = `status-dot ${state}`;
-  statusText.textContent = message;
-}
-
-/* ═══ Search ════════════════════════════════════════════════ */
-
-function escapeRegex(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function highlight(text, terms) {
-  let result = escapeHTML(text);
-  terms.forEach(t => {
-    const re = new RegExp(`(${escapeRegex(escapeHTML(t))})`, 'gi');
-    result = result.replace(re, '<mark>$1</mark>');
-  });
-  return result;
-}
-
-function escapeHTML(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
+/* ═══ Search & Render ════════════════════════════════════════ */
 
 function buildSnippet(text, terms) {
   if (!text) return '';
-  // Find the first match position
-  let firstMatch = text.length;
   const lc = text.toLowerCase();
+  let first = text.length;
   for (const t of terms) {
-    const idx = lc.indexOf(t.toLowerCase());
-    if (idx !== -1 && idx < firstMatch) firstMatch = idx;
+    const i = lc.indexOf(t.toLowerCase());
+    if (i !== -1 && i < first) first = i;
   }
-  const start = Math.max(0, firstMatch - 40);
-  const end = Math.min(text.length, start + SNIPPET_WINDOW);
+  const start = Math.max(0, first - 40);
+  const end   = Math.min(text.length, start + SNIPPET_WINDOW);
   let snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
-  return highlight(snippet, terms);
-}
 
-function getTopFields(fields) {
-  // Return up to 5 non-empty field key-value pairs for the meta strip
-  return Object.entries(fields)
-    .filter(([, v]) => v && String(v).trim())
-    .slice(0, 5);
+  // Highlight every term
+  let html = escapeHTML(snippet);
+  terms.forEach(t => {
+    const re = new RegExp(`(${escapeRe(escapeHTML(t))})`, 'gi');
+    html = html.replace(re, '<mark>$1</mark>');
+  });
+  return html;
 }
 
 function runSearch() {
@@ -838,13 +1001,13 @@ function runSearch() {
     return;
   }
 
-  const terms = raw.split(/\s+/).filter(Boolean);
+  const terms   = raw.split(/\s+/).filter(Boolean);
   const lcTerms = terms.map(t => t.toLowerCase());
 
-  // Filter by active repo
-  let pool = activeFilter === 'all' ? allRecords : allRecords.filter(r => r.repo === activeFilter);
+  const pool = activeFilter === 'all'
+    ? allRecords
+    : allRecords.filter(r => r.repo === activeFilter);
 
-  // Match: every term must appear somewhere in the text (case-insensitive)
   const matches = pool.filter(r => {
     const lc = r.text.toLowerCase();
     return lcTerms.every(t => lc.includes(t));
@@ -863,34 +1026,30 @@ function runSearch() {
   const shown = matches.slice(0, MAX_RESULTS);
   resultsEl.innerHTML = shown.map(r => {
     const snippet = buildSnippet(r.text, terms);
-    const topFields = getTopFields(r.fields);
-    const metaPills = topFields.map(([k, v]) =>
-      `<span class="result-meta-pill">${escapeHTML(k)}: ${escapeHTML(String(v).slice(0, 60))}</span>`
-    ).join('');
+    const pills   = (r.display || [])
+      .map(d => `<span class="result-meta-pill">${escapeHTML(d)}</span>`)
+      .join('');
     return `
-      <a class="result-card" href="${escapeHTML(r.repoUrl)}" target="_blank" rel="noopener"
-         title="Open ${escapeHTML(r.repoLabel)} collection">
+      <a class="result-card" href="${escapeHTML(r.repoUrl)}" target="_blank" rel="noopener">
         <div class="result-header">
           <span class="result-repo">${escapeHTML(r.repoLabel)}</span>
           <span class="result-file">${escapeHTML(r.file)}</span>
         </div>
         <div class="result-body">${snippet}</div>
-        ${metaPills ? `<div class="result-meta">${metaPills}</div>` : ''}
+        ${pills ? `<div class="result-meta">${pills}</div>` : ''}
       </a>`;
   }).join('');
 }
 
-/* ═══ Event listeners ══════════════════════════════════════ */
+/* ═══ Events ════════════════════════════════════════════════ */
 
 searchInput.addEventListener('input', () => {
   clearTimeout(searchDebounce);
   searchDebounce = setTimeout(runSearch, 220);
 });
-
 searchInput.addEventListener('keydown', e => {
   if (e.key === 'Escape') { searchInput.value = ''; runSearch(); }
 });
-
 filterRow.addEventListener('click', e => {
   const btn = e.target.closest('.filter-btn');
   if (!btn) return;
