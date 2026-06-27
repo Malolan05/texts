@@ -639,7 +639,7 @@
 <script>
 /* ═══════════════════════════════════════════════════════════════
    MĀLOLA ARCHIVE — Cross-Repository Search
-   FIXED: Both sAmam and srivaishnavam search working
+   FIXED: Specifically handles srivaishnavam data folder structure
 ═══════════════════════════════════════════════════════════════ */
 
 /* ── Repo configs ─────────────────────────────────────────── */
@@ -650,7 +650,9 @@ const REPOS = [
     branch:   'content',
     label:    'sAmam',
     url:      'https://malolan05.github.io/sAmam/index.html',
-    strategy: 'mixed',  // Try both TSV and JSON
+    strategy: 'mixed',
+    // Known files to try if jsDelivr listing fails
+    fallbackFiles: ['sAmam.tsv', 'data.tsv', 'index.tsv']
   },
   {
     name:     'Agama',
@@ -659,6 +661,7 @@ const REPOS = [
     label:    'Āgama',
     url:      'https://malolan05.github.io/Agama',
     strategy: 'mixed',
+    fallbackFiles: []
   },
   {
     name:     'srivaishnavam',
@@ -666,7 +669,28 @@ const REPOS = [
     branch:   'main',
     label:    'Śrīvaiṣṇava',
     url:      'https://malolan05.github.io/srivaishnavam',
-    strategy: 'mixed',  // Try nested first, then flat
+    strategy: 'mixed',
+    // Common JSON files in the data folder
+    fallbackFiles: [
+      '/data/vedas.json',
+      '/data/upanishads.json', 
+      '/data/puranas.json',
+      '/data/itihasas.json',
+      '/data/agamas.json',
+      '/data/stotras.json',
+      '/data/texts.json',
+      '/data/scriptures.json',
+      '/data/index.json',
+      'data/vedas.json',
+      'data/upanishads.json',
+      'data/puranas.json',
+      'data/itihasas.json',
+      'data/agamas.json',
+      'data/stotras.json',
+      'data/texts.json',
+      'data/scriptures.json',
+      'data/index.json'
+    ]
   },
 ];
 
@@ -710,7 +734,6 @@ function updateFilterCount(repoName) {
 
 /* ═══ Parsers ════════════════════════════════════════════════ */
 
-/** Parse TSV data into records */
 function parseTSV(raw, repo, filename) {
   const lines = raw.trim().split('\n');
   if (lines.length < 2) return [];
@@ -727,31 +750,24 @@ function parseTSV(raw, repo, filename) {
       fields[h] = (cells[idx] || '').trim(); 
     });
     
-    // Collect all text for searching
     const textParts = [];
     const displayParts = [];
     
-    // Common Sanskrit/scripture field names
     const textFieldNames = [
       'verse', 'original', 'translation', 'meaning', 'sanskrit', 
       'english', 'text', 'content', 'transliteration', 'section',
-      'description', 'notes', 'commentary', 'hymn', 'mantra'
+      'description', 'notes', 'commentary', 'hymn', 'mantra', 'title'
     ];
     
     for (const field of textFieldNames) {
-      if (fields[field]) {
-        textParts.push(fields[field]);
-      }
+      if (fields[field]) textParts.push(fields[field]);
     }
     
-    // Build display info
     if (fields.section) displayParts.push(`Section: ${fields.section.substring(0, 40)}`);
     if (fields.verse) displayParts.push(`Verse: ${fields.verse}`);
     if (fields.title) displayParts.push(fields.title.substring(0, 60));
     if (fields.original) displayParts.push(fields.original.substring(0, 60));
-    if (fields.translation) displayParts.push(fields.translation.substring(0, 60));
     
-    // If we have no text parts, use all fields
     if (textParts.length === 0) {
       Object.values(fields).forEach(v => {
         if (v && typeof v === 'string') textParts.push(v);
@@ -786,14 +802,12 @@ function parseTSV(raw, repo, filename) {
   return records;
 }
 
-/** Parse JSON array or object with array properties */
 function parseFlatJSON(data, repo, filename) {
   let array = null;
   
   if (Array.isArray(data)) {
     array = data;
   } else if (typeof data === 'object' && data !== null) {
-    // Try common container properties
     for (const key of ['data', 'records', 'items', 'texts', 'verses', 'entries', 'hymns', 'results']) {
       if (Array.isArray(data[key])) {
         array = data[key];
@@ -835,6 +849,11 @@ function parseFlatJSON(data, repo, filename) {
     if (textParts.length === 0) {
       Object.values(item).forEach(v => {
         if (typeof v === 'string') textParts.push(v);
+        else if (Array.isArray(v)) {
+          v.forEach(sv => {
+            if (typeof sv === 'string') textParts.push(sv);
+          });
+        }
       });
     }
     
@@ -852,173 +871,98 @@ function parseFlatJSON(data, repo, filename) {
   }).filter(Boolean);
 }
 
-/**
- * Parse nested scripture JSON structures
- */
 function parseNestedScriptureJSON(data, repo, filename) {
   const records = [];
   const fileTitle = (typeof data === 'object' && !Array.isArray(data) && data.title)
     ? data.title
-    : filename.replace(/\.json$/i, '').replace(/-/g, ' ');
+    : filename.replace(/\.json$/i, '').replace(/-/g, ' ').replace(/\//g, ' > ');
 
-  function processVerse(verse, sectionInfo = {}) {
-    if (!verse || typeof verse !== 'object') return;
+  function extractText(obj) {
+    const parts = [];
+    if (!obj || typeof obj !== 'object') return '';
     
-    const num = String(
-      verse.num ?? verse.number ?? verse.id ?? verse.index ?? verse.verse ?? ''
-    );
-
-    // Collect all text content
-    const textParts = [];
-    
-    // Original/Sanskrit text
-    const original = verse.original ?? verse.text ?? verse.sanskrit ?? 
-                    verse.devanagari ?? verse.sloka ?? verse.sutra ??
-                    verse.mantra ?? verse.content ?? verse.verse ?? '';
-    if (original) textParts.push(original);
-    
-    // Transliteration
-    const translit = verse.transliteration ?? verse.iast ?? verse.roman ??
-                    verse.translit ?? verse.romanized ?? '';
-    if (translit) textParts.push(translit);
-    
-    // Translation
-    const translation = verse.translation ?? verse.meaning ?? verse.english ??
-                       verse.artha ?? verse.paraphrase ?? '';
-    if (translation) textParts.push(translation);
-    
-    // Commentaries
-    let commentaryText = '';
-    const commRaw = verse.commentaries ?? verse.commentary ?? 
-                   verse.bhasya ?? verse.tika ?? verse.vyakhya;
-    if (Array.isArray(commRaw)) {
-      commentaryText = commRaw.map(c => {
-        if (typeof c === 'string') return c;
-        if (typeof c === 'object' && c !== null) {
-          return [c.author, c.name, c.body, c.text, c.content]
-            .filter(Boolean).join(' ');
-        }
-        return '';
-      }).filter(Boolean).join(' ');
-    } else if (typeof commRaw === 'string') {
-      commentaryText = commRaw;
+    const textFields = ['text', 'original', 'sanskrit', 'verse', 'content', 'translation', 'meaning', 'english', 'transliteration'];
+    for (const field of textFields) {
+      if (obj[field] && typeof obj[field] === 'string') {
+        parts.push(obj[field]);
+      }
     }
-    if (commentaryText) textParts.push(commentaryText);
     
-    const text = textParts.join(' ');
-    if (!text.trim()) return;
+    // Also check for arrays of strings
+    if (Array.isArray(obj.lines) || Array.isArray(obj.verses)) {
+      const arr = obj.lines || obj.verses;
+      arr.forEach(item => {
+        if (typeof item === 'string') parts.push(item);
+        else if (typeof item === 'object' && item.text) parts.push(item.text);
+      });
+    }
     
-    const display = [];
-    if (sectionInfo.title) display.push(sectionInfo.title.substring(0, 40));
-    if (sectionInfo.section) display.push(sectionInfo.section.substring(0, 40));
-    if (num) display.push(`Verse ${num}`);
-    if (original) display.push(original.substring(0, 60));
-    
-    records.push({
-      repo: repo.name, repoLabel: repo.label, repoUrl: repo.url,
-      file: filename, fileTitle,
-      section: sectionInfo.title || sectionInfo.section || '',
-      verseNum: num,
-      text,
-      display: display.length > 0 ? display : [fileTitle],
-    });
+    return parts.join(' ');
   }
 
-  function processSections(sections, parentTitle = '') {
-    if (!Array.isArray(sections)) return;
+  function processObject(obj, path = [], parentTitle = fileTitle) {
+    if (!obj || typeof obj !== 'object') return;
     
-    for (const section of sections) {
-      if (!section || typeof section !== 'object') continue;
+    // If it has direct text content, create a record
+    const directText = extractText(obj);
+    if (directText) {
+      const title = obj.title || obj.name || obj.heading || path[path.length - 1] || '';
+      const num = obj.verse || obj.num || obj.number || obj.id || '';
       
-      const sectionTitle = section.title || section.name || section.heading || parentTitle;
-      
-      // Process verses in this section
-      const verseKeys = ['verses', 'hymns', 'items', 'sutras', 'slokas', 
-                        'shlokas', 'stanzas', 'mantras', 'passages', 'entries'];
-      let foundVerses = false;
-      
-      for (const key of verseKeys) {
-        if (Array.isArray(section[key])) {
-          foundVerses = true;
-          section[key].forEach(verse => {
-            processVerse(verse, { title: sectionTitle, section: sectionTitle });
+      records.push({
+        repo: repo.name,
+        repoLabel: repo.label,
+        repoUrl: repo.url,
+        file: filename,
+        fileTitle: fileTitle,
+        section: parentTitle,
+        verseNum: String(num),
+        text: directText,
+        display: [
+          parentTitle.substring(0, 40),
+          title ? title.substring(0, 40) : '',
+          num ? `Verse ${num}` : '',
+          directText.substring(0, 60)
+        ].filter(Boolean)
+      });
+    }
+    
+    // Process nested objects and arrays
+    if (Array.isArray(obj)) {
+      obj.forEach((item, index) => {
+        if (typeof item === 'string') {
+          records.push({
+            repo: repo.name,
+            repoLabel: repo.label,
+            repoUrl: repo.url,
+            file: filename,
+            fileTitle: fileTitle,
+            section: parentTitle,
+            verseNum: String(index + 1),
+            text: item,
+            display: [parentTitle.substring(0, 40), `Item ${index + 1}`]
           });
+        } else if (typeof item === 'object' && item !== null) {
+          const itemTitle = item.title || item.name || `Item ${index + 1}`;
+          processObject(item, [...path, itemTitle], itemTitle);
         }
-      }
-      
-      // If no verses found but section has text, treat as verse
-      if (!foundVerses && (section.text || section.content || section.original)) {
-        processVerse(section, { title: parentTitle, section: sectionTitle });
-      }
-      
-      // Process nested sections
-      const subSectionKeys = ['sections', 'chapters', 'parts', 'books', 
-                              'adhyayas', 'kandas', 'prakaranas', 'subsections'];
-      for (const key of subSectionKeys) {
-        if (Array.isArray(section[key])) {
-          processSections(section[key], sectionTitle);
-        }
-      }
-    }
-  }
-
-  // Handle different top-level structures
-  if (Array.isArray(data)) {
-    // Could be array of verses or array of sections
-    const firstItem = data[0];
-    if (firstItem && typeof firstItem === 'object') {
-      // Check if it looks like sections
-      const hasSections = data.some(item => 
-        item.sections || item.chapters || item.verses || item.hymns
-      );
-      if (hasSections) {
-        processSections(data, fileTitle);
-      } else {
-        // Treat as flat array of verses
-        data.forEach(verse => processVerse(verse, { title: fileTitle }));
-      }
-    }
-  } else if (typeof data === 'object' && data !== null) {
-    // Try container keys
-    const containerKeys = ['sections', 'chapters', 'parts', 'books', 
-                           'adhyayas', 'kandas', 'prakaranas'];
-    let foundContainer = false;
-    
-    for (const key of containerKeys) {
-      if (Array.isArray(data[key])) {
-        foundContainer = true;
-        processSections(data[key], data.title || fileTitle);
-      }
-    }
-    
-    if (!foundContainer) {
-      // Try verse keys at top level
-      const verseKeys = ['verses', 'hymns', 'items', 'sutras', 'slokas',
-                         'shlokas', 'stanzas', 'mantras', 'passages', 'entries'];
-      let foundVerses = false;
-      
-      for (const key of verseKeys) {
-        if (Array.isArray(data[key])) {
-          foundVerses = true;
-          data[key].forEach(verse => processVerse(verse, { title: data.title || fileTitle }));
-        }
-      }
-      
-      if (!foundVerses) {
-        // Try to find any array values
-        for (const [key, value] of Object.entries(data)) {
-          if (Array.isArray(value) && value.length > 0) {
-            // Check if array contains objects
-            if (typeof value[0] === 'object') {
-              processSections([{ title: key, verses: value }], data.title || fileTitle);
-              break;
-            }
-          }
+      });
+    } else {
+      // Process object properties
+      for (const [key, value] of Object.entries(obj)) {
+        if (key === 'title' || key === 'name' || key === 'heading') continue;
+        
+        if (typeof value === 'object' && value !== null) {
+          const subTitle = (typeof value === 'object' && !Array.isArray(value)) 
+            ? (value.title || value.name || key)
+            : key;
+          processObject(value, [...path, key], subTitle);
         }
       }
     }
   }
 
+  processObject(data);
   return records;
 }
 
@@ -1028,48 +972,67 @@ const JSDLVR_LIST  = (owner, repo, branch) =>
   `https://data.jsdelivr.com/v1/package/gh/${owner}/${repo}@${branch}/flat`;
 
 const JSDLVR_FILE  = (owner, repo, branch, path) =>
-  `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}${path}`;
+  `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path.startsWith('/') ? path.slice(1) : path}`;
 
-/** List all .json/.tsv files in a repo using the jsDelivr API */
 async function listFilesViaJsdelivr(repo, exts) {
   const url = JSDLVR_LIST(repo.owner, repo.name, repo.branch);
-  console.log(`[${repo.name}] Fetching file list from jsDelivr...`);
+  console.log(`[${repo.name}] Fetching file list from jsDelivr: ${url}`);
   
   try {
     const res = await fetch(url);
     if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      throw new Error(`jsDelivr list API ${res.status}: ${body.slice(0, 120)}`);
+      throw new Error(`jsDelivr list API ${res.status}`);
     }
     const data = await res.json();
     const extSet = new Set(exts.map(e => e.toLowerCase()));
+    
+    // Filter files and also look in subdirectories
     const files = (data.files || []).filter(f => {
       const ext = f.name.split('.').pop().toLowerCase();
       return extSet.has(ext);
     });
+    
     console.log(`[${repo.name}] Found ${files.length} files:`, files.map(f => f.name));
     return files;
   } catch (error) {
-    console.error(`[${repo.name}] Failed to list files:`, error);
-    throw error;
+    console.warn(`[${repo.name}] jsDelivr listing failed:`, error.message);
+    
+    // If listing fails and repo has fallback files, use those
+    if (repo.fallbackFiles && repo.fallbackFiles.length > 0) {
+      console.log(`[${repo.name}] Using fallback file list`);
+      return repo.fallbackFiles.map(name => ({ name }));
+    }
+    
+    return [];
   }
 }
 
-/** Fetch a single file through the jsDelivr CDN */
 async function fetchViaJsdelivr(repo, filePath) {
-  const url = JSDLVR_FILE(repo.owner, repo.name, repo.branch, filePath);
+  // Normalize path - remove leading slash if present
+  const cleanPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
+  const url = JSDLVR_FILE(repo.owner, repo.name, repo.branch, cleanPath);
+  console.log(`[${repo.name}] Fetching: ${url}`);
+  
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`jsDelivr CDN ${res.status}: ${url}`);
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} for ${url}`);
+  }
   return res.text();
 }
 
-/** Load repo with mixed strategy - try both TSV and JSON */
 async function loadMixedRepo(repo) {
-  const files = await listFilesViaJsdelivr(repo, ['tsv', 'json']);
+  console.log(`[${repo.name}] Starting load with strategy: ${repo.strategy}`);
+  
+  let files = await listFilesViaJsdelivr(repo, ['tsv', 'json']);
+  
+  // If no files found with jsDelivr and no fallback, try direct known paths
+  if (files.length === 0 && (!repo.fallbackFiles || repo.fallbackFiles.length === 0)) {
+    console.warn(`[${repo.name}] No files found and no fallback configured`);
+    return 0;
+  }
   
   if (files.length === 0) {
-    console.warn(`[${repo.name}] No TSV or JSON files found`);
-    return 0;
+    console.log(`[${repo.name}] Using ${repo.fallbackFiles.length} fallback files`);
   }
 
   const perFile = await Promise.all(files.map(async f => {
@@ -1086,18 +1049,47 @@ async function loadMixedRepo(repo) {
         let data;
         try { 
           data = JSON.parse(raw); 
+          console.log(`[${repo.name}] ${basename}: JSON parsed successfully, type:`, 
+            Array.isArray(data) ? 'array' : typeof data);
         } catch (e) {
           console.warn(`[${repo.name}] JSON parse error in ${basename}:`, e.message);
           return [];
         }
         
-        // Try nested parsing first, then flat
+        // Try nested parsing first
         let records = parseNestedScriptureJSON(data, repo, basename);
         console.log(`[${repo.name}] ${basename}: nested parse → ${records.length} records`);
         
+        // If nested parsing yielded nothing, try flat
         if (records.length === 0) {
           records = parseFlatJSON(data, repo, basename);
           console.log(`[${repo.name}] ${basename}: flat parse → ${records.length} records`);
+        }
+        
+        // If still nothing, try to extract any text content
+        if (records.length === 0) {
+          console.log(`[${repo.name}] ${basename}: Attempting deep extraction`);
+          // Convert entire object to text for searching
+          const allText = JSON.stringify(data)
+            .replace(/[{}[\]"]/g, ' ')
+            .replace(/\\n/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+          
+          if (allText.length > 0) {
+            records = [{
+              repo: repo.name,
+              repoLabel: repo.label,
+              repoUrl: repo.url,
+              file: basename,
+              fileTitle: basename.replace(/\.json$/i, ''),
+              section: 'Full Text',
+              verseNum: '',
+              text: allText,
+              display: [`Full text extraction from ${basename}`]
+            }];
+            console.log(`[${repo.name}] ${basename}: extracted ${allText.length} chars of raw text`);
+          }
         }
         
         return records;
@@ -1105,7 +1097,7 @@ async function loadMixedRepo(repo) {
       
       return [];
     } catch (e) {
-      console.warn(`[${repo.name}] skip ${f.name}:`, e.message);
+      console.warn(`[${repo.name}] Failed to process ${f.name}:`, e.message);
       return [];
     }
   }));
@@ -1124,6 +1116,8 @@ async function loadMixedRepo(repo) {
 
 async function loadAll() {
   setStatus('loading', 'Loading data files…');
+  console.log('Starting archive load...');
+  console.log('Repos to load:', REPOS.map(r => r.name));
 
   const results = await Promise.allSettled(REPOS.map(repo => loadMixedRepo(repo)));
 
@@ -1134,15 +1128,16 @@ async function loadAll() {
       updateFilterCount(REPOS[i].name);
     } else {
       failed++;
-      console.error(`Repo ${REPOS[i].name} failed:`, r.reason);
+      console.error(`Repo ${REPOS[i].name} completely failed:`, r.reason);
     }
   });
 
   const total = allRecords.length;
   console.log(`Total records across all repos: ${total}`);
+  console.log('Sample records:', allRecords.slice(0, 3));
   
   if (total === 0 && failed === REPOS.length) {
-    setStatus('error', 'Could not load any data — check network / CORS. Check console for details.');
+    setStatus('error', 'Could not load any data. Check browser console for details.');
   } else if (failed > 0) {
     setStatus('ready',
       `${total.toLocaleString()} records loaded (${failed} collection${failed > 1 ? 's' : ''} unavailable)`
@@ -1193,10 +1188,14 @@ function runSearch() {
     ? allRecords
     : allRecords.filter(r => r.repo === activeFilter);
 
+  console.log(`Searching "${raw}" in ${pool.length} records (filter: ${activeFilter})`);
+
   const matches = pool.filter(r => {
     const lc = r.text.toLowerCase();
     return lcTerms.every(t => lc.includes(t));
   });
+
+  console.log(`Found ${matches.length} matches`);
 
   resultsCount.hidden = false;
   resultsCount.innerHTML = matches.length === 0
