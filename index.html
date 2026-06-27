@@ -516,704 +516,578 @@
     }
   </style>
 </head>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mālola · Digitized Text Archive</title>
+    <style>
+        /* CSS Reset and Base Variables */
+        :root {
+            --primary: #8B0000; /* Deep maroon/red */
+            --primary-light: #A52A2A;
+            --bg: #FDFBF7; /* Off-white/parchment */
+            --text: #2C2C2C;
+            --text-light: #555;
+            --border: #E0D8C8;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2, h3 {
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--primary);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 3rem 1rem;
+            border-bottom: 2px solid var(--border);
+            background: linear-gradient(to bottom, #fff, var(--bg));
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        header .subtitle {
+            font-style: italic;
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        .tags {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: var(--primary);
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Sections */
+        section {
+            margin: 3rem 0;
+        }
+
+        section h2 {
+            font-size: 1.8rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Search Section */
+        #search-section {
+            background: var(--card-bg);
+            padding: 2rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .search-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+
+        .search-controls label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .search-controls select, .search-controls input[type="text"] {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-input-group input {
+            flex: 1;
+        }
+
+        .search-input-group button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .search-input-group button:hover {
+            background: var(--primary-light);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            font-weight: normal;
+        }
+
+        #loading-status {
+            color: var(--text-light);
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        #search-results {
+            margin-top: 1.5rem;
+        }
+
+        .result-item {
+            background: #FAFAFA;
+            border: 1px solid #EEE;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .result-item h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--primary);
+        }
+
+        .result-item .meta {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Collections Grid */
+        .collections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .collection-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: var(--text);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .collection-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+            border-color: var(--primary);
+        }
+
+        .collection-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .collection-card h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.3rem;
+        }
+
+        .collection-card p {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            flex: 1;
+        }
+
+        .collection-card .link {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        /* Languages Grid */
+        .languages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .lang-item {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .lang-item strong {
+            display: block;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .lang-item span {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* Contact & Footer */
+        .contact-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .contact-links a {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.25rem;
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .contact-links a:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
 <body>
 
-  <header class="hero" role="banner">
-    <div class="hero-rule"></div>
-    <p class="hero-eyebrow">A Living Repository</p>
-    <h1 class="hero-name">
-      Mālola<br />
-      <span class="accent">Digitized Text</span> Archive
-    </h1>
-    <p class="hero-tagline">
-      Manuscripts, melodies, and scripture — recovered line by line
-      through OCR, correction, and careful re-typesetting on the web.
-    </p>
-    <div class="hero-pills">
-      <span class="hero-pill"><span class="dot"></span>Sanskrit · Tamil · Telugu</span>
-      <span class="hero-pill"><span class="dot"></span>OCR + Manual Correction</span>
-      <span class="hero-pill"><span class="dot"></span>3 Open Collections</span>
+    <header>
+        <h1>Mālola · Digitized Text Archive</h1>
+        <p class="subtitle">A Living Repository</p>
+        <p style="max-width: 600px; margin: 1rem auto 0; color: #555;">
+            Manuscripts, melodies, and scripture — recovered line by line through OCR, correction, and careful re-typesetting on the web.
+        </p>
+        <div class="tags">
+            <span class="tag">Sanskrit · Tamil · Telugu</span>
+            <span class="tag">OCR + Manual Correction</span>
+            <span class="tag">3 Open Collections</span>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- SEARCH SECTION -->
+        <section id="search-section">
+            <h2>Search the Archive</h2>
+            
+            <div class="search-controls">
+                <div>
+                    <label for="collection-select">Collection:</label>
+                    <select id="collection-select">
+                        <option value="all">All collections</option>
+                        <option value="sAmam">sAmam</option>
+                        <option value="Agama">Āgama</option>
+                        <option value="srivaishnavam">Śrīvaiṣṇava</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Search Mode:</label>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="search-mode" value="phrase" checked> phrase exact match
+                        </label>
+                        <label>
+                            <input type="radio" name="search-mode" value="terms"> word1 word2 (all terms)
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-input-group">
+                <input type="text" id="search-input" placeholder="Enter search query...">
+                <button id="search-btn">🔍 Search</button>
+            </div>
+            <p style="font-size: 0.85rem; color: #888; margin-top: 0.5rem;">⏎ press Enter to search</p>
+
+            <p id="loading-status">Loading data files…</p>
+            <div id="search-results"></div>
+        </section>
+
+        <!-- ABOUT SECTION -->
+        <section id="about">
+            <h2>About the Archive</h2>
+            <p>
+                The Mālola Digitized Text Archive gathers Sanskrit and Tamil texts that survive only as scans, photocopies, or faded prints, and brings them back as clean, searchable, citable text.
+            </p>
+        </section>
+
+        <!-- COLLECTIONS SECTION -->
+        <section id="collections">
+            <h2>Collections</h2>
+            <div class="collections-grid">
+                <a href="https://malolan05.github.io/sAmam" class="collection-card" target="_blank">
+                    <div class="icon">𝄞</div>
+                    <h3>Sāmaveda <span style="font-weight:normal; color:#888;">sAmam</span></h3>
+                    <p>An interactive table exploring the Sāmaveda — its hymns, melodies, and structure, built as a living web project.</p>
+                    <div class="link">malolan05.github.io/sAmam →</div>
+                </a>
+
+                <a href="https://malolan05.github.io/Agama" class="collection-card" target="_blank">
+                    <div class="icon">📜</div>
+                    <h3>Vaiṣṇava Āgama <span style="font-weight:normal; color:#888;">Āgama</span></h3>
+                    <p>A repository of Vaiṣṇava Āgama texts, assembled by digitising and correcting OCR outputs of Sanskrit manuscripts.</p>
+                    <div class="link">malolan05.github.io/Agama →</div>
+                </a>
+
+                <a href="https://malolan05.github.io/srivaishnavam" class="collection-card" target="_blank">
+                    <div class="icon">📜</div>
+                    <h3>Śrīvaiṣṇava <span style="font-weight:normal; color:#888;">Śrīvaiṣṇava</span></h3>
+                    <p>A repository of ŚrīVaiṣṇava texts, assembled by digitising and correcting OCR outputs of Sanskrit texts.</p>
+                    <div class="link">malolan05.github.io/srivaishnavam →</div>
+                </a>
+            </div>
+        </section>
+
+        <!-- SCRIPTS & LANGUAGES SECTION -->
+        <section id="languages">
+            <h2>Scripts & Languages Covered</h2>
+            <div class="languages-grid">
+                <div class="lang-item">
+                    <strong>Sanskrit</strong>
+                    <span>Devanāgarī source texts</span>
+                </div>
+                <div class="lang-item">
+                    <strong>Tamil</strong>
+                    <span>Maṇipravāḻam & commentary</span>
+                </div>
+                <div class="lang-item">
+                    <strong>Telugu</strong>
+                    <span>Grantha-derived editions</span>
+                </div>
+                <div class="lang-item">
+                    <strong>English</strong>
+                    <span>Working & reference text</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact">
+            <h2>Contact the Archivist</h2>
+            <div class="contact-links">
+                <a href="https://github.com/malolan05" target="_blank">github.com/malolan05</a>
+                <a href="https://www.linkedin.com/in/sunder-malolan-t-9423bb179/" target="_blank">LinkedIn</a>
+                <a href="mailto:tsmalolan@gmail.com">tsmalolan@gmail.com</a>
+                <a href="mailto:tsunderamalolan@gmail.com">tsunderamalolan@gmail.com</a>
+            </div>
+        </section>
+
     </div>
-  </header>
 
-  <main class="body-wrap">
+    <footer>
+        Mālola Digitized Text Archive · malolan05.github.io · Built with HTML & GitHub Pages
+    </footer>
 
-    <!-- SEARCH -->
-    <section aria-labelledby="search-label">
-      <p class="sec-label" id="search-label">Search the Archive</p>
+    <!-- SEARCH FUNCTIONALITY SCRIPT -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const searchInput = document.getElementById('search-input');
+            const searchBtn = document.getElementById('search-btn');
+            const collectionSelect = document.getElementById('collection-select');
+            const resultsDiv = document.getElementById('search-results');
+            const loadingStatus = document.getElementById('loading-status');
 
-      <div class="search-wrapper">
-        <input
-        type="search"
-        id="search-input"
-        class="search-input"
-        placeholder="Search across all collections — Sanskrit, Tamil, or English…"
-        autocomplete="off"
-        spellcheck="false"
-        aria-label="Search archive texts"
-        />
-        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-      </svg>
-    </div>
+            // Global variable to hold the fetched data
+            let archiveData = {};
 
-    <div class="search-status" id="search-status" role="status" aria-live="polite">
-      <span class="status-dot loading" id="status-dot"></span>
-      <span id="status-text">Loading data files…</span>
-    </div>
+            // 1. Load Data Files
+            async function loadArchiveData() {
+                // Adjust these paths if your JSON files are located elsewhere
+                const collections = [
+                    { id: 'sAmam', file: 'sAmam.json' },
+                    { id: 'Agama', file: 'Agama.json' },
+                    { id: 'srivaishnavam', file: 'srivaishnavam.json' }
+                ];
+                
+                let failedFiles = [];
 
-    <div class="search-filters" id="filter-row" role="group" aria-label="Filter by collection">
-      <button class="filter-btn active" data-repo="all">All collections</button>
-      <button class="filter-btn" data-repo="sAmam">sAmam <span class="count"></span></button>
-      <button class="filter-btn" data-repo="Agama">Āgama <span class="count"></span></button>
-      <button class="filter-btn" data-repo="srivaishnavam">Śrīvaiṣṇava <span class="count"></span></button>
-    </div>
+                for (const col of collections) {
+                    try {
+                        // Try fetching from root first, then from a 'data/' folder if that fails
+                        let response = await fetch(col.file);
+                        if (!response.ok) {
+                            response = await fetch(`data/${col.file}`);
+                        }
+                        
+                        if (response.ok) {
+                            archiveData[col.id] = await response.json();
+                        } else {
+                            failedFiles.push(col.file);
+                        }
+                    } catch (error) {
+                        console.warn(`Could not load ${col.file}:`, error);
+                        failedFiles.push(col.file);
+                    }
+                }
 
-    <div class="search-hint">
-      <span>🔍 <kbd>phrase</kbd> exact match · <kbd>word1 word2</kbd> all terms</span>
-      <span>⏎ press Enter to search</span>
-    </div>
+                if (failedFiles.length === 0) {
+                    loadingStatus.style.display = 'none';
+                } else {
+                    loadingStatus.innerHTML = `<span style="color: #d32f2f;">Warning: Could not load ${failedFiles.join(', ')}. Ensure you are running this on a local server (e.g., Live Server) and the JSON files exist.</span>`;
+                }
+            }
 
-    <div id="results-count" class="results-count" hidden></div>
-    <div id="results-container" class="results-container" aria-live="polite" aria-label="Search results"></div>
-  </section>
+            // Helper to extract text from an object (handles nested structures automatically)
+            function extractText(obj) {
+                if (typeof obj === 'string') return obj;
+                if (Array.isArray(obj)) return obj.map(extractText).join(' ');
+                if (typeof obj === 'object' && obj !== null) {
+                    return Object.values(obj).map(extractText).join(' ');
+                }
+                return '';
+            }
 
-  <!-- ABOUT -->
-  <section aria-labelledby="about-label">
-    <p class="sec-label" id="about-label">About the Archive</p>
-    <p class="lede">
-      The <strong>Mālola Digitized Text Archive</strong> gathers Sanskrit and Tamil
-      texts that survive only as scans, photocopies, or faded prints, and
-      brings them back as clean, searchable, citable text.
-    </p>
-  </section>
+            // 2. Search Logic
+            function performSearch() {
+                const query = searchInput.value.trim().toLowerCase();
+                const selectedCollection = collectionSelect.value;
+                const searchMode = document.querySelector('input[name="search-mode"]:checked').value;
 
-  <!-- COLLECTIONS -->
-  <section aria-labelledby="proj-label">
-    <p class="sec-label" id="proj-label">Collections</p>
-    <div class="projects-grid">
-      <a class="project-card" href="https://malolan05.github.io/sAmam/index.html" target="_blank" rel="noopener">
-        <div class="project-icon">𝄞</div>
-        <div class="project-tag">Sāmaveda</div>
-        <div class="project-name">sAmam</div>
-        <p class="project-desc">An interactive table exploring the Sāmaveda — its hymns, melodies, and structure, built as a living web project.</p>
-        <span class="project-url">malolan05.github.io/sAmam</span>
-      </a>
-      <a class="project-card" href="https://malolan05.github.io/Agama" target="_blank" rel="noopener">
-        <div class="project-icon">📜</div>
-        <div class="project-tag">Vaiṣṇava Āgama</div>
-        <div class="project-name">Āgama</div>
-        <p class="project-desc">A repository of Vaiṣṇava Āgama texts, assembled by digitising and correcting OCR outputs of Sanskrit manuscripts.</p>
-        <span class="project-url">malolan05.github.io/Agama</span>
-      </a>
-      <a class="project-card" href="https://malolan05.github.io/srivaishnavam" target="_blank" rel="noopener">
-        <div class="project-icon">📜</div>
-        <div class="project-tag">Śrīvaiṣṇava</div>
-        <div class="project-name">Śrīvaiṣṇava</div>
-        <p class="project-desc">A repository of ŚrīVaiṣṇava texts, assembled by digitising and correcting OCR outputs of Sanskrit texts.</p>
-        <span class="project-url">malolan05.github.io/srivaishnavam</span>
-      </a>
-    </div>
-  </section>
+                resultsDiv.innerHTML = ''; // Clear previous results
 
-  <!-- SCRIPTS -->
-  <section aria-labelledby="lang-label">
-    <p class="sec-label" id="lang-label">Scripts &amp; Languages Covered</p>
-    <div class="lang-grid">
-      <div class="lang-card"><span class="lang-name">Sanskrit</span><span class="lang-level">Devanāgarī source texts</span></div>
-      <div class="lang-card"><span class="lang-name">Tamil</span><span class="lang-level">Maṇipravāḻam &amp; commentary</span></div>
-      <div class="lang-card"><span class="lang-name">Telugu</span><span class="lang-level">Grantha-derived editions</span></div>
-      <div class="lang-card"><span class="lang-name">English</span><span class="lang-level">Working &amp; reference text</span></div>
-    </div>
-  </section>
+                if (!query) {
+                    resultsDiv.innerHTML = '<p style="color: #d32f2f;">Please enter a search term.</p>';
+                    return;
+                }
 
-  <!-- CONTACT -->
-  <section aria-labelledby="contact-label">
-    <p class="sec-label" id="contact-label">Contact the Archivist</p>
-    <div class="contact-grid">
-      <a class="contact-link" href="https://github.com/malolan05" target="_blank" rel="noopener">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17 5.1 18 5.4 18 5.4c.7 1.6.2 2.8.1 3.1.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/>
-        </svg>
-        github.com/malolan05
-      </a>
-      <a class="contact-link" href="https://www.linkedin.com/in/sunder-malolan-t-9423bb179/" target="_blank" rel="noopener">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M4.98 3.5C4.98 4.88 3.86 6 2.48 6S0 4.88 0 3.5 1.12 1 2.48 1s2.5 1.12 2.5 2.5zM0 8h5v16H0zM8 8h4.8v2.2h.1c.7-1.3 2.3-2.7 4.8-2.7 5.1 0 6.1 3.4 6.1 7.8V24h-5v-7.2c0-1.7 0-3.9-2.4-3.9-2.4 0-2.8 1.9-2.8 3.8V24H8z"/>
-        </svg>
-        LinkedIn
-      </a>
-      <a class="contact-link" href="mailto:tsmalolan@gmail.com">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <rect x="2" y="4" width="20" height="16" rx="2"/>
-          <path d="M2 7l10 7 10-7"/>
-        </svg>
-        tsmalolan@gmail.com
-      </a>
-      <a class="contact-link" href="mailto:tsunderamalolan@gmail.com">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <rect x="2" y="4" width="20" height="16" rx="2"/>
-          <path d="M2 7l10 7 10-7"/>
-        </svg>
-        tsunderamalolan@gmail.com
-      </a>
-    </div>
-  </section>
+                if (Object.keys(archiveData).length === 0) {
+                    resultsDiv.innerHTML = '<p style="color: #d32f2f;">No data loaded. Please check your JSON files and server setup.</p>';
+                    return;
+                }
 
-</main>
+                let results = [];
+                const collectionsToSearch = selectedCollection === 'all' ? Object.keys(archiveData) : [selectedCollection];
 
-<footer>
-  Mālola Digitized Text Archive · malolan05.github.io · Built with HTML &amp; GitHub Pages
-</footer>
+                collectionsToSearch.forEach(col => {
+                    if (!archiveData[col]) return;
 
-<script>
-  /* =============================================================
-     MĀLOLA ARCHIVE — Fixed data loading for all repos
-     - Properly fetches from /data/ folder in each repo
-     - Handles TSV for sAmam, JSON for Agama and srivaishnavam
-     - Robust error handling with fallback file lists
-     ============================================================= */
+                    // Handle both array of items and single object
+                    const items = Array.isArray(archiveData[col]) ? archiveData[col] : [archiveData[col]];
 
-  // ── repo config ──
-  const REPOS = [{
-    name: 'sAmam',
-    owner: 'malolan05',
-    branch: 'content',
-    label: 'sAmam',
-    baseUrl: 'https://malolan05.github.io/sAmam/index.html',
-    urlPattern: '?file={file}',
-    strategy: 'mixed',
-    dataPath: 'data/'
-  }, {
-    name: 'Agama',
-    owner: 'malolan05',
-    branch: 'main',
-    label: 'Āgama',
-    baseUrl: 'https://malolan05.github.io/Agama',
-    urlPattern: '?file={file}',
-    strategy: 'json',
-    dataPath: 'data/'
-  }, {
-    name: 'srivaishnavam',
-    owner: 'malolan05',
-    branch: 'main',
-    label: 'Śrīvaiṣṇava',
-    baseUrl: 'https://malolan05.github.io/srivaishnavam',
-    urlPattern: '?file={file}',
-    strategy: 'json',
-    dataPath: 'data/'
-  }];
+                    items.forEach(item => {
+                        // Extract all text content from the item
+                        const searchableText = extractText(item).toLowerCase();
+                        let isMatch = false;
 
-  // ── state ──
-  let allRecords = [];
-  let activeFilter = 'all';
-  let searchDebounce = null;
-  const SNIPPET_WINDOW = 160;
+                        if (searchMode === 'phrase') {
+                            // Exact phrase match
+                            isMatch = searchableText.includes(query);
+                        } else if (searchMode === 'terms') {
+                            // All terms match (word1 AND word2)
+                            const words = query.split(/\s+/).filter(w => w.length > 0);
+                            isMatch = words.every(word => searchableText.includes(word));
+                        }
 
-  // ── DOM refs ──
-  const searchInput = document.getElementById('search-input');
-  const statusDot = document.getElementById('status-dot');
-  const statusText = document.getElementById('status-text');
-  const resultsEl = document.getElementById('results-container');
-  const resultsCount = document.getElementById('results-count');
-  const filterRow = document.getElementById('filter-row');
+                        if (isMatch) {
+                            results.push({ collection: col, data: item });
+                        }
+                    });
+                });
 
-  // ── helpers ──
-  function escapeHTML(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
+                renderResults(results, query);
+            }
 
-  function escapeRe(s) {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
+            // 3. Render Results
+            function renderResults(results, query) {
+                if (results.length === 0) {
+                    resultsDiv.innerHTML = '<p>No results found for your query.</p>';
+                    return;
+                }
 
-  function setStatus(state, msg) {
-    statusDot.className = 'status-dot ' + state;
-    statusText.textContent = msg;
-  }
+                let html = `<h3>Found ${results.length} result(s):</h3>`;
+                
+                results.forEach(r => {
+                    // Try to find a title and a snippet
+                    const item = r.data;
+                    let title = item.title || item.name || item.heading || 'Untitled Section';
+                    
+                    // Get a text snippet
+                    let fullText = extractText(item);
+                    let snippet = fullText.substring(0, 200);
+                    if (fullText.length > 200) snippet += '...';
 
-  function updateFilterCount(repoName) {
-    const n = allRecords.filter(r => r.repo === repoName).length;
-    const el = filterRow.querySelector(`[data-repo="${repoName}"] .count`);
-    if (el) el.textContent = n > 0 ? `(${n.toLocaleString()})` : '';
-  }
+                    // Highlight query in snippet
+                    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                    snippet = snippet.replace(regex, '<mark style="background: #ffeb3b; padding: 0 2px;">$1</mark>');
 
-  function buildFileUrl(repo, filePath) {
-    const filename = filePath.split('/').pop();
-    const pattern = repo.urlPattern || '?file={file}';
-    return repo.baseUrl + pattern.replace('{file}', encodeURIComponent(filename));
-  }
+                    html += `
+                        <div class="result-item">
+                            <div class="meta">Collection: <strong>${r.collection}</strong></div>
+                            <h4>${title}</h4>
+                            <p style="margin: 0; font-size: 0.95rem; color: #444;">${snippet}</p>
+                        </div>
+                    `;
+                });
+                
+                resultsDiv.innerHTML = html;
+            }
 
-  // ── text extraction from JSON (deep) ──
-  function extractAllText(obj, maxDepth = 12, depth = 0) {
-    if (depth > maxDepth) return '';
-    if (typeof obj === 'string') return obj;
-    if (typeof obj === 'number') return String(obj);
-    if (typeof obj === 'boolean') return '';
-    if (!obj || typeof obj !== 'object') return '';
-
-    if (Array.isArray(obj)) {
-      return obj.map(item => extractAllText(item, maxDepth, depth + 1)).filter(Boolean).join(' ');
-    }
-
-    // priority text fields
-    const priority = ['text', 'original', 'sanskrit', 'devanagari', 'verse', 'sloka',
-      'content', 'translation', 'meaning', 'english', 'artha',
-      'transliteration', 'iast', 'roman', 'commentary', 'bhasya',
-      'description', 'notes', 'explanation', 'summary', 'body', 'verse_text'
-    ];
-    const parts = [];
-    for (const f of priority) {
-      if (obj[f]) {
-        if (typeof obj[f] === 'string') parts.push(obj[f]);
-        else if (Array.isArray(obj[f])) {
-          const text = obj[f].map(item => {
-            if (typeof item === 'string') return item;
-            if (typeof item === 'object' && item !== null) return item.text || item.content || item.body || '';
-            return '';
-          }).filter(Boolean).join(' ');
-          if (text) parts.push(text);
-        }
-      }
-    }
-
-    // other string fields
-    const skip = new Set([...priority, 'id', 'index', 'num', 'number', 'verse_num', 'page',
-      'title', 'name', 'heading', 'chapter', 'section', 'type', 'category', 'tags', 'metadata', 'url', 'link'
-    ]);
-    for (const [key, val] of Object.entries(obj)) {
-      if (skip.has(key)) continue;
-      if (typeof val === 'string' && val.length > 2) parts.push(val);
-    }
-    return parts.join(' ');
-  }
-
-  // ── JSON parser for Agama / srivaishnavam ──
-  function parseJSON(data, repo, filename) {
-    const records = [];
-    const fileTitle = filename.replace(/\.json$/i, '').replace(/-/g, ' ');
-
-    function createRecord(text, meta = {}) {
-      if (!text || text.trim().length < 2) return null;
-      const display = [];
-      if (meta.bookTitle) display.push(meta.bookTitle.substring(0, 40));
-      if (meta.sectionTitle) display.push(meta.sectionTitle.substring(0, 40));
-      if (meta.verseNum) display.push(`Verse ${meta.verseNum}`);
-      if (meta.textPreview) display.push(meta.textPreview.substring(0, 60));
-      if (display.length === 0) {
-        display.push(fileTitle);
-        if (meta.sectionKey) display.push(meta.sectionKey);
-      }
-      return {
-        repo: repo.name,
-        repoLabel: repo.label,
-        repoUrl: buildFileUrl(repo, filename),
-        file: filename,
-        fileTitle: fileTitle,
-        section: meta.sectionTitle || meta.bookTitle || '',
-        verseNum: String(meta.verseNum || ''),
-        text: text.trim(),
-        display: display.filter(Boolean)
-      };
-    }
-
-    // Process different JSON structures
-    function processItem(obj, context = {}) {
-      if (!obj || typeof obj !== 'object') return;
-
-      // If it's an array, process each item
-      if (Array.isArray(obj)) {
-        obj.forEach((item, idx) => {
-          processItem(item, { ...context, index: idx });
-        });
-        return;
-      }
-
-      // Check if this is a verse/sloka object
-      const verseText = obj.verse || obj.verse_text || obj.text || obj.content || obj.sloka;
-      if (verseText && typeof verseText === 'string') {
-        const rec = createRecord(verseText, {
-          bookTitle: context.bookTitle || obj.book || obj.chapter || '',
-          sectionTitle: context.sectionTitle || obj.section || obj.chapter || '',
-          verseNum: obj.num || obj.number || obj.verse_num || context.index + 1 || '',
-          textPreview: verseText.substring(0, 100)
-        });
-        if (rec) records.push(rec);
-        return;
-      }
-
-      // If it has verses array
-      if (obj.verses && Array.isArray(obj.verses)) {
-        obj.verses.forEach((v, i) => {
-          if (typeof v === 'string') {
-            const rec = createRecord(v, {
-              bookTitle: obj.title || obj.name || context.bookTitle || '',
-              sectionTitle: obj.section || obj.chapter || '',
-              verseNum: i + 1,
-              textPreview: v.substring(0, 100)
+            // 4. Event Listeners
+            searchBtn.addEventListener('click', performSearch);
+            
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
             });
-            if (rec) records.push(rec);
-          } else if (typeof v === 'object') {
-            processItem(v, {
-              bookTitle: obj.title || obj.name || context.bookTitle || '',
-              sectionTitle: obj.section || obj.chapter || '',
-            });
-          }
+
+            // Initialize
+            loadArchiveData();
         });
-        return;
-      }
-
-      // If it has slokas array
-      if (obj.slokas && Array.isArray(obj.slokas)) {
-        obj.slokas.forEach((s, i) => {
-          if (typeof s === 'string') {
-            const rec = createRecord(s, {
-              bookTitle: obj.title || obj.name || context.bookTitle || '',
-              sectionTitle: obj.section || obj.chapter || '',
-              verseNum: i + 1,
-              textPreview: s.substring(0, 100)
-            });
-            if (rec) records.push(rec);
-          } else if (typeof s === 'object') {
-            processItem(s, {
-              bookTitle: obj.title || obj.name || context.bookTitle || '',
-              sectionTitle: obj.section || obj.chapter || '',
-            });
-          }
-        });
-        return;
-      }
-
-      // If it has chapters
-      if (obj.chapters && typeof obj.chapters === 'object') {
-        for (const [chName, chData] of Object.entries(obj.chapters)) {
-          processItem(chData, {
-            bookTitle: obj.title || obj.name || context.bookTitle || '',
-            sectionTitle: chName,
-          });
-        }
-        return;
-      }
-
-      // If it has sections
-      if (obj.sections && Array.isArray(obj.sections)) {
-        obj.sections.forEach((section, idx) => {
-          processItem(section, {
-            bookTitle: obj.title || obj.name || context.bookTitle || '',
-            sectionTitle: obj.section_names ? obj.section_names[idx] : `Section ${idx + 1}`,
-          });
-        });
-        return;
-      }
-
-      // If it has books
-      if (obj.books && typeof obj.books === 'object') {
-        for (const [bookName, bookData] of Object.entries(obj.books)) {
-          processItem(bookData, { bookTitle: bookName });
-        }
-        return;
-      }
-
-      // If it has a title and other fields, try to extract text
-      if (obj.title && typeof obj.title === 'string') {
-        // Check if there's any other text content
-        const text = extractAllText(obj);
-        if (text.trim()) {
-          const rec = createRecord(text, {
-            bookTitle: obj.title,
-            sectionTitle: obj.subtitle || obj.section || '',
-            textPreview: text.substring(0, 100)
-          });
-          if (rec) records.push(rec);
-        }
-        return;
-      }
-
-      // Generic object - extract all text
-      const text = extractAllText(obj);
-      if (text.trim()) {
-        const rec = createRecord(text, {
-          bookTitle: context.bookTitle || context.sectionTitle || fileTitle,
-          sectionTitle: context.sectionTitle || obj.section || obj.chapter || '',
-          textPreview: text.substring(0, 100)
-        });
-        if (rec) records.push(rec);
-      }
-    }
-
-    // Start processing
-    processItem(data);
-
-    // If no records found, try one more time with shallow extraction
-    if (records.length === 0) {
-      const text = extractAllText(data);
-      if (text.trim()) {
-        const rec = createRecord(text, {
-          bookTitle: fileTitle,
-          textPreview: text.substring(0, 100)
-        });
-        if (rec) records.push(rec);
-      }
-    }
-
-    return records;
-  }
-
-  // ── TSV parser for sAmam ──
-  function parseTSV(raw, repo, filename) {
-    const lines = raw.trim().split('\n');
-    if (lines.length < 2) return [];
-    const headers = lines[0].split('\t').map(h => h.trim().toLowerCase());
-    const records = [];
-    for (let i = 1; i < lines.length; i++) {
-      const cells = lines[i].split('\t');
-      if (cells.every(c => !c.trim())) continue;
-      const fields = {};
-      headers.forEach((h, idx) => { fields[h] = (cells[idx] || '').trim(); });
-      const textParts = [];
-      const displayParts = [];
-      const textFields = ['verse', 'original', 'translation', 'meaning', 'sanskrit', 'english', 'text', 'content', 'transliteration', 'section', 'description', 'notes', 'commentary', 'hymn', 'mantra', 'title'];
-      for (const f of textFields) {
-        if (fields[f]) textParts.push(fields[f]);
-      }
-      if (fields.section) displayParts.push(`Section: ${fields.section.substring(0, 40)}`);
-      if (fields.verse) displayParts.push(`Verse: ${fields.verse}`);
-      if (fields.title) displayParts.push(fields.title.substring(0, 60));
-      if (fields.original) displayParts.push(fields.original.substring(0, 60));
-      if (!textParts.length) {
-        Object.values(fields).forEach(v => { if (v && typeof v === 'string') textParts.push(v); });
-      }
-      if (!displayParts.length) {
-        const entries = Object.entries(fields).filter(([, v]) => v && typeof v === 'string').slice(0, 3);
-        for (const [k, v] of entries) displayParts.push(`${k}: ${v.substring(0, 50)}`);
-      }
-      const text = textParts.join(' ');
-      if (!text.trim()) continue;
-      records.push({
-        repo: repo.name,
-        repoLabel: repo.label,
-        repoUrl: buildFileUrl(repo, filename),
-        file: filename,
-        fileTitle: filename.replace(/\.[^.]+$/, ''),
-        section: fields.section || fields.title || '',
-        verseNum: fields.verse || '',
-        text: text,
-        display: displayParts
-      });
-    }
-    return records;
-  }
-
-  // ── jsDelivr fetch helpers ──
-  const JSDLVR_LIST = (owner, repo, branch) =>
-    `https://data.jsdelivr.com/v1/package/gh/${owner}/${repo}@${branch}/flat`;
-  const JSDLVR_FILE = (owner, repo, branch, path) =>
-    `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path.startsWith('/') ? path.slice(1) : path}`;
-
-  async function listDataFiles(repo) {
-    const url = JSDLVR_LIST(repo.owner, repo.name, repo.branch);
-    console.log(`[${repo.name}] listing files from ${url}`);
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`jsDelivr list ${res.status}`);
-      const data = await res.json();
-      const files = (data.files || [])
-        .filter(f => {
-          const path = f.name;
-          // Look for files in data/ folder
-          if (!path.startsWith(repo.dataPath || 'data/')) return false;
-          const ext = path.split('.').pop().toLowerCase();
-          return ext === 'tsv' || ext === 'json';
-        })
-        .map(f => f.name);
-      console.log(`[${repo.name}] found ${files.length} data files:`, files);
-      return files;
-    } catch (e) {
-      console.warn(`[${repo.name}] list failed:`, e.message);
-      // Fallback to known files for each repo
-      const fallbacks = {
-        'sAmam': ['data/sAmam.tsv'],
-        'Agama': ['data/texts.json', 'data/agamas.json', 'data/index.json'],
-        'srivaishnavam': ['data/gitarthasangraha.json', 'data/vedas.json', 'data/upanishads.json', 'data/puranas.json', 'data/itihasas.json', 'data/agamas.json', 'data/stotras.json', 'data/texts.json', 'data/scriptures.json']
-      };
-      return fallbacks[repo.name] || [];
-    }
-  }
-
-  async function fetchFile(repo, filePath) {
-    const url = JSDLVR_FILE(repo.owner, repo.name, repo.branch, filePath);
-    console.log(`[${repo.name}] fetching ${url}`);
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`);
-    return res.text();
-  }
-
-  // ── load a repo ──
-  async function loadRepo(repo) {
-    console.log(`[${repo.name}] loading...`);
-    const files = await listDataFiles(repo);
-    if (!files.length) {
-      console.warn(`[${repo.name}] no data files found`);
-      return 0;
-    }
-    let count = 0;
-    for (const f of files) {
-      try {
-        const raw = await fetchFile(repo, f);
-        const ext = f.split('.').pop().toLowerCase();
-        const basename = f.split('/').pop();
-        let parsed = [];
-        if (ext === 'tsv') {
-          parsed = parseTSV(raw, repo, basename);
-          console.log(`[${repo.name}] ${basename} → ${parsed.length} TSV records`);
-        } else if (ext === 'json') {
-          let data;
-          try { data = JSON.parse(raw); } catch (e) {
-            console.warn(`[${repo.name}] JSON parse error ${basename}`, e);
-            continue;
-          }
-          parsed = parseJSON(data, repo, basename);
-          console.log(`[${repo.name}] ${basename} → ${parsed.length} JSON records`);
-        }
-        if (parsed.length) {
-          allRecords.push(...parsed);
-          count += parsed.length;
-        }
-      } catch (e) {
-        console.warn(`[${repo.name}] failed ${f}:`, e.message);
-      }
-    }
-    console.log(`[${repo.name}] total indexed: ${count}`);
-    return count;
-  }
-
-  // ── load all ──
-  async function loadAll() {
-    setStatus('loading', 'Loading data files…');
-    let loaded = 0;
-    let failed = 0;
-    for (const repo of REPOS) {
-      try {
-        const n = await loadRepo(repo);
-        if (n > 0) loaded++;
-        else failed++;
-        updateFilterCount(repo.name);
-      } catch (e) {
-        console.error(`[${repo.name}] load error:`, e);
-        failed++;
-      }
-    }
-    const total = allRecords.length;
-    console.log(`total records indexed: ${total}`);
-    if (total === 0 && failed === REPOS.length) {
-      setStatus('error', 'Could not load any data. Check console.');
-    } else if (failed > 0) {
-      setStatus('ready', `${total.toLocaleString()} records loaded (${failed} collection${failed > 1 ? 's' : ''} unavailable)`);
-    } else {
-      setStatus('ready', `${total.toLocaleString()} records indexed from ${loaded} collection${loaded > 1 ? 's' : ''}`);
-    }
-    if (searchInput.value.trim().length >= 2) runSearch();
-  }
-
-  // ── search & render ──
-  function buildSnippet(text, terms) {
-    if (!text) return '';
-    const lc = text.toLowerCase();
-    let first = text.length;
-    for (const t of terms) {
-      const idx = lc.indexOf(t.toLowerCase());
-      if (idx !== -1 && idx < first) first = idx;
-    }
-    const start = Math.max(0, first - 40);
-    const end = Math.min(text.length, start + SNIPPET_WINDOW);
-    let snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
-    let html = escapeHTML(snippet);
-    for (const t of terms) {
-      const re = new RegExp(`(${escapeRe(escapeHTML(t))})`, 'gi');
-      html = html.replace(re, '<mark>$1</mark>');
-    }
-    return html;
-  }
-
-  function runSearch() {
-    const raw = searchInput.value.trim();
-    if (raw.length < 2) {
-      resultsEl.innerHTML = '';
-      resultsCount.hidden = true;
-      return;
-    }
-
-    // Parse quoted phrases
-    const termMatches = raw.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g);
-    if (!termMatches) {
-      resultsEl.innerHTML = '';
-      resultsCount.hidden = true;
-      return;
-    }
-    const terms = termMatches.map(t => t.replace(/^['"]|['"]$/g, '').trim()).filter(Boolean);
-    if (!terms.length) {
-      resultsEl.innerHTML = '';
-      resultsCount.hidden = true;
-      return;
-    }
-
-    const pool = activeFilter === 'all' ? allRecords : allRecords.filter(r => r.repo === activeFilter);
-
-    const matches = pool.filter(r => {
-      const lc = r.text.toLowerCase();
-      return terms.every(t => lc.includes(t.toLowerCase()));
-    });
-
-    resultsCount.hidden = false;
-    resultsCount.innerHTML = matches.length === 0 ?
-      `No results for <strong>${escapeHTML(raw)}</strong>` :
-      `<strong>${matches.length.toLocaleString()}</strong> result${matches.length !== 1 ? 's' : ''} for <strong>${escapeHTML(raw)}</strong>`;
-
-    if (matches.length === 0) {
-      resultsEl.innerHTML = `<p class="no-results">No texts matched <em>${escapeHTML(raw)}</em> in ${activeFilter === 'all' ? 'any collection' : 'this collection'}.</p>`;
-      return;
-    }
-
-    resultsEl.innerHTML = matches.map(r => {
-      const snippet = buildSnippet(r.text, terms);
-      const pills = (r.display || []).filter(Boolean).map(d => `<span class="result-meta-pill">${escapeHTML(d)}</span>`).join('');
-      return `
-        <a class="result-card" href="${escapeHTML(r.repoUrl)}" target="_blank" rel="noopener">
-          <div class="result-header">
-            <span class="result-repo">${escapeHTML(r.repoLabel)}</span>
-            <span class="result-file">${escapeHTML(r.file)}</span>
-          </div>
-          <div class="result-body">${snippet}</div>
-          ${pills ? `<div class="result-meta">${pills}</div>` : ''}
-        </a>`;
-    }).join('');
-  }
-
-  // ── events ──
-  searchInput.addEventListener('input', () => {
-    clearTimeout(searchDebounce);
-    searchDebounce = setTimeout(runSearch, 200);
-  });
-
-  searchInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault();
-      runSearch(); }
-    if (e.key === 'Escape') { searchInput.value = '';
-      runSearch(); }
-  });
-
-  filterRow.addEventListener('click', e => {
-    const btn = e.target.closest('.filter-btn');
-    if (!btn) return;
-    filterRow.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    activeFilter = btn.dataset.repo;
-    runSearch();
-  });
-
-  // ── boot ──
-  loadAll();
-</script>
+    </script>
 </body>
 </html>
