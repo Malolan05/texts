@@ -639,7 +639,9 @@
 <script>
 /* ═══════════════════════════════════════════════════════════════
    MĀLOLA ARCHIVE — Cross-Repository Search
-   FIXED: Specifically handles srivaishnavam data folder structure
+   - Proper file-specific URLs for each repository
+   - No result limit
+   - Fallback file lists for srivaishnavam data folder
 ═══════════════════════════════════════════════════════════════ */
 
 /* ── Repo configs ─────────────────────────────────────────── */
@@ -649,17 +651,18 @@ const REPOS = [
     owner:    'malolan05',
     branch:   'content',
     label:    'sAmam',
-    url:      'https://malolan05.github.io/sAmam/index.html',
+    baseUrl:  'https://malolan05.github.io/sAmam/index.html',
+    urlPattern: '?file={file}',  // sAmam uses ?file= parameter
     strategy: 'mixed',
-    // Known files to try if jsDelivr listing fails
-    fallbackFiles: ['sAmam.tsv', 'data.tsv', 'index.tsv']
+    fallbackFiles: []
   },
   {
     name:     'Agama',
     owner:    'malolan05',
     branch:   'main',
     label:    'Āgama',
-    url:      'https://malolan05.github.io/Agama',
+    baseUrl:  'https://malolan05.github.io/Agama',
+    urlPattern: '?file={file}',  // Agama likely uses ?file= parameter
     strategy: 'mixed',
     fallbackFiles: []
   },
@@ -668,19 +671,11 @@ const REPOS = [
     owner:    'malolan05',
     branch:   'main',
     label:    'Śrīvaiṣṇava',
-    url:      'https://malolan05.github.io/srivaishnavam',
+    baseUrl:  'https://malolan05.github.io/srivaishnavam',
+    urlPattern: '?file={file}',  // srivaishnavam uses ?file= parameter
     strategy: 'mixed',
-    // Common JSON files in the data folder
     fallbackFiles: [
-      '/data/vedas.json',
-      '/data/upanishads.json', 
-      '/data/puranas.json',
-      '/data/itihasas.json',
-      '/data/agamas.json',
-      '/data/stotras.json',
-      '/data/texts.json',
-      '/data/scriptures.json',
-      '/data/index.json',
+      'data/gitarthasangraha.json',
       'data/vedas.json',
       'data/upanishads.json',
       'data/puranas.json',
@@ -698,7 +693,6 @@ const REPOS = [
 let allRecords   = [];
 let activeFilter = 'all';
 let searchDebounce = null;
-const MAX_RESULTS   = 60;
 const SNIPPET_WINDOW = 140;
 
 /* ── DOM ──────────────────────────────────────────────────── */
@@ -730,6 +724,14 @@ function updateFilterCount(repoName) {
   const n  = allRecords.filter(r => r.repo === repoName).length;
   const el = filterRow.querySelector(`[data-repo="${repoName}"] .count`);
   if (el) el.textContent = n > 0 ? `(${n.toLocaleString()})` : '';
+}
+
+function buildFileUrl(repo, filePath) {
+  // Extract just the filename from the path
+  const filename = filePath.split('/').pop();
+  // Build the URL using the repo's URL pattern
+  const pattern = repo.urlPattern || '?file={file}';
+  return repo.baseUrl + pattern.replace('{file}', encodeURIComponent(filename));
 }
 
 /* ═══ Parsers ════════════════════════════════════════════════ */
@@ -789,7 +791,7 @@ function parseTSV(raw, repo, filename) {
     records.push({
       repo: repo.name, 
       repoLabel: repo.label, 
-      repoUrl: repo.url,
+      repoUrl: buildFileUrl(repo, filename),
       file: filename, 
       fileTitle: filename.replace(/\.[^.]+$/, ''),
       section: fields.section || fields.title || '',
@@ -821,7 +823,8 @@ function parseFlatJSON(data, repo, filename) {
   return array.map((item, index) => {
     if (typeof item === 'string') {
       return {
-        repo: repo.name, repoLabel: repo.label, repoUrl: repo.url,
+        repo: repo.name, repoLabel: repo.label, 
+        repoUrl: buildFileUrl(repo, filename),
         file: filename, fileTitle: filename.replace(/\.[^.]+$/, ''),
         section: '', verseNum: String(index + 1),
         text: item,
@@ -861,7 +864,8 @@ function parseFlatJSON(data, repo, filename) {
     if (!text.trim()) return null;
     
     return {
-      repo: repo.name, repoLabel: repo.label, repoUrl: repo.url,
+      repo: repo.name, repoLabel: repo.label,
+      repoUrl: buildFileUrl(repo, filename),
       file: filename, fileTitle: filename.replace(/\.[^.]+$/, ''),
       section: item.section || item.chapter || '',
       verseNum: String(item.verse || item.num || item.number || item.id || index + 1),
@@ -881,14 +885,13 @@ function parseNestedScriptureJSON(data, repo, filename) {
     const parts = [];
     if (!obj || typeof obj !== 'object') return '';
     
-    const textFields = ['text', 'original', 'sanskrit', 'verse', 'content', 'translation', 'meaning', 'english', 'transliteration'];
+    const textFields = ['text', 'original', 'sanskrit', 'verse', 'content', 'translation', 'meaning', 'english', 'transliteration', 'commentary'];
     for (const field of textFields) {
       if (obj[field] && typeof obj[field] === 'string') {
         parts.push(obj[field]);
       }
     }
     
-    // Also check for arrays of strings
     if (Array.isArray(obj.lines) || Array.isArray(obj.verses)) {
       const arr = obj.lines || obj.verses;
       arr.forEach(item => {
@@ -903,7 +906,6 @@ function parseNestedScriptureJSON(data, repo, filename) {
   function processObject(obj, path = [], parentTitle = fileTitle) {
     if (!obj || typeof obj !== 'object') return;
     
-    // If it has direct text content, create a record
     const directText = extractText(obj);
     if (directText) {
       const title = obj.title || obj.name || obj.heading || path[path.length - 1] || '';
@@ -912,7 +914,7 @@ function parseNestedScriptureJSON(data, repo, filename) {
       records.push({
         repo: repo.name,
         repoLabel: repo.label,
-        repoUrl: repo.url,
+        repoUrl: buildFileUrl(repo, filename),
         file: filename,
         fileTitle: fileTitle,
         section: parentTitle,
@@ -927,14 +929,13 @@ function parseNestedScriptureJSON(data, repo, filename) {
       });
     }
     
-    // Process nested objects and arrays
     if (Array.isArray(obj)) {
       obj.forEach((item, index) => {
         if (typeof item === 'string') {
           records.push({
             repo: repo.name,
             repoLabel: repo.label,
-            repoUrl: repo.url,
+            repoUrl: buildFileUrl(repo, filename),
             file: filename,
             fileTitle: fileTitle,
             section: parentTitle,
@@ -948,7 +949,6 @@ function parseNestedScriptureJSON(data, repo, filename) {
         }
       });
     } else {
-      // Process object properties
       for (const [key, value] of Object.entries(obj)) {
         if (key === 'title' || key === 'name' || key === 'heading') continue;
         
@@ -986,7 +986,6 @@ async function listFilesViaJsdelivr(repo, exts) {
     const data = await res.json();
     const extSet = new Set(exts.map(e => e.toLowerCase()));
     
-    // Filter files and also look in subdirectories
     const files = (data.files || []).filter(f => {
       const ext = f.name.split('.').pop().toLowerCase();
       return extSet.has(ext);
@@ -997,9 +996,8 @@ async function listFilesViaJsdelivr(repo, exts) {
   } catch (error) {
     console.warn(`[${repo.name}] jsDelivr listing failed:`, error.message);
     
-    // If listing fails and repo has fallback files, use those
     if (repo.fallbackFiles && repo.fallbackFiles.length > 0) {
-      console.log(`[${repo.name}] Using fallback file list`);
+      console.log(`[${repo.name}] Using ${repo.fallbackFiles.length} fallback files`);
       return repo.fallbackFiles.map(name => ({ name }));
     }
     
@@ -1008,7 +1006,6 @@ async function listFilesViaJsdelivr(repo, exts) {
 }
 
 async function fetchViaJsdelivr(repo, filePath) {
-  // Normalize path - remove leading slash if present
   const cleanPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
   const url = JSDLVR_FILE(repo.owner, repo.name, repo.branch, cleanPath);
   console.log(`[${repo.name}] Fetching: ${url}`);
@@ -1025,14 +1022,9 @@ async function loadMixedRepo(repo) {
   
   let files = await listFilesViaJsdelivr(repo, ['tsv', 'json']);
   
-  // If no files found with jsDelivr and no fallback, try direct known paths
-  if (files.length === 0 && (!repo.fallbackFiles || repo.fallbackFiles.length === 0)) {
-    console.warn(`[${repo.name}] No files found and no fallback configured`);
-    return 0;
-  }
-  
   if (files.length === 0) {
-    console.log(`[${repo.name}] Using ${repo.fallbackFiles.length} fallback files`);
+    console.warn(`[${repo.name}] No files found`);
+    return 0;
   }
 
   const perFile = await Promise.all(files.map(async f => {
@@ -1049,27 +1041,22 @@ async function loadMixedRepo(repo) {
         let data;
         try { 
           data = JSON.parse(raw); 
-          console.log(`[${repo.name}] ${basename}: JSON parsed successfully, type:`, 
-            Array.isArray(data) ? 'array' : typeof data);
+          console.log(`[${repo.name}] ${basename}: JSON parsed successfully`);
         } catch (e) {
           console.warn(`[${repo.name}] JSON parse error in ${basename}:`, e.message);
           return [];
         }
         
-        // Try nested parsing first
         let records = parseNestedScriptureJSON(data, repo, basename);
         console.log(`[${repo.name}] ${basename}: nested parse → ${records.length} records`);
         
-        // If nested parsing yielded nothing, try flat
         if (records.length === 0) {
           records = parseFlatJSON(data, repo, basename);
           console.log(`[${repo.name}] ${basename}: flat parse → ${records.length} records`);
         }
         
-        // If still nothing, try to extract any text content
         if (records.length === 0) {
           console.log(`[${repo.name}] ${basename}: Attempting deep extraction`);
-          // Convert entire object to text for searching
           const allText = JSON.stringify(data)
             .replace(/[{}[\]"]/g, ' ')
             .replace(/\\n/g, ' ')
@@ -1080,7 +1067,7 @@ async function loadMixedRepo(repo) {
             records = [{
               repo: repo.name,
               repoLabel: repo.label,
-              repoUrl: repo.url,
+              repoUrl: buildFileUrl(repo, basename),
               file: basename,
               fileTitle: basename.replace(/\.json$/i, ''),
               section: 'Full Text',
@@ -1117,7 +1104,6 @@ async function loadMixedRepo(repo) {
 async function loadAll() {
   setStatus('loading', 'Loading data files…');
   console.log('Starting archive load...');
-  console.log('Repos to load:', REPOS.map(r => r.name));
 
   const results = await Promise.allSettled(REPOS.map(repo => loadMixedRepo(repo)));
 
@@ -1134,7 +1120,6 @@ async function loadAll() {
 
   const total = allRecords.length;
   console.log(`Total records across all repos: ${total}`);
-  console.log('Sample records:', allRecords.slice(0, 3));
   
   if (total === 0 && failed === REPOS.length) {
     setStatus('error', 'Could not load any data. Check browser console for details.');
@@ -1200,15 +1185,15 @@ function runSearch() {
   resultsCount.hidden = false;
   resultsCount.innerHTML = matches.length === 0
     ? `No results for <strong>${escapeHTML(raw)}</strong>`
-    : `<strong>${matches.length.toLocaleString()}</strong> result${matches.length !== 1 ? 's' : ''} for <strong>${escapeHTML(raw)}</strong>${matches.length > MAX_RESULTS ? ` — showing first ${MAX_RESULTS}` : ''}`;
+    : `<strong>${matches.length.toLocaleString()}</strong> result${matches.length !== 1 ? 's' : ''} for <strong>${escapeHTML(raw)}</strong>`;
 
   if (matches.length === 0) {
     resultsEl.innerHTML = `<p class="no-results">No texts matched <em>${escapeHTML(raw)}</em> in ${activeFilter === 'all' ? 'any collection' : 'this collection'}.</p>`;
     return;
   }
 
-  const shown = matches.slice(0, MAX_RESULTS);
-  resultsEl.innerHTML = shown.map(r => {
+  // Show ALL results (removed MAX_RESULTS limit)
+  resultsEl.innerHTML = matches.map(r => {
     const snippet = buildSnippet(r.text, terms);
     const pills   = (r.display || [])
       .filter(Boolean)
