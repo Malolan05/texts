@@ -905,41 +905,45 @@ async function listDataFilesViaAPI(repo) {
 
 async function loadFlatRepo(repo) {
   const files = await listDataFilesViaAPI(repo);
-  let count = 0;
-  for (const f of files) {
+  const perFile = await Promise.all(files.map(async f => {
     try {
       const raw = await fetchRaw(repo.owner, repo.name, repo.branch, f.path);
       const ext = f.name.split('.').pop().toLowerCase();
-      let recs;
       if (ext === 'tsv') {
-        recs = parseTSV(raw, repo, f.name);
-      } else {
-        let parsed;
-        try { parsed = JSON.parse(raw); } catch { continue; }
-        recs = parseFlatJSON(parsed, repo, f.name);
+        return parseTSV(raw, repo, f.name);
       }
-      allRecords.push(...recs);
-      count += recs.length;
+      let parsed;
+      try { parsed = JSON.parse(raw); } catch { return []; }
+      return parseFlatJSON(parsed, repo, f.name);
     } catch (e) {
       console.warn(`Skip ${repo.name}/${f.name}:`, e.message);
+      return [];
     }
+  }));
+  let count = 0;
+  for (const recs of perFile) {
+    allRecords.push(...recs);
+    count += recs.length;
   }
   return count;
 }
 
 async function loadNestedRepo(repo) {
-  let count = 0;
-  for (const filename of repo.files) {
+  const perFile = await Promise.all(repo.files.map(async filename => {
     try {
       const raw = await fetchRaw(repo.owner, repo.name, repo.branch, `data/${filename}`);
       let parsed;
-      try { parsed = JSON.parse(raw); } catch { continue; }
-      const recs = parseNestedScriptureJSON(parsed, repo, filename);
-      allRecords.push(...recs);
-      count += recs.length;
+      try { parsed = JSON.parse(raw); } catch { return []; }
+      return parseNestedScriptureJSON(parsed, repo, filename);
     } catch (e) {
       console.warn(`Skip ${repo.name}/${filename}:`, e.message);
+      return [];
     }
+  }));
+  let count = 0;
+  for (const recs of perFile) {
+    allRecords.push(...recs);
+    count += recs.length;
   }
   return count;
 }
