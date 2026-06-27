@@ -497,7 +497,6 @@
       }
     }
 
-    /* advanced search hints */
     .search-hint {
       font-family: var(--mono);
       font-size: 10px;
@@ -670,11 +669,10 @@
 
 <script>
   /* =============================================================
-     MĀLOLA ARCHIVE — Advanced cross‑repo search
-     - Fetches /data/*.tsv and /data/*.json from each repo via jsDelivr
-     - Intelligent text extraction from JSON (Agama, srivaishnavam)
-     - Exact‑phrase support (wrap in quotes)
-     - All results shown, no artificial limit
+     MĀLOLA ARCHIVE — Fixed data loading for all repos
+     - Properly fetches from /data/ folder in each repo
+     - Handles TSV for sAmam, JSON for Agama and srivaishnavam
+     - Robust error handling with fallback file lists
      ============================================================= */
 
   // ── repo config ──
@@ -685,7 +683,7 @@
     label: 'sAmam',
     baseUrl: 'https://malolan05.github.io/sAmam/index.html',
     urlPattern: '?file={file}',
-    strategy: 'mixed', // tsv + json
+    strategy: 'mixed',
     dataPath: 'data/'
   }, {
     name: 'Agama',
@@ -763,7 +761,7 @@
     const priority = ['text', 'original', 'sanskrit', 'devanagari', 'verse', 'sloka',
       'content', 'translation', 'meaning', 'english', 'artha',
       'transliteration', 'iast', 'roman', 'commentary', 'bhasya',
-      'description', 'notes', 'explanation', 'summary', 'body'
+      'description', 'notes', 'explanation', 'summary', 'body', 'verse_text'
     ];
     const parts = [];
     for (const f of priority) {
@@ -820,103 +818,149 @@
       };
     }
 
-    function processBook(bookData, bookTitle) {
-      if (!bookData || typeof bookData !== 'object') return;
-      if (bookData.chapters && typeof bookData.chapters === 'object') {
-        for (const [chName, chData] of Object.entries(bookData.chapters)) {
-          processChapter(chData, bookTitle, chName);
-        }
-      } else if (bookData.sections && Array.isArray(bookData.sections)) {
-        bookData.sections.forEach((s, i) => processChapter(s, bookTitle, `Section ${i + 1}`));
-      } else if (bookData.verses && Array.isArray(bookData.verses)) {
-        bookData.verses.forEach((v, i) => processVerse(v, { bookTitle, verseNum: i + 1 }));
-      } else {
-        processGeneric(bookData, bookTitle);
-      }
-    }
-
-    function processChapter(chData, bookTitle, chTitle) {
-      if (!chData || typeof chData !== 'object') return;
-      const verses = chData.verses || chData.slokas || chData.sutras || chData.items || [];
-      if (Array.isArray(verses) && verses.length) {
-        verses.forEach((v, i) => {
-          const num = v.num || v.number || i + 1;
-          processVerse(v, { bookTitle, sectionTitle: chTitle, verseNum: num });
-        });
-      } else {
-        const text = extractAllText(chData);
-        if (text.trim()) {
-          const rec = createRecord(text, { bookTitle, sectionTitle: chTitle, textPreview: text.substring(0, 100) });
-          if (rec) records.push(rec);
-        }
-      }
-    }
-
-    function processVerse(verse, ctx) {
-      if (!verse || typeof verse !== 'object') return;
-      const text = extractAllText(verse);
-      if (!text.trim()) return;
-      const rec = createRecord(text, {
-        bookTitle: ctx.bookTitle,
-        sectionTitle: ctx.sectionTitle,
-        verseNum: ctx.verseNum || verse.num || verse.number || '',
-        textPreview: text.substring(0, 100)
-      });
-      if (rec) records.push(rec);
-    }
-
-    function processGeneric(obj, title) {
+    // Process different JSON structures
+    function processItem(obj, context = {}) {
       if (!obj || typeof obj !== 'object') return;
+
+      // If it's an array, process each item
       if (Array.isArray(obj)) {
-        obj.forEach((item, i) => {
-          if (typeof item === 'string') {
-            const rec = createRecord(item, { sectionTitle: title, verseNum: i + 1, textPreview: item.substring(0, 100) });
-            if (rec) records.push(rec);
-          } else if (typeof item === 'object' && item !== null) {
-            const text = extractAllText(item);
-            const rec = createRecord(text, {
-              sectionTitle: item.title || item.name || `${title} ${i + 1}`,
-              verseNum: item.num || item.number || i + 1,
-              textPreview: text.substring(0, 100)
+        obj.forEach((item, idx) => {
+          processItem(item, { ...context, index: idx });
+        });
+        return;
+      }
+
+      // Check if this is a verse/sloka object
+      const verseText = obj.verse || obj.verse_text || obj.text || obj.content || obj.sloka;
+      if (verseText && typeof verseText === 'string') {
+        const rec = createRecord(verseText, {
+          bookTitle: context.bookTitle || obj.book || obj.chapter || '',
+          sectionTitle: context.sectionTitle || obj.section || obj.chapter || '',
+          verseNum: obj.num || obj.number || obj.verse_num || context.index + 1 || '',
+          textPreview: verseText.substring(0, 100)
+        });
+        if (rec) records.push(rec);
+        return;
+      }
+
+      // If it has verses array
+      if (obj.verses && Array.isArray(obj.verses)) {
+        obj.verses.forEach((v, i) => {
+          if (typeof v === 'string') {
+            const rec = createRecord(v, {
+              bookTitle: obj.title || obj.name || context.bookTitle || '',
+              sectionTitle: obj.section || obj.chapter || '',
+              verseNum: i + 1,
+              textPreview: v.substring(0, 100)
             });
             if (rec) records.push(rec);
+          } else if (typeof v === 'object') {
+            processItem(v, {
+              bookTitle: obj.title || obj.name || context.bookTitle || '',
+              sectionTitle: obj.section || obj.chapter || '',
+            });
           }
         });
         return;
       }
-      const text = extractAllText(obj);
-      const rec = createRecord(text, { sectionTitle: title, textPreview: text.substring(0, 100) });
-      if (rec) records.push(rec);
-    }
 
-    // entry
-    if (data.books && typeof data.books === 'object') {
-      for (const [name, book] of Object.entries(data.books)) processBook(book, name);
-    } else if (data.title && (data.chapters || data.verses || data.sections)) {
-      processBook(data, data.title);
-    } else if (Array.isArray(data)) {
-      data.forEach((item, i) => {
-        if (typeof item === 'object' && item !== null) {
-          if (item.title) processBook(item, item.title);
-          else processGeneric(item, `Item ${i + 1}`);
+      // If it has slokas array
+      if (obj.slokas && Array.isArray(obj.slokas)) {
+        obj.slokas.forEach((s, i) => {
+          if (typeof s === 'string') {
+            const rec = createRecord(s, {
+              bookTitle: obj.title || obj.name || context.bookTitle || '',
+              sectionTitle: obj.section || obj.chapter || '',
+              verseNum: i + 1,
+              textPreview: s.substring(0, 100)
+            });
+            if (rec) records.push(rec);
+          } else if (typeof s === 'object') {
+            processItem(s, {
+              bookTitle: obj.title || obj.name || context.bookTitle || '',
+              sectionTitle: obj.section || obj.chapter || '',
+            });
+          }
+        });
+        return;
+      }
+
+      // If it has chapters
+      if (obj.chapters && typeof obj.chapters === 'object') {
+        for (const [chName, chData] of Object.entries(obj.chapters)) {
+          processItem(chData, {
+            bookTitle: obj.title || obj.name || context.bookTitle || '',
+            sectionTitle: chName,
+          });
         }
-      });
-    } else {
-      processGeneric(data, fileTitle);
-    }
+        return;
+      }
 
-    // fallback: if no records, extract all text once
-    if (records.length === 0) {
-      const allText = extractAllText(data);
-      if (allText.trim()) {
-        const rec = createRecord(allText, { sectionTitle: fileTitle, textPreview: allText.substring(0, 100) });
+      // If it has sections
+      if (obj.sections && Array.isArray(obj.sections)) {
+        obj.sections.forEach((section, idx) => {
+          processItem(section, {
+            bookTitle: obj.title || obj.name || context.bookTitle || '',
+            sectionTitle: obj.section_names ? obj.section_names[idx] : `Section ${idx + 1}`,
+          });
+        });
+        return;
+      }
+
+      // If it has books
+      if (obj.books && typeof obj.books === 'object') {
+        for (const [bookName, bookData] of Object.entries(obj.books)) {
+          processItem(bookData, { bookTitle: bookName });
+        }
+        return;
+      }
+
+      // If it has a title and other fields, try to extract text
+      if (obj.title && typeof obj.title === 'string') {
+        // Check if there's any other text content
+        const text = extractAllText(obj);
+        if (text.trim()) {
+          const rec = createRecord(text, {
+            bookTitle: obj.title,
+            sectionTitle: obj.subtitle || obj.section || '',
+            textPreview: text.substring(0, 100)
+          });
+          if (rec) records.push(rec);
+        }
+        return;
+      }
+
+      // Generic object - extract all text
+      const text = extractAllText(obj);
+      if (text.trim()) {
+        const rec = createRecord(text, {
+          bookTitle: context.bookTitle || context.sectionTitle || fileTitle,
+          sectionTitle: context.sectionTitle || obj.section || obj.chapter || '',
+          textPreview: text.substring(0, 100)
+        });
         if (rec) records.push(rec);
       }
     }
+
+    // Start processing
+    processItem(data);
+
+    // If no records found, try one more time with shallow extraction
+    if (records.length === 0) {
+      const text = extractAllText(data);
+      if (text.trim()) {
+        const rec = createRecord(text, {
+          bookTitle: fileTitle,
+          textPreview: text.substring(0, 100)
+        });
+        if (rec) records.push(rec);
+      }
+    }
+
     return records;
   }
 
-  // ── TSV parser ──
+  // ── TSV parser for sAmam ──
   function parseTSV(raw, repo, filename) {
     const lines = raw.trim().split('\n');
     if (lines.length < 2) return [];
@@ -977,6 +1021,7 @@
       const files = (data.files || [])
         .filter(f => {
           const path = f.name;
+          // Look for files in data/ folder
           if (!path.startsWith(repo.dataPath || 'data/')) return false;
           const ext = path.split('.').pop().toLowerCase();
           return ext === 'tsv' || ext === 'json';
@@ -986,9 +1031,9 @@
       return files;
     } catch (e) {
       console.warn(`[${repo.name}] list failed:`, e.message);
-      // fallback: try known files
+      // Fallback to known files for each repo
       const fallbacks = {
-        'sAmam': ['data/sAmam.tsv', 'data/sAmam.json'],
+        'sAmam': ['data/sAmam.tsv'],
         'Agama': ['data/texts.json', 'data/agamas.json', 'data/index.json'],
         'srivaishnavam': ['data/gitarthasangraha.json', 'data/vedas.json', 'data/upanishads.json', 'data/puranas.json', 'data/itihasas.json', 'data/agamas.json', 'data/stotras.json', 'data/texts.json', 'data/scriptures.json']
       };
@@ -998,6 +1043,7 @@
 
   async function fetchFile(repo, filePath) {
     const url = JSDLVR_FILE(repo.owner, repo.name, repo.branch, filePath);
+    console.log(`[${repo.name}] fetching ${url}`);
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`);
     return res.text();
@@ -1023,7 +1069,10 @@
           console.log(`[${repo.name}] ${basename} → ${parsed.length} TSV records`);
         } else if (ext === 'json') {
           let data;
-          try { data = JSON.parse(raw); } catch (e) { console.warn(`[${repo.name}] JSON parse error ${basename}`); continue; }
+          try { data = JSON.parse(raw); } catch (e) {
+            console.warn(`[${repo.name}] JSON parse error ${basename}`, e);
+            continue;
+          }
           parsed = parseJSON(data, repo, basename);
           console.log(`[${repo.name}] ${basename} → ${parsed.length} JSON records`);
         }
@@ -1056,7 +1105,7 @@
       }
     }
     const total = allRecords.length;
-    console.log(`total records: ${total}`);
+    console.log(`total records indexed: ${total}`);
     if (total === 0 && failed === REPOS.length) {
       setStatus('error', 'Could not load any data. Check console.');
     } else if (failed > 0) {
@@ -1064,7 +1113,6 @@
     } else {
       setStatus('ready', `${total.toLocaleString()} records indexed from ${loaded} collection${loaded > 1 ? 's' : ''}`);
     }
-    // initial search if query exists
     if (searchInput.value.trim().length >= 2) runSearch();
   }
 
@@ -1081,7 +1129,6 @@
     const end = Math.min(text.length, start + SNIPPET_WINDOW);
     let snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
     let html = escapeHTML(snippet);
-    // mark each term
     for (const t of terms) {
       const re = new RegExp(`(${escapeRe(escapeHTML(t))})`, 'gi');
       html = html.replace(re, '<mark>$1</mark>');
@@ -1097,7 +1144,7 @@
       return;
     }
 
-    // parse exact phrases (quoted)
+    // Parse quoted phrases
     const termMatches = raw.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g);
     if (!termMatches) {
       resultsEl.innerHTML = '';
@@ -1113,7 +1160,6 @@
 
     const pool = activeFilter === 'all' ? allRecords : allRecords.filter(r => r.repo === activeFilter);
 
-    // each term must appear (AND)
     const matches = pool.filter(r => {
       const lc = r.text.toLowerCase();
       return terms.every(t => lc.includes(t.toLowerCase()));
@@ -1129,7 +1175,6 @@
       return;
     }
 
-    // show all results
     resultsEl.innerHTML = matches.map(r => {
       const snippet = buildSnippet(r.text, terms);
       const pills = (r.display || []).filter(Boolean).map(d => `<span class="result-meta-pill">${escapeHTML(d)}</span>`).join('');
@@ -1152,8 +1197,10 @@
   });
 
   searchInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { runSearch(); }
-    if (e.key === 'Escape') { searchInput.value = ''; runSearch(); }
+    if (e.key === 'Enter') { e.preventDefault();
+      runSearch(); }
+    if (e.key === 'Escape') { searchInput.value = '';
+      runSearch(); }
   });
 
   filterRow.addEventListener('click', e => {
