@@ -3,31 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mālola Digitized Text Archive</title>
+  <title>Mālola · Digitized Text Archive</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --night:        #0d1117;
-      --night-mid:    #161b22;
-      --parchment:    #f0ebe0;
-      --parchment-dim:#e4ddd0;
-      --ink:          #1c1917;
-      --ink-soft:     #57534e;
-      --saffron:      #e8a020;
-      --sage:         #4d7c5f;
-      --sage-lt:      #dcf5e5;
-      --star:         #c9d1d9;
-
-      --cinzel: 'Cinzel', Georgia, serif;
-      --lora:   'Lora', Georgia, serif;
-      --mono:   'JetBrains Mono', monospace;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-
+    :root {
+      --night: #0d1117;
+      --night-mid: #161b22;
+      --parchment: #f0ebe0;
+      --parchment-dim: #e4ddd0;
+      --ink: #1c1917;
+      --ink-soft: #57534e;
+      --saffron: #e8a020;
+      --sage: #4d7c5f;
+      --sage-lt: #dcf5e5;
+      --star: #c9d1d9;
+      --cinzel: 'Cinzel', Georgia, serif;
+      --lora: 'Lora', Georgia, serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
     body {
       background: var(--parchment);
       color: var(--ink);
@@ -35,8 +38,6 @@
       font-size: 16px;
       line-height: 1.75;
     }
-
-    /* ── HERO ── */
     .hero {
       background: var(--night);
       min-height: 100svh;
@@ -45,14 +46,12 @@
       justify-content: flex-end;
       padding: 0 48px 64px;
     }
-
     .hero-rule {
       width: 64px;
       height: 2px;
       background: var(--saffron);
       margin-bottom: 28px;
     }
-
     .hero-eyebrow {
       font-family: var(--mono);
       font-size: 11px;
@@ -61,7 +60,6 @@
       color: var(--saffron);
       margin-bottom: 20px;
     }
-
     .hero-name {
       font-family: var(--cinzel);
       font-size: clamp(2.6rem, 8vw, 6rem);
@@ -71,8 +69,9 @@
       color: var(--parchment);
       margin-bottom: 32px;
     }
-    .hero-name .accent { color: var(--saffron); }
-
+    .hero-name .accent {
+      color: var(--saffron);
+    }
     .hero-tagline {
       font-family: var(--lora);
       font-size: clamp(1rem, 2.2vw, 1.2rem);
@@ -81,7 +80,6 @@
       max-width: 560px;
       margin-bottom: 36px;
     }
-
     .hero-pills {
       display: flex;
       flex-wrap: wrap;
@@ -91,8 +89,8 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 3px;
       padding: 8px 16px;
       font-family: var(--mono);
@@ -101,20 +99,17 @@
       letter-spacing: 0.04em;
     }
     .hero-pill .dot {
-      width: 5px; height: 5px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
       background: var(--saffron);
       flex-shrink: 0;
     }
-
-    /* ── body wrapper ── */
     .body-wrap {
       max-width: 900px;
       margin: 0 auto;
       padding: 80px 40px 120px;
     }
-
-    /* ── section label ── */
     .sec-label {
       display: flex;
       align-items: center;
@@ -139,18 +134,18 @@
       height: 1px;
       background: var(--parchment-dim);
     }
-
-    section { margin-bottom: 72px; }
-
-    /* ── about ── */
+    section {
+      margin-bottom: 72px;
+    }
     .lede {
       font-size: 1.05rem;
       color: var(--ink-soft);
       max-width: 680px;
     }
-    .lede strong { color: var(--ink); font-weight: 600; }
-
-    /* ── collections ── */
+    .lede strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
     .projects-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -169,7 +164,10 @@
     .project-card:hover {
       outline: 1.5px solid var(--saffron);
     }
-    .project-icon { font-size: 1.4rem; line-height: 1; }
+    .project-icon {
+      font-size: 1.4rem;
+      line-height: 1;
+    }
     .project-name {
       font-family: var(--cinzel);
       font-size: 1.05rem;
@@ -188,7 +186,7 @@
       font-family: var(--lora);
       font-size: 0.82rem;
       line-height: 1.55;
-      color: rgba(201,209,217,0.78);
+      color: rgba(201, 209, 217, 0.78);
       flex: 1;
     }
     .project-url {
@@ -198,8 +196,6 @@
       opacity: 0.85;
       margin-top: 4px;
     }
-
-    /* ── scripts / languages ── */
     .lang-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -234,8 +230,6 @@
       padding: 0 6px;
       border-radius: 2px;
     }
-
-    /* ── contact ── */
     .contact-grid {
       display: flex;
       flex-wrap: wrap;
@@ -259,8 +253,9 @@
       color: var(--night);
       background: var(--parchment-dim);
     }
-    .contact-link svg { flex-shrink: 0; }
-
+    .contact-link svg {
+      flex-shrink: 0;
+    }
     footer {
       text-align: center;
       font-family: var(--mono);
@@ -271,9 +266,7 @@
       border-top: 1px solid var(--parchment-dim);
     }
 
-    /* ══════════════════════════════════════
-       SEARCH SECTION
-    ══════════════════════════════════════ */
+    /* --- search --- */
     .search-wrapper {
       position: relative;
       margin-bottom: 20px;
@@ -297,7 +290,7 @@
     }
     .search-input:focus {
       border-color: var(--saffron);
-      box-shadow: 0 0 0 3px rgba(232,160,32,0.12);
+      box-shadow: 0 0 0 3px rgba(232, 160, 32, 0.12);
     }
     .search-icon {
       position: absolute;
@@ -308,8 +301,6 @@
       pointer-events: none;
       opacity: 0.5;
     }
-
-    /* status bar */
     .search-status {
       font-family: var(--mono);
       font-size: 10.5px;
@@ -321,18 +312,32 @@
       gap: 10px;
     }
     .status-dot {
-      width: 6px; height: 6px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: var(--parchment-dim);
       flex-shrink: 0;
       transition: background 0.2s;
     }
-    .status-dot.loading { background: var(--saffron); animation: pulse 1s infinite; }
-    .status-dot.ready   { background: var(--sage); }
-    .status-dot.error   { background: #c0392b; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-    /* filter row */
+    .status-dot.loading {
+      background: var(--saffron);
+      animation: pulse 1s infinite;
+    }
+    .status-dot.ready {
+      background: var(--sage);
+    }
+    .status-dot.error {
+      background: #c0392b;
+    }
+    @keyframes pulse {
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.4;
+      }
+    }
     .search-filters {
       display: flex;
       flex-wrap: wrap;
@@ -358,15 +363,13 @@
     }
     .filter-btn.active {
       border-color: var(--saffron);
-      background: rgba(232,160,32,0.08);
+      background: rgba(232, 160, 32, 0.08);
       color: var(--ink);
     }
     .filter-btn .count {
       font-size: 9px;
       opacity: 0.6;
     }
-
-    /* results */
     .results-container {
       display: flex;
       flex-direction: column;
@@ -383,8 +386,9 @@
       display: block;
       transition: border-color 0.12s;
     }
-    .result-card:hover { border-color: var(--saffron); }
-
+    .result-card:hover {
+      border-color: var(--saffron);
+    }
     .result-header {
       display: flex;
       align-items: baseline;
@@ -408,7 +412,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .result-body {
       font-family: var(--lora);
       font-size: 0.875rem;
@@ -416,12 +419,11 @@
       color: var(--ink);
     }
     .result-body mark {
-      background: rgba(232,160,32,0.3);
+      background: rgba(232, 160, 32, 0.3);
       color: var(--ink);
       border-radius: 2px;
       padding: 0 2px;
     }
-
     .result-meta {
       margin-top: 8px;
       display: flex;
@@ -437,7 +439,6 @@
       border-radius: 2px;
       color: var(--ink-soft);
     }
-
     .no-results {
       font-family: var(--lora);
       font-style: italic;
@@ -446,8 +447,6 @@
       padding: 36px 0;
       font-size: 0.95rem;
     }
-
-    /* loading spinner inside results */
     .search-spinner {
       display: flex;
       align-items: center;
@@ -460,64 +459,92 @@
     }
     .search-spinner::before {
       content: '';
-      width: 16px; height: 16px;
+      width: 16px;
+      height: 16px;
       border: 2px solid var(--parchment-dim);
       border-top-color: var(--saffron);
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* result count badge */
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
     .results-count {
       font-family: var(--mono);
       font-size: 10px;
       color: var(--ink-soft);
       margin-bottom: 14px;
     }
-    .results-count strong { color: var(--ink); }
-
+    .results-count strong {
+      color: var(--ink);
+    }
     @media (max-width: 640px) {
-      .hero { padding: 0 24px 48px; }
-      .body-wrap { padding: 56px 24px 80px; }
+      .hero {
+        padding: 0 24px 48px;
+      }
+      .body-wrap {
+        padding: 56px 24px 80px;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+        animation: none !important;
+      }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { transition: none !important; animation: none !important; }
+    /* advanced search hints */
+    .search-hint {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--ink-soft);
+      opacity: 0.6;
+      margin-top: 6px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .search-hint kbd {
+      background: var(--parchment-dim);
+      padding: 0 6px;
+      border-radius: 2px;
+      font-family: var(--mono);
+      font-size: 9px;
     }
   </style>
 </head>
 <body>
 
-<header class="hero" role="banner">
-  <div class="hero-rule"></div>
-  <p class="hero-eyebrow">A Living Repository</p>
+  <header class="hero" role="banner">
+    <div class="hero-rule"></div>
+    <p class="hero-eyebrow">A Living Repository</p>
+    <h1 class="hero-name">
+      Mālola<br />
+      <span class="accent">Digitized Text</span> Archive
+    </h1>
+    <p class="hero-tagline">
+      Manuscripts, melodies, and scripture — recovered line by line
+      through OCR, correction, and careful re-typesetting on the web.
+    </p>
+    <div class="hero-pills">
+      <span class="hero-pill"><span class="dot"></span>Sanskrit · Tamil · Telugu</span>
+      <span class="hero-pill"><span class="dot"></span>OCR + Manual Correction</span>
+      <span class="hero-pill"><span class="dot"></span>3 Open Collections</span>
+    </div>
+  </header>
 
-  <h1 class="hero-name">
-    Mālola<br/>
-    <span class="accent">Digitized Text</span> Archive
-  </h1>
+  <main class="body-wrap">
 
-  <p class="hero-tagline">
-    Manuscripts, melodies, and scripture — recovered line by line
-    through OCR, correction, and careful re-typesetting on the web.
-  </p>
+    <!-- SEARCH -->
+    <section aria-labelledby="search-label">
+      <p class="sec-label" id="search-label">Search the Archive</p>
 
-  <div class="hero-pills">
-    <span class="hero-pill"><span class="dot"></span>Sanskrit · Tamil · Telugu</span>
-    <span class="hero-pill"><span class="dot"></span>OCR + Manual Correction</span>
-    <span class="hero-pill"><span class="dot"></span>3 Open Collections</span>
-  </div>
-</header>
-
-<main class="body-wrap">
-
-  <!-- ── SEARCH ── -->
-  <section aria-labelledby="search-label">
-    <p class="sec-label" id="search-label">Search the Archive</p>
-
-    <div class="search-wrapper">
-      <input
+      <div class="search-wrapper">
+        <input
         type="search"
         id="search-input"
         class="search-input"
@@ -525,10 +552,10 @@
         autocomplete="off"
         spellcheck="false"
         aria-label="Search archive texts"
-      />
-      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        />
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
       </svg>
     </div>
 
@@ -544,11 +571,16 @@
       <button class="filter-btn" data-repo="srivaishnavam">Śrīvaiṣṇava <span class="count"></span></button>
     </div>
 
+    <div class="search-hint">
+      <span>🔍 <kbd>phrase</kbd> exact match · <kbd>word1 word2</kbd> all terms</span>
+      <span>⏎ press Enter to search</span>
+    </div>
+
     <div id="results-count" class="results-count" hidden></div>
     <div id="results-container" class="results-container" aria-live="polite" aria-label="Search results"></div>
   </section>
 
-  <!-- ── ABOUT ── -->
+  <!-- ABOUT -->
   <section aria-labelledby="about-label">
     <p class="sec-label" id="about-label">About the Archive</p>
     <p class="lede">
@@ -558,7 +590,7 @@
     </p>
   </section>
 
-  <!-- ── COLLECTIONS ── -->
+  <!-- COLLECTIONS -->
   <section aria-labelledby="proj-label">
     <p class="sec-label" id="proj-label">Collections</p>
     <div class="projects-grid">
@@ -586,7 +618,7 @@
     </div>
   </section>
 
-  <!-- ── SCRIPTS ── -->
+  <!-- SCRIPTS -->
   <section aria-labelledby="lang-label">
     <p class="sec-label" id="lang-label">Scripts &amp; Languages Covered</p>
     <div class="lang-grid">
@@ -597,7 +629,7 @@
     </div>
   </section>
 
-  <!-- ── CONTACT ── -->
+  <!-- CONTACT -->
   <section aria-labelledby="contact-label">
     <p class="sec-label" id="contact-label">Contact the Archivist</p>
     <div class="contact-grid">
@@ -637,733 +669,504 @@
 </footer>
 
 <script>
-/* ═══════════════════════════════════════════════════════════════
-   MĀLOLA ARCHIVE — Cross-Repository Search
-   - Proper file-specific URLs for each repository
-   - Optimized JSON parsing for Agama repository
-   - No result limit - shows all matches
-═══════════════════════════════════════════════════════════════ */
+  /* =============================================================
+     MĀLOLA ARCHIVE — Advanced cross‑repo search
+     - Fetches /data/*.tsv and /data/*.json from each repo via jsDelivr
+     - Intelligent text extraction from JSON (Agama, srivaishnavam)
+     - Exact‑phrase support (wrap in quotes)
+     - All results shown, no artificial limit
+     ============================================================= */
 
-/* ── Repo configs ─────────────────────────────────────────── */
-const REPOS = [
-  {
-    name:     'sAmam',
-    owner:    'malolan05',
-    branch:   'content',
-    label:    'sAmam',
-    baseUrl:  'https://malolan05.github.io/sAmam/index.html',
+  // ── repo config ──
+  const REPOS = [{
+    name: 'sAmam',
+    owner: 'malolan05',
+    branch: 'content',
+    label: 'sAmam',
+    baseUrl: 'https://malolan05.github.io/sAmam/index.html',
     urlPattern: '?file={file}',
-    strategy: 'mixed',  // TSV and JSON
-    fallbackFiles: []
-  },
-  {
-    name:     'Agama',
-    owner:    'malolan05',
-    branch:   'main',
-    label:    'Āgama',
-    baseUrl:  'https://malolan05.github.io/Agama',
+    strategy: 'mixed', // tsv + json
+    dataPath: 'data/'
+  }, {
+    name: 'Agama',
+    owner: 'malolan05',
+    branch: 'main',
+    label: 'Āgama',
+    baseUrl: 'https://malolan05.github.io/Agama',
     urlPattern: '?file={file}',
-    strategy: 'json',  // JSON only now
-    fallbackFiles: [
-      'data/texts.json',
-      'data/agamas.json',
-      'data/index.json',
-      'texts.json',
-      'agamas.json',
-      'index.json'
-    ]
-  },
-  {
-    name:     'srivaishnavam',
-    owner:    'malolan05',
-    branch:   'main',
-    label:    'Śrīvaiṣṇava',
-    baseUrl:  'https://malolan05.github.io/srivaishnavam',
+    strategy: 'json',
+    dataPath: 'data/'
+  }, {
+    name: 'srivaishnavam',
+    owner: 'malolan05',
+    branch: 'main',
+    label: 'Śrīvaiṣṇava',
+    baseUrl: 'https://malolan05.github.io/srivaishnavam',
     urlPattern: '?file={file}',
-    strategy: 'json',  // JSON only
-    fallbackFiles: [
-      'data/gitarthasangraha.json',
-      'data/vedas.json',
-      'data/upanishads.json',
-      'data/puranas.json',
-      'data/itihasas.json',
-      'data/agamas.json',
-      'data/stotras.json',
-      'data/texts.json',
-      'data/scriptures.json',
-      'data/index.json'
-    ]
-  },
-];
+    strategy: 'json',
+    dataPath: 'data/'
+  }];
 
-/* ── State ────────────────────────────────────────────────── */
-let allRecords   = [];
-let activeFilter = 'all';
-let searchDebounce = null;
-const SNIPPET_WINDOW = 140;
+  // ── state ──
+  let allRecords = [];
+  let activeFilter = 'all';
+  let searchDebounce = null;
+  const SNIPPET_WINDOW = 160;
 
-/* ── DOM ──────────────────────────────────────────────────── */
-const searchInput  = document.getElementById('search-input');
-const statusDot    = document.getElementById('status-dot');
-const statusText   = document.getElementById('status-text');
-const resultsEl    = document.getElementById('results-container');
-const resultsCount = document.getElementById('results-count');
-const filterRow    = document.getElementById('filter-row');
+  // ── DOM refs ──
+  const searchInput = document.getElementById('search-input');
+  const statusDot = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
+  const resultsEl = document.getElementById('results-container');
+  const resultsCount = document.getElementById('results-count');
+  const filterRow = document.getElementById('filter-row');
 
-/* ═══ Utilities ══════════════════════════════════════════════ */
-
-function escapeHTML(s) {
-  return String(s ?? '')
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function escapeRe(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function setStatus(state, msg) {
-  statusDot.className = `status-dot ${state}`;
-  statusText.textContent = msg;
-}
-
-function updateFilterCount(repoName) {
-  const n  = allRecords.filter(r => r.repo === repoName).length;
-  const el = filterRow.querySelector(`[data-repo="${repoName}"] .count`);
-  if (el) el.textContent = n > 0 ? `(${n.toLocaleString()})` : '';
-}
-
-function buildFileUrl(repo, filePath) {
-  const filename = filePath.split('/').pop();
-  const pattern = repo.urlPattern || '?file={file}';
-  return repo.baseUrl + pattern.replace('{file}', encodeURIComponent(filename));
-}
-
-/* ═══ JSON Parsers (Optimized for Agama structure) ═══════════ */
-
-/**
- * Extract all text content from any JSON object recursively
- */
-function extractAllText(obj, maxDepth = 10, currentDepth = 0) {
-  if (currentDepth > maxDepth) return '';
-  
-  if (typeof obj === 'string') return obj;
-  if (typeof obj === 'number') return String(obj);
-  if (typeof obj === 'boolean') return '';
-  if (!obj || typeof obj !== 'object') return '';
-  
-  if (Array.isArray(obj)) {
-    return obj.map(item => extractAllText(item, maxDepth, currentDepth + 1))
-              .filter(Boolean)
-              .join(' ');
-  }
-  
-  // For objects, prioritize text-like fields
-  const priorityFields = [
-    'text', 'original', 'sanskrit', 'devanagari', 'verse', 'sloka',
-    'content', 'translation', 'meaning', 'english', 'artha',
-    'transliteration', 'iast', 'roman', 'commentary', 'bhasya',
-    'description', 'notes', 'explanation', 'summary'
-  ];
-  
-  const parts = [];
-  
-  // First pass: priority text fields
-  for (const field of priorityFields) {
-    if (obj[field]) {
-      if (typeof obj[field] === 'string') {
-        parts.push(obj[field]);
-      } else if (Array.isArray(obj[field])) {
-        const text = obj[field].map(item => {
-          if (typeof item === 'string') return item;
-          if (typeof item === 'object' && item !== null) {
-            return item.text || item.content || item.body || '';
-          }
-          return '';
-        }).filter(Boolean).join(' ');
-        if (text) parts.push(text);
-      }
-    }
-  }
-  
-  // Second pass: other string fields that aren't metadata
-  const skipFields = new Set([
-    ...priorityFields,
-    'id', 'index', 'num', 'number', 'verse_num', 'page',
-    'title', 'name', 'heading', 'chapter', 'section',
-    'type', 'category', 'tags', 'metadata', 'url', 'link'
-  ]);
-  
-  for (const [key, value] of Object.entries(obj)) {
-    if (skipFields.has(key)) continue;
-    if (typeof value === 'string' && value.length > 3) {
-      parts.push(value);
-    }
-  }
-  
-  return parts.join(' ');
-}
-
-/**
- * Main JSON parser - handles various Agama and scripture JSON structures
- */
-function parseJSON(data, repo, filename) {
-  const records = [];
-  const fileTitle = filename.replace(/\.json$/i, '').replace(/-/g, ' ');
-  
-  function createRecord(text, metadata = {}) {
-    if (!text || text.trim().length < 2) return null;
-    
-    const display = [];
-    if (metadata.bookTitle) display.push(metadata.bookTitle.substring(0, 40));
-    if (metadata.sectionTitle) display.push(metadata.sectionTitle.substring(0, 40));
-    if (metadata.chapterTitle) display.push(metadata.chapterTitle.substring(0, 40));
-    if (metadata.verseNum) display.push(`Verse ${metadata.verseNum}`);
-    if (metadata.textPreview) display.push(metadata.textPreview.substring(0, 60));
-    
-    if (display.length === 0) {
-      display.push(fileTitle);
-      if (metadata.sectionKey) display.push(metadata.sectionKey);
-    }
-    
-    return {
-      repo: repo.name,
-      repoLabel: repo.label,
-      repoUrl: buildFileUrl(repo, filename),
-      file: filename,
-      fileTitle: fileTitle,
-      section: metadata.sectionTitle || metadata.bookTitle || '',
-      verseNum: String(metadata.verseNum || ''),
-      text: text.trim(),
-      display: display.filter(Boolean),
-    };
+  // ── helpers ──
+  function escapeHTML(s) {
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  /**
-   * Process Agama-specific structures
-   * Agama typically has: books > chapters > verses
-   */
-  function processAgamaStructure(obj) {
-    if (!obj || typeof obj !== 'object') return;
-    
-    // Check if it's a books collection
-    if (obj.books && typeof obj.books === 'object') {
-      for (const [bookName, bookData] of Object.entries(obj.books)) {
-        processBook(bookData, bookName);
-      }
-    }
-    // Check for direct book objects
-    else if (obj.title && (obj.chapters || obj.verses || obj.sections)) {
-      processBook(obj, obj.title);
-    }
-    // Check for array of books
-    else if (Array.isArray(obj)) {
-      obj.forEach((item, index) => {
-        if (typeof item === 'object' && item !== null) {
-          if (item.title) {
-            processBook(item, item.title);
-          } else {
-            processGenericSection(item, `Book ${index + 1}`);
-          }
-        }
-      });
-    }
-    // Generic object with sections
-    else {
-      processGenericSection(obj, fileTitle);
-    }
+  function escapeRe(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  function processBook(bookData, bookTitle) {
-    if (!bookData || typeof bookData !== 'object') return;
-    
-    // Process chapters
-    if (bookData.chapters && typeof bookData.chapters === 'object') {
-      for (const [chapterName, chapterData] of Object.entries(bookData.chapters)) {
-        processChapter(chapterData, bookTitle, chapterName);
-      }
-    }
-    // Process sections
-    else if (bookData.sections && Array.isArray(bookData.sections)) {
-      bookData.sections.forEach((section, index) => {
-        processChapter(section, bookTitle, `Section ${index + 1}`);
-      });
-    }
-    // Process direct verses
-    else if (bookData.verses && Array.isArray(bookData.verses)) {
-      bookData.verses.forEach((verse, index) => {
-        processVerse(verse, { bookTitle, verseNum: index + 1 });
-      });
-    }
-    // Process any array content
-    else {
-      processGenericSection(bookData, bookTitle);
-    }
+  function setStatus(state, msg) {
+    statusDot.className = 'status-dot ' + state;
+    statusText.textContent = msg;
   }
 
-  function processChapter(chapterData, bookTitle, chapterTitle) {
-    if (!chapterData || typeof chapterData !== 'object') return;
-    
-    // Process verses array
-    const verses = chapterData.verses || chapterData.slokas || 
-                   chapterData.sutras || chapterData.items || [];
-    
-    if (Array.isArray(verses) && verses.length > 0) {
-      verses.forEach((verse, index) => {
-        processVerse(verse, {
-          bookTitle,
-          sectionTitle: chapterTitle,
-          verseNum: verse.num || verse.number || index + 1
-        });
-      });
-    }
-    
-    // Process nested sections
-    if (chapterData.sections && Array.isArray(chapterData.sections)) {
-      chapterData.sections.forEach(section => {
-        processChapter(section, bookTitle, section.title || 'Section');
-      });
-    }
-    
-    // If no verses found, extract text directly
-    if (!Array.isArray(verses) || verses.length === 0) {
-      const text = extractAllText(chapterData);
-      if (text.trim()) {
-        const record = createRecord(text, {
-          bookTitle,
-          sectionTitle: chapterTitle,
-          textPreview: text.substring(0, 100)
-        });
-        if (record) records.push(record);
-      }
-    }
+  function updateFilterCount(repoName) {
+    const n = allRecords.filter(r => r.repo === repoName).length;
+    const el = filterRow.querySelector(`[data-repo="${repoName}"] .count`);
+    if (el) el.textContent = n > 0 ? `(${n.toLocaleString()})` : '';
   }
 
-  function processVerse(verse, context) {
-    if (!verse || typeof verse !== 'object') return;
-    
-    // Extract verse text
-    const text = extractAllText(verse);
-    if (!text.trim()) return;
-    
-    const record = createRecord(text, {
-      bookTitle: context.bookTitle,
-      sectionTitle: context.sectionTitle,
-      verseNum: context.verseNum || verse.num || verse.number || '',
-      textPreview: text.substring(0, 100)
-    });
-    
-    if (record) records.push(record);
+  function buildFileUrl(repo, filePath) {
+    const filename = filePath.split('/').pop();
+    const pattern = repo.urlPattern || '?file={file}';
+    return repo.baseUrl + pattern.replace('{file}', encodeURIComponent(filename));
   }
 
-  function processGenericSection(obj, sectionTitle) {
-    if (!obj || typeof obj !== 'object') return;
-    
+  // ── text extraction from JSON (deep) ──
+  function extractAllText(obj, maxDepth = 12, depth = 0) {
+    if (depth > maxDepth) return '';
+    if (typeof obj === 'string') return obj;
+    if (typeof obj === 'number') return String(obj);
+    if (typeof obj === 'boolean') return '';
+    if (!obj || typeof obj !== 'object') return '';
+
     if (Array.isArray(obj)) {
-      obj.forEach((item, index) => {
-        if (typeof item === 'string') {
-          const record = createRecord(item, {
-            sectionTitle,
-            verseNum: index + 1,
-            textPreview: item.substring(0, 100)
-          });
-          if (record) records.push(record);
-        } else if (typeof item === 'object' && item !== null) {
-          const text = extractAllText(item);
-          const title = item.title || item.name || `${sectionTitle} ${index + 1}`;
-          const record = createRecord(text, {
-            sectionTitle: title,
-            verseNum: item.num || item.number || index + 1,
-            textPreview: text.substring(0, 100)
-          });
-          if (record) records.push(record);
+      return obj.map(item => extractAllText(item, maxDepth, depth + 1)).filter(Boolean).join(' ');
+    }
+
+    // priority text fields
+    const priority = ['text', 'original', 'sanskrit', 'devanagari', 'verse', 'sloka',
+      'content', 'translation', 'meaning', 'english', 'artha',
+      'transliteration', 'iast', 'roman', 'commentary', 'bhasya',
+      'description', 'notes', 'explanation', 'summary', 'body'
+    ];
+    const parts = [];
+    for (const f of priority) {
+      if (obj[f]) {
+        if (typeof obj[f] === 'string') parts.push(obj[f]);
+        else if (Array.isArray(obj[f])) {
+          const text = obj[f].map(item => {
+            if (typeof item === 'string') return item;
+            if (typeof item === 'object' && item !== null) return item.text || item.content || item.body || '';
+            return '';
+          }).filter(Boolean).join(' ');
+          if (text) parts.push(text);
+        }
+      }
+    }
+
+    // other string fields
+    const skip = new Set([...priority, 'id', 'index', 'num', 'number', 'verse_num', 'page',
+      'title', 'name', 'heading', 'chapter', 'section', 'type', 'category', 'tags', 'metadata', 'url', 'link'
+    ]);
+    for (const [key, val] of Object.entries(obj)) {
+      if (skip.has(key)) continue;
+      if (typeof val === 'string' && val.length > 2) parts.push(val);
+    }
+    return parts.join(' ');
+  }
+
+  // ── JSON parser for Agama / srivaishnavam ──
+  function parseJSON(data, repo, filename) {
+    const records = [];
+    const fileTitle = filename.replace(/\.json$/i, '').replace(/-/g, ' ');
+
+    function createRecord(text, meta = {}) {
+      if (!text || text.trim().length < 2) return null;
+      const display = [];
+      if (meta.bookTitle) display.push(meta.bookTitle.substring(0, 40));
+      if (meta.sectionTitle) display.push(meta.sectionTitle.substring(0, 40));
+      if (meta.verseNum) display.push(`Verse ${meta.verseNum}`);
+      if (meta.textPreview) display.push(meta.textPreview.substring(0, 60));
+      if (display.length === 0) {
+        display.push(fileTitle);
+        if (meta.sectionKey) display.push(meta.sectionKey);
+      }
+      return {
+        repo: repo.name,
+        repoLabel: repo.label,
+        repoUrl: buildFileUrl(repo, filename),
+        file: filename,
+        fileTitle: fileTitle,
+        section: meta.sectionTitle || meta.bookTitle || '',
+        verseNum: String(meta.verseNum || ''),
+        text: text.trim(),
+        display: display.filter(Boolean)
+      };
+    }
+
+    function processBook(bookData, bookTitle) {
+      if (!bookData || typeof bookData !== 'object') return;
+      if (bookData.chapters && typeof bookData.chapters === 'object') {
+        for (const [chName, chData] of Object.entries(bookData.chapters)) {
+          processChapter(chData, bookTitle, chName);
+        }
+      } else if (bookData.sections && Array.isArray(bookData.sections)) {
+        bookData.sections.forEach((s, i) => processChapter(s, bookTitle, `Section ${i + 1}`));
+      } else if (bookData.verses && Array.isArray(bookData.verses)) {
+        bookData.verses.forEach((v, i) => processVerse(v, { bookTitle, verseNum: i + 1 }));
+      } else {
+        processGeneric(bookData, bookTitle);
+      }
+    }
+
+    function processChapter(chData, bookTitle, chTitle) {
+      if (!chData || typeof chData !== 'object') return;
+      const verses = chData.verses || chData.slokas || chData.sutras || chData.items || [];
+      if (Array.isArray(verses) && verses.length) {
+        verses.forEach((v, i) => {
+          const num = v.num || v.number || i + 1;
+          processVerse(v, { bookTitle, sectionTitle: chTitle, verseNum: num });
+        });
+      } else {
+        const text = extractAllText(chData);
+        if (text.trim()) {
+          const rec = createRecord(text, { bookTitle, sectionTitle: chTitle, textPreview: text.substring(0, 100) });
+          if (rec) records.push(rec);
+        }
+      }
+    }
+
+    function processVerse(verse, ctx) {
+      if (!verse || typeof verse !== 'object') return;
+      const text = extractAllText(verse);
+      if (!text.trim()) return;
+      const rec = createRecord(text, {
+        bookTitle: ctx.bookTitle,
+        sectionTitle: ctx.sectionTitle,
+        verseNum: ctx.verseNum || verse.num || verse.number || '',
+        textPreview: text.substring(0, 100)
+      });
+      if (rec) records.push(rec);
+    }
+
+    function processGeneric(obj, title) {
+      if (!obj || typeof obj !== 'object') return;
+      if (Array.isArray(obj)) {
+        obj.forEach((item, i) => {
+          if (typeof item === 'string') {
+            const rec = createRecord(item, { sectionTitle: title, verseNum: i + 1, textPreview: item.substring(0, 100) });
+            if (rec) records.push(rec);
+          } else if (typeof item === 'object' && item !== null) {
+            const text = extractAllText(item);
+            const rec = createRecord(text, {
+              sectionTitle: item.title || item.name || `${title} ${i + 1}`,
+              verseNum: item.num || item.number || i + 1,
+              textPreview: text.substring(0, 100)
+            });
+            if (rec) records.push(rec);
+          }
+        });
+        return;
+      }
+      const text = extractAllText(obj);
+      const rec = createRecord(text, { sectionTitle: title, textPreview: text.substring(0, 100) });
+      if (rec) records.push(rec);
+    }
+
+    // entry
+    if (data.books && typeof data.books === 'object') {
+      for (const [name, book] of Object.entries(data.books)) processBook(book, name);
+    } else if (data.title && (data.chapters || data.verses || data.sections)) {
+      processBook(data, data.title);
+    } else if (Array.isArray(data)) {
+      data.forEach((item, i) => {
+        if (typeof item === 'object' && item !== null) {
+          if (item.title) processBook(item, item.title);
+          else processGeneric(item, `Item ${i + 1}`);
         }
       });
+    } else {
+      processGeneric(data, fileTitle);
+    }
+
+    // fallback: if no records, extract all text once
+    if (records.length === 0) {
+      const allText = extractAllText(data);
+      if (allText.trim()) {
+        const rec = createRecord(allText, { sectionTitle: fileTitle, textPreview: allText.substring(0, 100) });
+        if (rec) records.push(rec);
+      }
+    }
+    return records;
+  }
+
+  // ── TSV parser ──
+  function parseTSV(raw, repo, filename) {
+    const lines = raw.trim().split('\n');
+    if (lines.length < 2) return [];
+    const headers = lines[0].split('\t').map(h => h.trim().toLowerCase());
+    const records = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cells = lines[i].split('\t');
+      if (cells.every(c => !c.trim())) continue;
+      const fields = {};
+      headers.forEach((h, idx) => { fields[h] = (cells[idx] || '').trim(); });
+      const textParts = [];
+      const displayParts = [];
+      const textFields = ['verse', 'original', 'translation', 'meaning', 'sanskrit', 'english', 'text', 'content', 'transliteration', 'section', 'description', 'notes', 'commentary', 'hymn', 'mantra', 'title'];
+      for (const f of textFields) {
+        if (fields[f]) textParts.push(fields[f]);
+      }
+      if (fields.section) displayParts.push(`Section: ${fields.section.substring(0, 40)}`);
+      if (fields.verse) displayParts.push(`Verse: ${fields.verse}`);
+      if (fields.title) displayParts.push(fields.title.substring(0, 60));
+      if (fields.original) displayParts.push(fields.original.substring(0, 60));
+      if (!textParts.length) {
+        Object.values(fields).forEach(v => { if (v && typeof v === 'string') textParts.push(v); });
+      }
+      if (!displayParts.length) {
+        const entries = Object.entries(fields).filter(([, v]) => v && typeof v === 'string').slice(0, 3);
+        for (const [k, v] of entries) displayParts.push(`${k}: ${v.substring(0, 50)}`);
+      }
+      const text = textParts.join(' ');
+      if (!text.trim()) continue;
+      records.push({
+        repo: repo.name,
+        repoLabel: repo.label,
+        repoUrl: buildFileUrl(repo, filename),
+        file: filename,
+        fileTitle: filename.replace(/\.[^.]+$/, ''),
+        section: fields.section || fields.title || '',
+        verseNum: fields.verse || '',
+        text: text,
+        display: displayParts
+      });
+    }
+    return records;
+  }
+
+  // ── jsDelivr fetch helpers ──
+  const JSDLVR_LIST = (owner, repo, branch) =>
+    `https://data.jsdelivr.com/v1/package/gh/${owner}/${repo}@${branch}/flat`;
+  const JSDLVR_FILE = (owner, repo, branch, path) =>
+    `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path.startsWith('/') ? path.slice(1) : path}`;
+
+  async function listDataFiles(repo) {
+    const url = JSDLVR_LIST(repo.owner, repo.name, repo.branch);
+    console.log(`[${repo.name}] listing files from ${url}`);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`jsDelivr list ${res.status}`);
+      const data = await res.json();
+      const files = (data.files || [])
+        .filter(f => {
+          const path = f.name;
+          if (!path.startsWith(repo.dataPath || 'data/')) return false;
+          const ext = path.split('.').pop().toLowerCase();
+          return ext === 'tsv' || ext === 'json';
+        })
+        .map(f => f.name);
+      console.log(`[${repo.name}] found ${files.length} data files:`, files);
+      return files;
+    } catch (e) {
+      console.warn(`[${repo.name}] list failed:`, e.message);
+      // fallback: try known files
+      const fallbacks = {
+        'sAmam': ['data/sAmam.tsv', 'data/sAmam.json'],
+        'Agama': ['data/texts.json', 'data/agamas.json', 'data/index.json'],
+        'srivaishnavam': ['data/gitarthasangraha.json', 'data/vedas.json', 'data/upanishads.json', 'data/puranas.json', 'data/itihasas.json', 'data/agamas.json', 'data/stotras.json', 'data/texts.json', 'data/scriptures.json']
+      };
+      return fallbacks[repo.name] || [];
+    }
+  }
+
+  async function fetchFile(repo, filePath) {
+    const url = JSDLVR_FILE(repo.owner, repo.name, repo.branch, filePath);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`);
+    return res.text();
+  }
+
+  // ── load a repo ──
+  async function loadRepo(repo) {
+    console.log(`[${repo.name}] loading...`);
+    const files = await listDataFiles(repo);
+    if (!files.length) {
+      console.warn(`[${repo.name}] no data files found`);
+      return 0;
+    }
+    let count = 0;
+    for (const f of files) {
+      try {
+        const raw = await fetchFile(repo, f);
+        const ext = f.split('.').pop().toLowerCase();
+        const basename = f.split('/').pop();
+        let parsed = [];
+        if (ext === 'tsv') {
+          parsed = parseTSV(raw, repo, basename);
+          console.log(`[${repo.name}] ${basename} → ${parsed.length} TSV records`);
+        } else if (ext === 'json') {
+          let data;
+          try { data = JSON.parse(raw); } catch (e) { console.warn(`[${repo.name}] JSON parse error ${basename}`); continue; }
+          parsed = parseJSON(data, repo, basename);
+          console.log(`[${repo.name}] ${basename} → ${parsed.length} JSON records`);
+        }
+        if (parsed.length) {
+          allRecords.push(...parsed);
+          count += parsed.length;
+        }
+      } catch (e) {
+        console.warn(`[${repo.name}] failed ${f}:`, e.message);
+      }
+    }
+    console.log(`[${repo.name}] total indexed: ${count}`);
+    return count;
+  }
+
+  // ── load all ──
+  async function loadAll() {
+    setStatus('loading', 'Loading data files…');
+    let loaded = 0;
+    let failed = 0;
+    for (const repo of REPOS) {
+      try {
+        const n = await loadRepo(repo);
+        if (n > 0) loaded++;
+        else failed++;
+        updateFilterCount(repo.name);
+      } catch (e) {
+        console.error(`[${repo.name}] load error:`, e);
+        failed++;
+      }
+    }
+    const total = allRecords.length;
+    console.log(`total records: ${total}`);
+    if (total === 0 && failed === REPOS.length) {
+      setStatus('error', 'Could not load any data. Check console.');
+    } else if (failed > 0) {
+      setStatus('ready', `${total.toLocaleString()} records loaded (${failed} collection${failed > 1 ? 's' : ''} unavailable)`);
+    } else {
+      setStatus('ready', `${total.toLocaleString()} records indexed from ${loaded} collection${loaded > 1 ? 's' : ''}`);
+    }
+    // initial search if query exists
+    if (searchInput.value.trim().length >= 2) runSearch();
+  }
+
+  // ── search & render ──
+  function buildSnippet(text, terms) {
+    if (!text) return '';
+    const lc = text.toLowerCase();
+    let first = text.length;
+    for (const t of terms) {
+      const idx = lc.indexOf(t.toLowerCase());
+      if (idx !== -1 && idx < first) first = idx;
+    }
+    const start = Math.max(0, first - 40);
+    const end = Math.min(text.length, start + SNIPPET_WINDOW);
+    let snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
+    let html = escapeHTML(snippet);
+    // mark each term
+    for (const t of terms) {
+      const re = new RegExp(`(${escapeRe(escapeHTML(t))})`, 'gi');
+      html = html.replace(re, '<mark>$1</mark>');
+    }
+    return html;
+  }
+
+  function runSearch() {
+    const raw = searchInput.value.trim();
+    if (raw.length < 2) {
+      resultsEl.innerHTML = '';
+      resultsCount.hidden = true;
       return;
     }
-    
-    // Object with key-value pairs
-    const entries = Object.entries(obj);
-    if (entries.length > 0) {
-      // Check if values are objects (sub-sections)
-      const hasSubSections = entries.some(([, v]) => typeof v === 'object' && v !== null && !Array.isArray(v));
-      
-      if (hasSubSections) {
-        // Process each key as a sub-section
-        for (const [key, value] of entries) {
-          if (typeof value === 'object' && value !== null) {
-            if (Array.isArray(value)) {
-              value.forEach((item, index) => {
-                if (typeof item === 'string') {
-                  const record = createRecord(item, {
-                    sectionTitle: key,
-                    verseNum: index + 1,
-                    textPreview: item.substring(0, 100)
-                  });
-                  if (record) records.push(record);
-                } else if (typeof item === 'object' && item !== null) {
-                  const text = extractAllText(item);
-                  const record = createRecord(text, {
-                    sectionTitle: key,
-                    verseNum: item.num || item.number || index + 1,
-                    textPreview: text.substring(0, 100)
-                  });
-                  if (record) records.push(record);
-                }
-              });
-            } else {
-              processGenericSection(value, key);
-            }
-          }
-        }
-      } else {
-        // Treat entire object as one text entry
-        const text = extractAllText(obj);
-        const record = createRecord(text, {
-          sectionTitle,
-          textPreview: text.substring(0, 100)
-        });
-        if (record) records.push(record);
-      }
+
+    // parse exact phrases (quoted)
+    const termMatches = raw.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g);
+    if (!termMatches) {
+      resultsEl.innerHTML = '';
+      resultsCount.hidden = true;
+      return;
     }
-  }
-
-  // Start processing
-  processAgamaStructure(data);
-  
-  // If no records found with structured parsing, do deep extraction
-  if (records.length === 0) {
-    const allText = extractAllText(data);
-    if (allText.trim().length > 0) {
-      const record = createRecord(allText, {
-        sectionTitle: fileTitle,
-        textPreview: allText.substring(0, 100)
-      });
-      if (record) records.push(record);
+    const terms = termMatches.map(t => t.replace(/^['"]|['"]$/g, '').trim()).filter(Boolean);
+    if (!terms.length) {
+      resultsEl.innerHTML = '';
+      resultsCount.hidden = true;
+      return;
     }
-  }
-  
-  return records;
-}
 
-/* ═══ TSV Parser ═════════════════════════════════════════════ */
+    const pool = activeFilter === 'all' ? allRecords : allRecords.filter(r => r.repo === activeFilter);
 
-function parseTSV(raw, repo, filename) {
-  const lines = raw.trim().split('\n');
-  if (lines.length < 2) return [];
-  
-  const headers = lines[0].split('\t').map(h => h.trim().toLowerCase());
-  const records = [];
-  
-  for (let i = 1; i < lines.length; i++) {
-    const cells = lines[i].split('\t');
-    if (cells.every(c => !c.trim())) continue;
-    
-    const fields = {};
-    headers.forEach((h, idx) => { 
-      fields[h] = (cells[idx] || '').trim(); 
+    // each term must appear (AND)
+    const matches = pool.filter(r => {
+      const lc = r.text.toLowerCase();
+      return terms.every(t => lc.includes(t.toLowerCase()));
     });
-    
-    const textParts = [];
-    const displayParts = [];
-    
-    const textFieldNames = [
-      'verse', 'original', 'translation', 'meaning', 'sanskrit', 
-      'english', 'text', 'content', 'transliteration', 'section',
-      'description', 'notes', 'commentary', 'hymn', 'mantra', 'title'
-    ];
-    
-    for (const field of textFieldNames) {
-      if (fields[field]) textParts.push(fields[field]);
+
+    resultsCount.hidden = false;
+    resultsCount.innerHTML = matches.length === 0 ?
+      `No results for <strong>${escapeHTML(raw)}</strong>` :
+      `<strong>${matches.length.toLocaleString()}</strong> result${matches.length !== 1 ? 's' : ''} for <strong>${escapeHTML(raw)}</strong>`;
+
+    if (matches.length === 0) {
+      resultsEl.innerHTML = `<p class="no-results">No texts matched <em>${escapeHTML(raw)}</em> in ${activeFilter === 'all' ? 'any collection' : 'this collection'}.</p>`;
+      return;
     }
-    
-    if (fields.section) displayParts.push(`Section: ${fields.section.substring(0, 40)}`);
-    if (fields.verse) displayParts.push(`Verse: ${fields.verse}`);
-    if (fields.title) displayParts.push(fields.title.substring(0, 60));
-    if (fields.original) displayParts.push(fields.original.substring(0, 60));
-    
-    if (textParts.length === 0) {
-      Object.values(fields).forEach(v => {
-        if (v && typeof v === 'string') textParts.push(v);
-      });
-    }
-    
-    if (displayParts.length === 0) {
-      const entries = Object.entries(fields)
-        .filter(([, v]) => v && typeof v === 'string')
-        .slice(0, 3);
-      for (const [k, v] of entries) {
-        displayParts.push(`${k}: ${v.substring(0, 50)}`);
-      }
-    }
-    
-    const text = textParts.join(' ');
-    if (!text.trim()) continue;
-    
-    records.push({
-      repo: repo.name, 
-      repoLabel: repo.label, 
-      repoUrl: buildFileUrl(repo, filename),
-      file: filename, 
-      fileTitle: filename.replace(/\.[^.]+$/, ''),
-      section: fields.section || fields.title || '',
-      verseNum: fields.verse || '',
-      text: text,
-      display: displayParts,
-    });
-  }
-  
-  return records;
-}
 
-/* ═══ Loaders ════════════════════════════════════════════════ */
-
-const JSDLVR_LIST  = (owner, repo, branch) =>
-  `https://data.jsdelivr.com/v1/package/gh/${owner}/${repo}@${branch}/flat`;
-
-const JSDLVR_FILE  = (owner, repo, branch, path) =>
-  `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path.startsWith('/') ? path.slice(1) : path}`;
-
-async function listFilesViaJsdelivr(repo, extensions) {
-  const url = JSDLVR_LIST(repo.owner, repo.name, repo.branch);
-  console.log(`[${repo.name}] Fetching file list from jsDelivr: ${url}`);
-  
-  try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`jsDelivr list API ${res.status}`);
-    }
-    const data = await res.json();
-    const extSet = new Set(extensions.map(e => e.toLowerCase()));
-    
-    const files = (data.files || []).filter(f => {
-      const ext = f.name.split('.').pop().toLowerCase();
-      return extSet.has(ext);
-    });
-    
-    console.log(`[${repo.name}] Found ${files.length} files:`, files.map(f => f.name));
-    return files;
-  } catch (error) {
-    console.warn(`[${repo.name}] jsDelivr listing failed:`, error.message);
-    
-    if (repo.fallbackFiles && repo.fallbackFiles.length > 0) {
-      console.log(`[${repo.name}] Using ${repo.fallbackFiles.length} fallback files`);
-      return repo.fallbackFiles.map(name => ({ name }));
-    }
-    
-    return [];
-  }
-}
-
-async function fetchViaJsdelivr(repo, filePath) {
-  const cleanPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
-  const url = JSDLVR_FILE(repo.owner, repo.name, repo.branch, cleanPath);
-  console.log(`[${repo.name}] Fetching: ${url}`);
-  
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} for ${url}`);
-  }
-  return res.text();
-}
-
-async function loadRepo(repo) {
-  console.log(`[${repo.name}] Starting load with strategy: ${repo.strategy}`);
-  
-  // Determine file extensions to look for
-  const extensions = repo.strategy === 'json' ? ['json'] : ['tsv', 'json'];
-  let files = await listFilesViaJsdelivr(repo, extensions);
-  
-  if (files.length === 0) {
-    console.warn(`[${repo.name}] No files found`);
-    return 0;
+    // show all results
+    resultsEl.innerHTML = matches.map(r => {
+      const snippet = buildSnippet(r.text, terms);
+      const pills = (r.display || []).filter(Boolean).map(d => `<span class="result-meta-pill">${escapeHTML(d)}</span>`).join('');
+      return `
+        <a class="result-card" href="${escapeHTML(r.repoUrl)}" target="_blank" rel="noopener">
+          <div class="result-header">
+            <span class="result-repo">${escapeHTML(r.repoLabel)}</span>
+            <span class="result-file">${escapeHTML(r.file)}</span>
+          </div>
+          <div class="result-body">${snippet}</div>
+          ${pills ? `<div class="result-meta">${pills}</div>` : ''}
+        </a>`;
+    }).join('');
   }
 
-  const perFile = await Promise.all(files.map(async f => {
-    try {
-      const raw = await fetchViaJsdelivr(repo, f.name);
-      const ext = f.name.split('.').pop().toLowerCase();
-      const basename = f.name.split('/').pop();
-      
-      if (ext === 'tsv') {
-        const parsed = parseTSV(raw, repo, basename);
-        console.log(`[${repo.name}] ${basename}: parsed ${parsed.length} TSV records`);
-        return parsed;
-      } else if (ext === 'json') {
-        let data;
-        try { 
-          data = JSON.parse(raw); 
-          console.log(`[${repo.name}] ${basename}: JSON parsed successfully`);
-        } catch (e) {
-          console.warn(`[${repo.name}] JSON parse error in ${basename}:`, e.message);
-          return [];
-        }
-        
-        const records = parseJSON(data, repo, basename);
-        console.log(`[${repo.name}] ${basename}: parsed ${records.length} records`);
-        
-        if (records.length === 0) {
-          console.warn(`[${repo.name}] ${basename}: No records extracted`);
-        }
-        
-        return records;
-      }
-      
-      return [];
-    } catch (e) {
-      console.warn(`[${repo.name}] Failed to process ${f.name}:`, e.message);
-      return [];
-    }
-  }));
-  
-  let count = 0;
-  for (const recs of perFile) { 
-    if (Array.isArray(recs)) {
-      allRecords.push(...recs); 
-      count += recs.length; 
-    }
-  }
-  
-  console.log(`[${repo.name}] Total indexed: ${count} records`);
-  return count;
-}
-
-async function loadAll() {
-  setStatus('loading', 'Loading data files…');
-  console.log('Starting archive load...');
-
-  const results = await Promise.allSettled(REPOS.map(repo => loadRepo(repo)));
-
-  let loaded = 0, failed = 0;
-  results.forEach((r, i) => {
-    if (r.status === 'fulfilled') {
-      loaded++;
-      updateFilterCount(REPOS[i].name);
-    } else {
-      failed++;
-      console.error(`Repo ${REPOS[i].name} completely failed:`, r.reason);
-    }
+  // ── events ──
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(runSearch, 200);
   });
 
-  const total = allRecords.length;
-  console.log(`Total records across all repos: ${total}`);
-  console.log('Sample records:', allRecords.slice(0, 3));
-  
-  if (total === 0 && failed === REPOS.length) {
-    setStatus('error', 'Could not load any data. Check browser console for details.');
-  } else if (failed > 0) {
-    setStatus('ready',
-      `${total.toLocaleString()} records loaded (${failed} collection${failed > 1 ? 's' : ''} unavailable)`
-    );
-  } else {
-    setStatus('ready',
-      `${total.toLocaleString()} records indexed across ${loaded} collection${loaded !== 1 ? 's' : ''}`
-    );
-  }
-
-  if (searchInput.value.trim().length >= 2) runSearch();
-}
-
-/* ═══ Search & Render ════════════════════════════════════════ */
-
-function buildSnippet(text, terms) {
-  if (!text) return '';
-  const lc = text.toLowerCase();
-  let first = text.length;
-  for (const t of terms) {
-    const i = lc.indexOf(t.toLowerCase());
-    if (i !== -1 && i < first) first = i;
-  }
-  const start   = Math.max(0, first - 40);
-  const end     = Math.min(text.length, start + SNIPPET_WINDOW);
-  let snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
-
-  let html = escapeHTML(snippet);
-  terms.forEach(t => {
-    const re = new RegExp(`(${escapeRe(escapeHTML(t))})`, 'gi');
-    html = html.replace(re, '<mark>$1</mark>');
-  });
-  return html;
-}
-
-function runSearch() {
-  const raw = searchInput.value.trim();
-  if (raw.length < 2) {
-    resultsEl.innerHTML = '';
-    resultsCount.hidden = true;
-    return;
-  }
-
-  const terms   = raw.split(/\s+/).filter(Boolean);
-  const lcTerms = terms.map(t => t.toLowerCase());
-
-  const pool = activeFilter === 'all'
-    ? allRecords
-    : allRecords.filter(r => r.repo === activeFilter);
-
-  console.log(`Searching "${raw}" in ${pool.length} records (filter: ${activeFilter})`);
-
-  const matches = pool.filter(r => {
-    const lc = r.text.toLowerCase();
-    return lcTerms.every(t => lc.includes(t));
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { runSearch(); }
+    if (e.key === 'Escape') { searchInput.value = ''; runSearch(); }
   });
 
-  console.log(`Found ${matches.length} matches`);
+  filterRow.addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    filterRow.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.repo;
+    runSearch();
+  });
 
-  resultsCount.hidden = false;
-  resultsCount.innerHTML = matches.length === 0
-    ? `No results for <strong>${escapeHTML(raw)}</strong>`
-    : `<strong>${matches.length.toLocaleString()}</strong> result${matches.length !== 1 ? 's' : ''} for <strong>${escapeHTML(raw)}</strong>`;
-
-  if (matches.length === 0) {
-    resultsEl.innerHTML = `<p class="no-results">No texts matched <em>${escapeHTML(raw)}</em> in ${activeFilter === 'all' ? 'any collection' : 'this collection'}.</p>`;
-    return;
-  }
-
-  // Show ALL results (no limit)
-  resultsEl.innerHTML = matches.map(r => {
-    const snippet = buildSnippet(r.text, terms);
-    const pills   = (r.display || [])
-      .filter(Boolean)
-      .map(d => `<span class="result-meta-pill">${escapeHTML(d)}</span>`)
-      .join('');
-    return `
-      <a class="result-card" href="${escapeHTML(r.repoUrl)}" target="_blank" rel="noopener">
-        <div class="result-header">
-          <span class="result-repo">${escapeHTML(r.repoLabel)}</span>
-          <span class="result-file">${escapeHTML(r.file)}</span>
-        </div>
-        <div class="result-body">${snippet}</div>
-        ${pills ? `<div class="result-meta">${pills}</div>` : ''}
-      </a>`;
-  }).join('');
-}
-
-/* ═══ Events ════════════════════════════════════════════════ */
-
-searchInput.addEventListener('input', () => {
-  clearTimeout(searchDebounce);
-  searchDebounce = setTimeout(runSearch, 220);
-});
-
-searchInput.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { 
-    searchInput.value = ''; 
-    runSearch(); 
-  }
-});
-
-filterRow.addEventListener('click', e => {
-  const btn = e.target.closest('.filter-btn');
-  if (!btn) return;
-  filterRow.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  activeFilter = btn.dataset.repo;
-  runSearch();
-});
-
-/* ═══ Boot ══════════════════════════════════════════════════ */
-loadAll();
+  // ── boot ──
+  loadAll();
 </script>
 </body>
 </html>
