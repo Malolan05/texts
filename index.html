@@ -309,7 +309,6 @@
       opacity: 0.5;
     }
 
-    /* status bar */
     .search-status {
       font-family: var(--mono);
       font-size: 10.5px;
@@ -332,7 +331,6 @@
     .status-dot.error   { background: #c0392b; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-    /* filter row */
     .search-filters {
       display: flex;
       flex-wrap: wrap;
@@ -366,7 +364,6 @@
       opacity: 0.6;
     }
 
-    /* results */
     .results-container {
       display: flex;
       flex-direction: column;
@@ -447,7 +444,6 @@
       font-size: 0.95rem;
     }
 
-    /* loading spinner inside results */
     .search-spinner {
       display: flex;
       align-items: center;
@@ -468,7 +464,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* result count badge */
     .results-count {
       font-family: var(--mono);
       font-size: 10px;
@@ -639,44 +634,10 @@
 <script>
 /* ═══════════════════════════════════════════════════════════════
    MĀLOLA ARCHIVE — Cross-Repository Search
-
-   FIXES vs original:
-
-   ── FIX 1: owner lowercased to 'malolan05'.
-             raw.githubusercontent.com is case-sensitive on the
-             username; 'Malolan05' returned HTTP 404 silently.
-
-   ── FIX 2: File discovery now uses the Git Trees API
-             (GET /git/trees/{branch}?recursive=1) instead of the
-             Contents API pointed at a hardcoded '/data' path.
-             This finds JSON/TSV files wherever they actually live
-             in the repo (root, data/, texts/, etc.) and returns
-             a download_url for each, bypassing raw.githubusercontent
-             entirely so casing and rate-limit issues are avoided.
-
-   ── FIX 3: parseNestedScriptureJSON expanded with broad key
-             fallbacks so it handles schema variations across files.
-
-   ── FIX 4: srivaishnavam result cards link to repo.url directly
-             rather than appending '?file=' which the viewer ignores.
-
-   Per-repo strategies:
-   ┌─────────────────┬─────────────────────────────────────────────────┐
-   │ sAmam           │ Git Trees API → TSV/JSON anywhere → flat rows   │
-   │ Agama           │ Git Trees API → TSV/JSON anywhere → flat rows   │
-   │ srivaishnavam   │ Git Trees API → JSON anywhere → nested parse    │
-   └─────────────────┴─────────────────────────────────────────────────┘
+   srivaishnavam FIX: replaced fragile key-list parser with a
+   recursive deep-scan that finds the best verse array regardless
+   of what keys the JSON author chose to use.
 ═══════════════════════════════════════════════════════════════ */
-
-/* ── Repo configs ─────────────────────────────────────────── */
-// FIX 1: owner is lowercase 'malolan05' — raw.githubusercontent.com
-// is case-sensitive; 'Malolan05' silently returned HTTP 404.
-//
-// FIX 2: we now use the Git Trees API (recursive) instead of the
-// Contents API pointed at a hardcoded '/data' subdirectory.
-// This finds JSON/TSV files wherever they live, and returns a
-// download_url per file that we use directly — no raw.githubusercontent
-// URL construction needed.
 
 const REPOS = [
   {
@@ -685,7 +646,7 @@ const REPOS = [
     branch:   'content',
     label:    'sAmam',
     url:      'https://malolan05.github.io/sAmam/index.html',
-    strategy: 'flat',     // parse discovered files as flat TSV/JSON rows
+    strategy: 'flat',
   },
   {
     name:     'Agama',
@@ -701,7 +662,7 @@ const REPOS = [
     branch:   'main',
     label:    'Śrīvaiṣṇava',
     url:      'https://malolan05.github.io/srivaishnavam',
-    strategy: 'nested',   // parse discovered JSON as nested scripture objects
+    strategy: 'nested',
   },
 ];
 
@@ -709,7 +670,7 @@ const REPOS = [
 let allRecords   = [];
 let activeFilter = 'all';
 let searchDebounce = null;
-const MAX_RESULTS   = 60;
+const MAX_RESULTS    = 60;
 const SNIPPET_WINDOW = 140;
 
 /* ── DOM ──────────────────────────────────────────────────── */
@@ -727,16 +688,11 @@ function escapeHTML(s) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
-function escapeRe(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
+function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 function setStatus(state, msg) {
   statusDot.className = `status-dot ${state}`;
   statusText.textContent = msg;
 }
-
 function updateFilterCount(repoName) {
   const n  = allRecords.filter(r => r.repo === repoName).length;
   const el = filterRow.querySelector(`[data-repo="${repoName}"] .count`);
@@ -745,7 +701,6 @@ function updateFilterCount(repoName) {
 
 /* ═══ Parsers ════════════════════════════════════════════════ */
 
-/** Flat TSV → one record per data row */
 function parseTSV(raw, repo, filename) {
   const lines = raw.trim().split('\n');
   if (lines.length < 2) return [];
@@ -769,10 +724,9 @@ function parseTSV(raw, repo, filename) {
   return records;
 }
 
-/** Flat JSON array → one record per object */
 function parseFlatJSON(data, repo, filename) {
   if (!Array.isArray(data)) {
-    for (const key of ['data','records','items','texts','verses','entries','hymns']) {
+    for (const key of ['data','records','items','texts','verses','entries','hymns','content','list','results']) {
       if (Array.isArray(data[key])) { data = data[key]; break; }
     }
   }
@@ -793,182 +747,204 @@ function parseFlatJSON(data, repo, filename) {
   });
 }
 
+/* ── Deep-scan helpers ─────────────────────────────────────── */
+
 /**
- * Nested scripture JSON → one record per verse.
+ * Score how "verse-like" an object looks.
+ * Higher = more confident it's a verse/record.
+ */
+const VERSE_KEYS = new Set([
+  'text','original','devanagari','sanskrit','sloka','sutra','mantra',
+  'verse','content','passage','stanza','shloka','hymn',
+  'transliteration','iast','roman','translit','romanized',
+  'translation','meaning','english','artha','paraphrase',
+  'commentary','commentaries','bhasya','tika','vyakhya',
+  'num','number','id','index','verse_number','shloka_number',
+]);
+
+function scoreObject(obj) {
+  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) return 0;
+  let score = 0;
+  for (const k of Object.keys(obj)) {
+    if (VERSE_KEYS.has(k.toLowerCase())) score += 2;
+    const v = obj[k];
+    if (typeof v === 'string' && v.length > 5) score += 1;
+  }
+  return score;
+}
+
+/**
+ * Walk the entire JSON tree recursively, collecting every array
+ * and scoring it by how verse-like its first few elements are.
+ * Returns the best-scoring array, or null.
  *
- * FIX 3: Greatly expanded key fallbacks so the parser is robust
- * against minor schema variations across srivaishnavam files.
+ * maxDepth guards against pathologically nested structures.
+ */
+function findBestArray(node, depth = 0, results = []) {
+  if (depth > 8) return results;
+
+  if (Array.isArray(node)) {
+    if (node.length > 0) {
+      const sample = node.slice(0, Math.min(5, node.length));
+      const avgScore = sample.reduce((s, el) => s + scoreObject(el), 0) / sample.length;
+      results.push({ arr: node, score: avgScore * node.length, depth });
+    }
+    // Also walk into array elements
+    for (const el of node.slice(0, 10)) {
+      if (typeof el === 'object' && el !== null && !Array.isArray(el)) {
+        findBestArray(el, depth + 1, results);
+      }
+    }
+  } else if (typeof node === 'object' && node !== null) {
+    for (const val of Object.values(node)) {
+      findBestArray(val, depth + 1, results);
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Extract all searchable text from a verse object, regardless of key names.
+ * Uses VERSE_KEYS for preferred fields first, then falls back to all string values.
+ */
+function extractVerseText(obj) {
+  if (typeof obj !== 'object' || obj === null) return String(obj ?? '');
+
+  const parts = [];
+  // Preferred keys first (for better snippet quality)
+  for (const k of VERSE_KEYS) {
+    if (k in obj) {
+      const v = obj[k];
+      if (typeof v === 'string' && v.trim()) parts.push(v);
+      else if (Array.isArray(v)) {
+        parts.push(v.map(c =>
+          typeof c === 'string' ? c :
+          (typeof c === 'object' && c !== null)
+            ? Object.values(c).filter(x => typeof x === 'string').join(' ')
+            : ''
+        ).join(' '));
+      }
+    }
+  }
+  // Then any remaining string values not already captured
+  for (const [k, v] of Object.entries(obj)) {
+    if (!VERSE_KEYS.has(k.toLowerCase()) && typeof v === 'string' && v.trim()) {
+      parts.push(v);
+    }
+  }
+  return parts.join(' ');
+}
+
+/**
+ * THE FIX for srivaishnavam:
  *
- * Handles shapes including:
- *  { title, sections[{ title, verses[{ num, original, transliteration,
- *    translation, commentaries[{author,body}] }] }] }
- *  { title, chapters[...] }  { title, adhyayas[...] }
- *  { verses: [...] }  (flat verse array at root)
- *  Array of verse objects at root
+ * Instead of a fixed list of container keys that must match exactly,
+ * we recursively scan the entire JSON to find every array, score each
+ * by how verse-like its objects are, and index the best one.
+ *
+ * This works regardless of whether the author used "sections",
+ * "chapters", "adhyayas", "data", "content", "items", or any other key.
+ *
+ * Additionally, if a file has a two-level structure (sections → verses),
+ * we prefer the deeper arrays (the actual verse lists) over the outer
+ * section arrays, because verse arrays score higher (they contain string
+ * fields) while section arrays score lower (they contain sub-arrays).
  */
 function parseNestedScriptureJSON(data, repo, filename) {
-  const records = [];
-  // FIX 4: link directly to the viewer; do NOT append ?file= because
-  // the viewer's routing does not honour that query-string parameter.
   const repoUrl   = repo.url;
   const fileTitle = (typeof data === 'object' && !Array.isArray(data) && data.title)
-    ? data.title
-    : filename.replace(/\.json$/i, '').replace(/-/g, ' ');
+    ? String(data.title)
+    : filename.replace(/\.json$/i, '').replace(/[-_]/g, ' ');
 
-  /* ---------- normalise top-level into a sections array ---------- */
-  let sections = [];
+  // ── Step 1: find all candidate arrays in the tree ──────────
+  const candidates = findBestArray(data);
 
-  if (Array.isArray(data)) {
-    // Root is already a verse array
-    sections = [{ title: fileTitle, verses: data }];
-  } else if (typeof data === 'object' && data !== null) {
-    // Try every plausible container key (FIX 3)
-    const containerKeys = [
-      'sections', 'chapters', 'parts', 'books',
-      'adhyayas', 'kandas', 'prakaranas',
-    ];
-    let found = false;
-    for (const k of containerKeys) {
-      if (Array.isArray(data[k])) {
-        sections = data[k];
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      // Maybe the file IS a flat verse array under a known key
-      const verseKeys = [
-        'verses','hymns','items','sutras','slokas',
-        'shlokas','stanzas','mantras','passages','entries',
-      ];
-      for (const k of verseKeys) {
-        if (Array.isArray(data[k])) {
-          sections = [{ title: fileTitle, verses: data[k] }];
-          found = true;
-          break;
-        }
-      }
-    }
-    if (!found) {
-      // Last resort: treat the object values themselves as a section
-      const vals = Object.values(data).filter(Array.isArray);
-      if (vals.length) sections = [{ title: fileTitle, verses: vals[0] }];
-    }
+  if (candidates.length === 0) {
+    console.warn(`[${repo.name}] ${filename}: no arrays found in JSON`);
+    return [];
   }
 
-  /* ---------- iterate sections → verses ---------- */
-  for (const sec of sections) {
-    if (!sec || typeof sec !== 'object') continue;
-    const secTitle = sec.title || sec.name || sec.heading || '';
+  // Sort: highest score first; on tie, prefer deeper (more specific) arrays
+  candidates.sort((a, b) => b.score - a.score || b.depth - a.depth);
 
-    // FIX 3: expanded verse-array key list
-    const verseArr =
-      sec.verses     || sec.hymns    || sec.items    ||
-      sec.sutras     || sec.slokas   || sec.shlokas  ||
-      sec.stanzas    || sec.mantras  || sec.passages  ||
-      sec.entries    || [];
+  // Log the top candidates so you can debug from the browser console
+  console.group(`[${repo.name}] ${filename} — array candidates`);
+  candidates.slice(0, 5).forEach((c, i) =>
+    console.log(`  #${i+1} score=${c.score.toFixed(1)} depth=${c.depth} len=${c.arr.length}`,
+      c.arr[0])
+  );
+  console.groupEnd();
 
-    for (const verse of verseArr) {
-      if (!verse || typeof verse !== 'object') continue;
+  const bestArr = candidates[0].arr;
 
-      // Verse identifier
-      const num = String(
-        verse.num ?? verse.number ?? verse.id ?? verse.index ?? ''
-      );
+  // ── Step 2: check if bestArr is a "sections" array (objects
+  //    that contain arrays) or a "verses" array (objects that
+  //    contain text strings). Handle both cases.
+  // ──────────────────────────────────────────────────────────
+  const firstEl = bestArr[0];
+  const hasSubArrays = firstEl && typeof firstEl === 'object' &&
+    Object.values(firstEl).some(v => Array.isArray(v) && v.length > 0);
 
-      // FIX 3: expanded field key fallbacks for verse content
-      const original = String(
-        verse.original     ?? verse.text       ?? verse.sanskrit   ??
-        verse.devanagari   ?? verse.sloka      ?? verse.sutra      ??
-        verse.mantra       ?? verse.content    ?? verse.verse      ?? ''
-      );
-      const translit = String(
-        verse.transliteration ?? verse.iast    ?? verse.roman      ??
-        verse.translit        ?? verse.romanized ?? ''
-      );
-      const translation = String(
-        verse.translation  ?? verse.meaning    ?? verse.english    ??
-        verse.artha        ?? verse.paraphrase ?? ''
-      );
+  if (hasSubArrays) {
+    // bestArr is a sections/chapters array — iterate its children
+    const records = [];
+    for (const section of bestArr) {
+      if (typeof section !== 'object' || section === null) continue;
+      const secTitle = String(section.title ?? section.name ?? section.heading ?? '');
+      // Find the verse array inside this section
+      const subCandidates = findBestArray(section, 0, [])
+        .filter(c => c.arr !== bestArr)
+        .sort((a, b) => b.score - a.score || b.depth - a.depth);
+      const verseArr = subCandidates.length ? subCandidates[0].arr : [];
 
-      // FIX 3: expanded commentary key list; handle string or array
-      let commentaryText = '';
-      const commRaw =
-        verse.commentaries ?? verse.commentary ??
-        verse.bhasya       ?? verse.tika       ??
-        verse.vyakhya      ?? [];
-
-      if (Array.isArray(commRaw)) {
-        commentaryText = commRaw
-          .map(c => {
-            if (typeof c === 'string') return c;
-            if (typeof c === 'object' && c !== null) {
-              return [c.author || c.name || '', c.body || c.text || c.content || ''].join(' ');
-            }
-            return '';
-          })
-          .join(' ');
-      } else if (typeof commRaw === 'string') {
-        commentaryText = commRaw;
+      for (const verse of verseArr) {
+        const text = extractVerseText(verse);
+        if (!text.trim()) continue;
+        const num = String(verse.num ?? verse.number ?? verse.id ?? verse.index ?? '');
+        const display = [];
+        if (fileTitle) display.push(fileTitle);
+        if (secTitle && secTitle !== fileTitle) display.push(secTitle);
+        if (num) display.push(`verse ${num}`);
+        records.push({
+          repo: repo.name, repoLabel: repo.label, repoUrl,
+          file: filename, fileTitle, section: secTitle, verseNum: num,
+          text, display,
+        });
       }
-
-      const text = [original, translit, translation, commentaryText]
-        .filter(Boolean).join(' ');
-      if (!text.trim()) continue;
-
-      // Meta pills shown on result cards
-      const display = [];
-      if (fileTitle) display.push(fileTitle);
-      if (secTitle && secTitle !== fileTitle) display.push(secTitle);
-      if (num) display.push(`verse ${num}`);
-
-      records.push({
-        repo: repo.name, repoLabel: repo.label, repoUrl,
-        file: filename, fileTitle,
-        section: secTitle, verseNum: num,
-        text, display,
-      });
     }
+    if (records.length > 0) return records;
+    // Fall through to flat verse treatment if sections had no verses
   }
 
+  // bestArr contains verse-like objects directly
+  const records = [];
+  for (const verse of bestArr) {
+    const text = extractVerseText(verse);
+    if (!text.trim()) continue;
+    const num = String(
+      verse?.num ?? verse?.number ?? verse?.id ?? verse?.index ?? ''
+    );
+    const display = [];
+    if (fileTitle) display.push(fileTitle);
+    if (num) display.push(`verse ${num}`);
+    records.push({
+      repo: repo.name, repoLabel: repo.label, repoUrl,
+      file: filename, fileTitle, section: '', verseNum: num,
+      text, display,
+    });
+  }
   return records;
 }
 
-/* ═══ Loaders ════════════════════════════════════════════════ */
+/* ═══ jsDelivr Loaders ═══════════════════════════════════════ */
 
-/**
- * THE DEFINITIVE FIX: Use jsDelivr instead of GitHub directly.
- *
- * Why this works when everything else didn't:
- *  • raw.githubusercontent.com is DNS-blocked by several Indian ISPs
- *    (Jio, ACT, Airtel in some regions) — every fetch returns a
- *    network error regardless of URL casing or path correctness.
- *  • The GitHub Contents API and Git Trees API both also rely on
- *    raw.githubusercontent.com for the actual file downloads.
- *  • jsDelivr (cdn.jsdelivr.net) is a global CDN served over
- *    Cloudflare + Fastly — it is NOT blocked in India and mirrors
- *    every public GitHub repo automatically.
- *
- * Two jsDelivr surfaces we use:
- *
- *  1. FILE LISTING — data.jsdelivr.com API (no auth, no rate limit):
- *       GET https://data.jsdelivr.com/v1/package/gh/{user}/{repo}@{branch}/flat
- *     Returns { files: [ { name: '/data/foo.json' }, … ] } — a flat
- *     list of every file in the repo. We filter for .json / .tsv.
- *
- *  2. FILE CONTENT — cdn.jsdelivr.net CDN:
- *       GET https://cdn.jsdelivr.net/gh/{user}/{repo}@{branch}{path}
- *     Serves the raw file. `path` is exactly what the listing API
- *     returns (already slash-prefixed, e.g. '/data/foo.json').
- */
-
-const JSDLVR_LIST  = (owner, repo, branch) =>
+const JSDLVR_LIST = (owner, repo, branch) =>
   `https://data.jsdelivr.com/v1/package/gh/${owner}/${repo}@${branch}/flat`;
 
-const JSDLVR_FILE  = (owner, repo, branch, path) =>
+const JSDLVR_FILE = (owner, repo, branch, path) =>
   `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}${path}`;
 
-/** List all .json/.tsv files in a repo using the jsDelivr API */
 async function listFilesViaJsdelivr(repo, exts) {
   const url = JSDLVR_LIST(repo.owner, repo.name, repo.branch);
   console.log(`[${repo.name}] jsDelivr list:`, url);
@@ -983,10 +959,8 @@ async function listFilesViaJsdelivr(repo, exts) {
     const ext = f.name.split('.').pop().toLowerCase();
     return extSet.has(ext);
   });
-  // Each entry: { name: '/data/brahma-sutra-adhyaya-one.json', … }
 }
 
-/** Fetch a single file through the jsDelivr CDN */
 async function fetchViaJsdelivr(repo, filePath) {
   const url = JSDLVR_FILE(repo.owner, repo.name, repo.branch, filePath);
   const res = await fetch(url);
@@ -994,7 +968,6 @@ async function fetchViaJsdelivr(repo, filePath) {
   return res.text();
 }
 
-/** 'flat': discover files, parse each as flat TSV or JSON rows */
 async function loadFlatRepo(repo) {
   const files = await listFilesViaJsdelivr(repo, ['tsv', 'json']);
   console.log(`[${repo.name}] found ${files.length} file(s):`, files.map(f => f.name));
@@ -1019,7 +992,6 @@ async function loadFlatRepo(repo) {
   return count;
 }
 
-/** 'nested': discover JSON files, parse each as a nested scripture object */
 async function loadNestedRepo(repo) {
   const files = await listFilesViaJsdelivr(repo, ['json']);
   console.log(`[${repo.name}] found ${files.length} JSON file(s):`, files.map(f => f.name));
@@ -1033,13 +1005,42 @@ async function loadNestedRepo(repo) {
         console.warn(`[${repo.name}] JSON parse error in ${f.name}:`, e.message);
         return [];
       }
+
+      // Try deep-scan nested parser first
       const recs = parseNestedScriptureJSON(parsed, repo, basename);
-      if (recs.length === 0) {
-        console.info(`[${repo.name}] ${f.name}: nested parse → 0 records, trying flat`);
-        return parseFlatJSON(parsed, repo, basename);
+      if (recs.length > 0) {
+        console.log(`[${repo.name}] ${f.name}: ${recs.length} record(s) via deep-scan`);
+        return recs;
       }
-      console.log(`[${repo.name}] ${f.name}: ${recs.length} record(s)`);
-      return recs;
+
+      // Fallback: treat as flat JSON
+      console.info(`[${repo.name}] ${f.name}: deep-scan → 0, trying flat JSON`);
+      const flatRecs = parseFlatJSON(parsed, repo, basename);
+      if (flatRecs.length > 0) {
+        console.log(`[${repo.name}] ${f.name}: ${flatRecs.length} record(s) via flat fallback`);
+        return flatRecs;
+      }
+
+      // Last resort: collect all string leaf values as one big record
+      console.info(`[${repo.name}] ${f.name}: flat → 0, collecting all string leaves`);
+      const strings = [];
+      function collectStrings(node) {
+        if (typeof node === 'string' && node.trim().length > 2) strings.push(node.trim());
+        else if (Array.isArray(node)) node.forEach(collectStrings);
+        else if (typeof node === 'object' && node !== null)
+          Object.values(node).forEach(collectStrings);
+      }
+      collectStrings(parsed);
+      if (strings.length === 0) return [];
+      return [{
+        repo: repo.name, repoLabel: repo.label, repoUrl: repo.url,
+        file: basename,
+        fileTitle: basename.replace(/\.json$/i,'').replace(/[-_]/g,' '),
+        section: '', verseNum: '',
+        text: strings.join(' '),
+        display: [basename.replace(/\.json$/i,'')],
+      }];
+
     } catch (e) {
       console.warn(`[${repo.name}] skip ${f.name}:`, e.message);
       return [];
