@@ -640,8 +640,8 @@
 /* ═══════════════════════════════════════════════════════════════
    MĀLOLA ARCHIVE — Cross-Repository Search
    - Proper file-specific URLs for each repository
-   - No result limit
-   - Fallback file lists for srivaishnavam data folder
+   - Optimized JSON parsing for Agama repository
+   - No result limit - shows all matches
 ═══════════════════════════════════════════════════════════════ */
 
 /* ── Repo configs ─────────────────────────────────────────── */
@@ -652,8 +652,8 @@ const REPOS = [
     branch:   'content',
     label:    'sAmam',
     baseUrl:  'https://malolan05.github.io/sAmam/index.html',
-    urlPattern: '?file={file}',  // sAmam uses ?file= parameter
-    strategy: 'mixed',
+    urlPattern: '?file={file}',
+    strategy: 'mixed',  // TSV and JSON
     fallbackFiles: []
   },
   {
@@ -662,9 +662,16 @@ const REPOS = [
     branch:   'main',
     label:    'Āgama',
     baseUrl:  'https://malolan05.github.io/Agama',
-    urlPattern: '?file={file}',  // Agama likely uses ?file= parameter
-    strategy: 'mixed',
-    fallbackFiles: []
+    urlPattern: '?file={file}',
+    strategy: 'json',  // JSON only now
+    fallbackFiles: [
+      'data/texts.json',
+      'data/agamas.json',
+      'data/index.json',
+      'texts.json',
+      'agamas.json',
+      'index.json'
+    ]
   },
   {
     name:     'srivaishnavam',
@@ -672,8 +679,8 @@ const REPOS = [
     branch:   'main',
     label:    'Śrīvaiṣṇava',
     baseUrl:  'https://malolan05.github.io/srivaishnavam',
-    urlPattern: '?file={file}',  // srivaishnavam uses ?file= parameter
-    strategy: 'mixed',
+    urlPattern: '?file={file}',
+    strategy: 'json',  // JSON only
     fallbackFiles: [
       'data/gitarthasangraha.json',
       'data/vedas.json',
@@ -727,14 +734,319 @@ function updateFilterCount(repoName) {
 }
 
 function buildFileUrl(repo, filePath) {
-  // Extract just the filename from the path
   const filename = filePath.split('/').pop();
-  // Build the URL using the repo's URL pattern
   const pattern = repo.urlPattern || '?file={file}';
   return repo.baseUrl + pattern.replace('{file}', encodeURIComponent(filename));
 }
 
-/* ═══ Parsers ════════════════════════════════════════════════ */
+/* ═══ JSON Parsers (Optimized for Agama structure) ═══════════ */
+
+/**
+ * Extract all text content from any JSON object recursively
+ */
+function extractAllText(obj, maxDepth = 10, currentDepth = 0) {
+  if (currentDepth > maxDepth) return '';
+  
+  if (typeof obj === 'string') return obj;
+  if (typeof obj === 'number') return String(obj);
+  if (typeof obj === 'boolean') return '';
+  if (!obj || typeof obj !== 'object') return '';
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => extractAllText(item, maxDepth, currentDepth + 1))
+              .filter(Boolean)
+              .join(' ');
+  }
+  
+  // For objects, prioritize text-like fields
+  const priorityFields = [
+    'text', 'original', 'sanskrit', 'devanagari', 'verse', 'sloka',
+    'content', 'translation', 'meaning', 'english', 'artha',
+    'transliteration', 'iast', 'roman', 'commentary', 'bhasya',
+    'description', 'notes', 'explanation', 'summary'
+  ];
+  
+  const parts = [];
+  
+  // First pass: priority text fields
+  for (const field of priorityFields) {
+    if (obj[field]) {
+      if (typeof obj[field] === 'string') {
+        parts.push(obj[field]);
+      } else if (Array.isArray(obj[field])) {
+        const text = obj[field].map(item => {
+          if (typeof item === 'string') return item;
+          if (typeof item === 'object' && item !== null) {
+            return item.text || item.content || item.body || '';
+          }
+          return '';
+        }).filter(Boolean).join(' ');
+        if (text) parts.push(text);
+      }
+    }
+  }
+  
+  // Second pass: other string fields that aren't metadata
+  const skipFields = new Set([
+    ...priorityFields,
+    'id', 'index', 'num', 'number', 'verse_num', 'page',
+    'title', 'name', 'heading', 'chapter', 'section',
+    'type', 'category', 'tags', 'metadata', 'url', 'link'
+  ]);
+  
+  for (const [key, value] of Object.entries(obj)) {
+    if (skipFields.has(key)) continue;
+    if (typeof value === 'string' && value.length > 3) {
+      parts.push(value);
+    }
+  }
+  
+  return parts.join(' ');
+}
+
+/**
+ * Main JSON parser - handles various Agama and scripture JSON structures
+ */
+function parseJSON(data, repo, filename) {
+  const records = [];
+  const fileTitle = filename.replace(/\.json$/i, '').replace(/-/g, ' ');
+  
+  function createRecord(text, metadata = {}) {
+    if (!text || text.trim().length < 2) return null;
+    
+    const display = [];
+    if (metadata.bookTitle) display.push(metadata.bookTitle.substring(0, 40));
+    if (metadata.sectionTitle) display.push(metadata.sectionTitle.substring(0, 40));
+    if (metadata.chapterTitle) display.push(metadata.chapterTitle.substring(0, 40));
+    if (metadata.verseNum) display.push(`Verse ${metadata.verseNum}`);
+    if (metadata.textPreview) display.push(metadata.textPreview.substring(0, 60));
+    
+    if (display.length === 0) {
+      display.push(fileTitle);
+      if (metadata.sectionKey) display.push(metadata.sectionKey);
+    }
+    
+    return {
+      repo: repo.name,
+      repoLabel: repo.label,
+      repoUrl: buildFileUrl(repo, filename),
+      file: filename,
+      fileTitle: fileTitle,
+      section: metadata.sectionTitle || metadata.bookTitle || '',
+      verseNum: String(metadata.verseNum || ''),
+      text: text.trim(),
+      display: display.filter(Boolean),
+    };
+  }
+
+  /**
+   * Process Agama-specific structures
+   * Agama typically has: books > chapters > verses
+   */
+  function processAgamaStructure(obj) {
+    if (!obj || typeof obj !== 'object') return;
+    
+    // Check if it's a books collection
+    if (obj.books && typeof obj.books === 'object') {
+      for (const [bookName, bookData] of Object.entries(obj.books)) {
+        processBook(bookData, bookName);
+      }
+    }
+    // Check for direct book objects
+    else if (obj.title && (obj.chapters || obj.verses || obj.sections)) {
+      processBook(obj, obj.title);
+    }
+    // Check for array of books
+    else if (Array.isArray(obj)) {
+      obj.forEach((item, index) => {
+        if (typeof item === 'object' && item !== null) {
+          if (item.title) {
+            processBook(item, item.title);
+          } else {
+            processGenericSection(item, `Book ${index + 1}`);
+          }
+        }
+      });
+    }
+    // Generic object with sections
+    else {
+      processGenericSection(obj, fileTitle);
+    }
+  }
+
+  function processBook(bookData, bookTitle) {
+    if (!bookData || typeof bookData !== 'object') return;
+    
+    // Process chapters
+    if (bookData.chapters && typeof bookData.chapters === 'object') {
+      for (const [chapterName, chapterData] of Object.entries(bookData.chapters)) {
+        processChapter(chapterData, bookTitle, chapterName);
+      }
+    }
+    // Process sections
+    else if (bookData.sections && Array.isArray(bookData.sections)) {
+      bookData.sections.forEach((section, index) => {
+        processChapter(section, bookTitle, `Section ${index + 1}`);
+      });
+    }
+    // Process direct verses
+    else if (bookData.verses && Array.isArray(bookData.verses)) {
+      bookData.verses.forEach((verse, index) => {
+        processVerse(verse, { bookTitle, verseNum: index + 1 });
+      });
+    }
+    // Process any array content
+    else {
+      processGenericSection(bookData, bookTitle);
+    }
+  }
+
+  function processChapter(chapterData, bookTitle, chapterTitle) {
+    if (!chapterData || typeof chapterData !== 'object') return;
+    
+    // Process verses array
+    const verses = chapterData.verses || chapterData.slokas || 
+                   chapterData.sutras || chapterData.items || [];
+    
+    if (Array.isArray(verses) && verses.length > 0) {
+      verses.forEach((verse, index) => {
+        processVerse(verse, {
+          bookTitle,
+          sectionTitle: chapterTitle,
+          verseNum: verse.num || verse.number || index + 1
+        });
+      });
+    }
+    
+    // Process nested sections
+    if (chapterData.sections && Array.isArray(chapterData.sections)) {
+      chapterData.sections.forEach(section => {
+        processChapter(section, bookTitle, section.title || 'Section');
+      });
+    }
+    
+    // If no verses found, extract text directly
+    if (!Array.isArray(verses) || verses.length === 0) {
+      const text = extractAllText(chapterData);
+      if (text.trim()) {
+        const record = createRecord(text, {
+          bookTitle,
+          sectionTitle: chapterTitle,
+          textPreview: text.substring(0, 100)
+        });
+        if (record) records.push(record);
+      }
+    }
+  }
+
+  function processVerse(verse, context) {
+    if (!verse || typeof verse !== 'object') return;
+    
+    // Extract verse text
+    const text = extractAllText(verse);
+    if (!text.trim()) return;
+    
+    const record = createRecord(text, {
+      bookTitle: context.bookTitle,
+      sectionTitle: context.sectionTitle,
+      verseNum: context.verseNum || verse.num || verse.number || '',
+      textPreview: text.substring(0, 100)
+    });
+    
+    if (record) records.push(record);
+  }
+
+  function processGenericSection(obj, sectionTitle) {
+    if (!obj || typeof obj !== 'object') return;
+    
+    if (Array.isArray(obj)) {
+      obj.forEach((item, index) => {
+        if (typeof item === 'string') {
+          const record = createRecord(item, {
+            sectionTitle,
+            verseNum: index + 1,
+            textPreview: item.substring(0, 100)
+          });
+          if (record) records.push(record);
+        } else if (typeof item === 'object' && item !== null) {
+          const text = extractAllText(item);
+          const title = item.title || item.name || `${sectionTitle} ${index + 1}`;
+          const record = createRecord(text, {
+            sectionTitle: title,
+            verseNum: item.num || item.number || index + 1,
+            textPreview: text.substring(0, 100)
+          });
+          if (record) records.push(record);
+        }
+      });
+      return;
+    }
+    
+    // Object with key-value pairs
+    const entries = Object.entries(obj);
+    if (entries.length > 0) {
+      // Check if values are objects (sub-sections)
+      const hasSubSections = entries.some(([, v]) => typeof v === 'object' && v !== null && !Array.isArray(v));
+      
+      if (hasSubSections) {
+        // Process each key as a sub-section
+        for (const [key, value] of entries) {
+          if (typeof value === 'object' && value !== null) {
+            if (Array.isArray(value)) {
+              value.forEach((item, index) => {
+                if (typeof item === 'string') {
+                  const record = createRecord(item, {
+                    sectionTitle: key,
+                    verseNum: index + 1,
+                    textPreview: item.substring(0, 100)
+                  });
+                  if (record) records.push(record);
+                } else if (typeof item === 'object' && item !== null) {
+                  const text = extractAllText(item);
+                  const record = createRecord(text, {
+                    sectionTitle: key,
+                    verseNum: item.num || item.number || index + 1,
+                    textPreview: text.substring(0, 100)
+                  });
+                  if (record) records.push(record);
+                }
+              });
+            } else {
+              processGenericSection(value, key);
+            }
+          }
+        }
+      } else {
+        // Treat entire object as one text entry
+        const text = extractAllText(obj);
+        const record = createRecord(text, {
+          sectionTitle,
+          textPreview: text.substring(0, 100)
+        });
+        if (record) records.push(record);
+      }
+    }
+  }
+
+  // Start processing
+  processAgamaStructure(data);
+  
+  // If no records found with structured parsing, do deep extraction
+  if (records.length === 0) {
+    const allText = extractAllText(data);
+    if (allText.trim().length > 0) {
+      const record = createRecord(allText, {
+        sectionTitle: fileTitle,
+        textPreview: allText.substring(0, 100)
+      });
+      if (record) records.push(record);
+    }
+  }
+  
+  return records;
+}
+
+/* ═══ TSV Parser ═════════════════════════════════════════════ */
 
 function parseTSV(raw, repo, filename) {
   const lines = raw.trim().split('\n');
@@ -804,168 +1116,6 @@ function parseTSV(raw, repo, filename) {
   return records;
 }
 
-function parseFlatJSON(data, repo, filename) {
-  let array = null;
-  
-  if (Array.isArray(data)) {
-    array = data;
-  } else if (typeof data === 'object' && data !== null) {
-    for (const key of ['data', 'records', 'items', 'texts', 'verses', 'entries', 'hymns', 'results']) {
-      if (Array.isArray(data[key])) {
-        array = data[key];
-        break;
-      }
-    }
-  }
-  
-  if (!array || array.length === 0) return [];
-  
-  return array.map((item, index) => {
-    if (typeof item === 'string') {
-      return {
-        repo: repo.name, repoLabel: repo.label, 
-        repoUrl: buildFileUrl(repo, filename),
-        file: filename, fileTitle: filename.replace(/\.[^.]+$/, ''),
-        section: '', verseNum: String(index + 1),
-        text: item,
-        display: [`Item ${index + 1}`],
-      };
-    }
-    
-    if (typeof item !== 'object' || item === null) return null;
-    
-    const textParts = [];
-    const displayParts = [];
-    
-    const textFields = ['verse', 'original', 'text', 'content', 'translation', 'meaning', 'sanskrit', 'english', 'title', 'name', 'description'];
-    
-    for (const field of textFields) {
-      if (item[field] && typeof item[field] === 'string') {
-        textParts.push(item[field]);
-      }
-    }
-    
-    if (item.title || item.name) displayParts.push((item.title || item.name).substring(0, 60));
-    if (item.verse || item.num) displayParts.push(`Verse ${item.verse || item.num}`);
-    if (item.original) displayParts.push(item.original.substring(0, 60));
-    
-    if (textParts.length === 0) {
-      Object.values(item).forEach(v => {
-        if (typeof v === 'string') textParts.push(v);
-        else if (Array.isArray(v)) {
-          v.forEach(sv => {
-            if (typeof sv === 'string') textParts.push(sv);
-          });
-        }
-      });
-    }
-    
-    const text = textParts.join(' ');
-    if (!text.trim()) return null;
-    
-    return {
-      repo: repo.name, repoLabel: repo.label,
-      repoUrl: buildFileUrl(repo, filename),
-      file: filename, fileTitle: filename.replace(/\.[^.]+$/, ''),
-      section: item.section || item.chapter || '',
-      verseNum: String(item.verse || item.num || item.number || item.id || index + 1),
-      text,
-      display: displayParts.length > 0 ? displayParts : [`Item ${index + 1}`],
-    };
-  }).filter(Boolean);
-}
-
-function parseNestedScriptureJSON(data, repo, filename) {
-  const records = [];
-  const fileTitle = (typeof data === 'object' && !Array.isArray(data) && data.title)
-    ? data.title
-    : filename.replace(/\.json$/i, '').replace(/-/g, ' ').replace(/\//g, ' > ');
-
-  function extractText(obj) {
-    const parts = [];
-    if (!obj || typeof obj !== 'object') return '';
-    
-    const textFields = ['text', 'original', 'sanskrit', 'verse', 'content', 'translation', 'meaning', 'english', 'transliteration', 'commentary'];
-    for (const field of textFields) {
-      if (obj[field] && typeof obj[field] === 'string') {
-        parts.push(obj[field]);
-      }
-    }
-    
-    if (Array.isArray(obj.lines) || Array.isArray(obj.verses)) {
-      const arr = obj.lines || obj.verses;
-      arr.forEach(item => {
-        if (typeof item === 'string') parts.push(item);
-        else if (typeof item === 'object' && item.text) parts.push(item.text);
-      });
-    }
-    
-    return parts.join(' ');
-  }
-
-  function processObject(obj, path = [], parentTitle = fileTitle) {
-    if (!obj || typeof obj !== 'object') return;
-    
-    const directText = extractText(obj);
-    if (directText) {
-      const title = obj.title || obj.name || obj.heading || path[path.length - 1] || '';
-      const num = obj.verse || obj.num || obj.number || obj.id || '';
-      
-      records.push({
-        repo: repo.name,
-        repoLabel: repo.label,
-        repoUrl: buildFileUrl(repo, filename),
-        file: filename,
-        fileTitle: fileTitle,
-        section: parentTitle,
-        verseNum: String(num),
-        text: directText,
-        display: [
-          parentTitle.substring(0, 40),
-          title ? title.substring(0, 40) : '',
-          num ? `Verse ${num}` : '',
-          directText.substring(0, 60)
-        ].filter(Boolean)
-      });
-    }
-    
-    if (Array.isArray(obj)) {
-      obj.forEach((item, index) => {
-        if (typeof item === 'string') {
-          records.push({
-            repo: repo.name,
-            repoLabel: repo.label,
-            repoUrl: buildFileUrl(repo, filename),
-            file: filename,
-            fileTitle: fileTitle,
-            section: parentTitle,
-            verseNum: String(index + 1),
-            text: item,
-            display: [parentTitle.substring(0, 40), `Item ${index + 1}`]
-          });
-        } else if (typeof item === 'object' && item !== null) {
-          const itemTitle = item.title || item.name || `Item ${index + 1}`;
-          processObject(item, [...path, itemTitle], itemTitle);
-        }
-      });
-    } else {
-      for (const [key, value] of Object.entries(obj)) {
-        if (key === 'title' || key === 'name' || key === 'heading') continue;
-        
-        if (typeof value === 'object' && value !== null) {
-          const subTitle = (typeof value === 'object' && !Array.isArray(value)) 
-            ? (value.title || value.name || key)
-            : key;
-          processObject(value, [...path, key], subTitle);
-        }
-      }
-    }
-  }
-
-  processObject(data);
-  return records;
-}
-
 /* ═══ Loaders ════════════════════════════════════════════════ */
 
 const JSDLVR_LIST  = (owner, repo, branch) =>
@@ -974,7 +1124,7 @@ const JSDLVR_LIST  = (owner, repo, branch) =>
 const JSDLVR_FILE  = (owner, repo, branch, path) =>
   `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path.startsWith('/') ? path.slice(1) : path}`;
 
-async function listFilesViaJsdelivr(repo, exts) {
+async function listFilesViaJsdelivr(repo, extensions) {
   const url = JSDLVR_LIST(repo.owner, repo.name, repo.branch);
   console.log(`[${repo.name}] Fetching file list from jsDelivr: ${url}`);
   
@@ -984,7 +1134,7 @@ async function listFilesViaJsdelivr(repo, exts) {
       throw new Error(`jsDelivr list API ${res.status}`);
     }
     const data = await res.json();
-    const extSet = new Set(exts.map(e => e.toLowerCase()));
+    const extSet = new Set(extensions.map(e => e.toLowerCase()));
     
     const files = (data.files || []).filter(f => {
       const ext = f.name.split('.').pop().toLowerCase();
@@ -1017,10 +1167,12 @@ async function fetchViaJsdelivr(repo, filePath) {
   return res.text();
 }
 
-async function loadMixedRepo(repo) {
+async function loadRepo(repo) {
   console.log(`[${repo.name}] Starting load with strategy: ${repo.strategy}`);
   
-  let files = await listFilesViaJsdelivr(repo, ['tsv', 'json']);
+  // Determine file extensions to look for
+  const extensions = repo.strategy === 'json' ? ['json'] : ['tsv', 'json'];
+  let files = await listFilesViaJsdelivr(repo, extensions);
   
   if (files.length === 0) {
     console.warn(`[${repo.name}] No files found`);
@@ -1047,36 +1199,11 @@ async function loadMixedRepo(repo) {
           return [];
         }
         
-        let records = parseNestedScriptureJSON(data, repo, basename);
-        console.log(`[${repo.name}] ${basename}: nested parse → ${records.length} records`);
+        const records = parseJSON(data, repo, basename);
+        console.log(`[${repo.name}] ${basename}: parsed ${records.length} records`);
         
         if (records.length === 0) {
-          records = parseFlatJSON(data, repo, basename);
-          console.log(`[${repo.name}] ${basename}: flat parse → ${records.length} records`);
-        }
-        
-        if (records.length === 0) {
-          console.log(`[${repo.name}] ${basename}: Attempting deep extraction`);
-          const allText = JSON.stringify(data)
-            .replace(/[{}[\]"]/g, ' ')
-            .replace(/\\n/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-          
-          if (allText.length > 0) {
-            records = [{
-              repo: repo.name,
-              repoLabel: repo.label,
-              repoUrl: buildFileUrl(repo, basename),
-              file: basename,
-              fileTitle: basename.replace(/\.json$/i, ''),
-              section: 'Full Text',
-              verseNum: '',
-              text: allText,
-              display: [`Full text extraction from ${basename}`]
-            }];
-            console.log(`[${repo.name}] ${basename}: extracted ${allText.length} chars of raw text`);
-          }
+          console.warn(`[${repo.name}] ${basename}: No records extracted`);
         }
         
         return records;
@@ -1105,7 +1232,7 @@ async function loadAll() {
   setStatus('loading', 'Loading data files…');
   console.log('Starting archive load...');
 
-  const results = await Promise.allSettled(REPOS.map(repo => loadMixedRepo(repo)));
+  const results = await Promise.allSettled(REPOS.map(repo => loadRepo(repo)));
 
   let loaded = 0, failed = 0;
   results.forEach((r, i) => {
@@ -1120,6 +1247,7 @@ async function loadAll() {
 
   const total = allRecords.length;
   console.log(`Total records across all repos: ${total}`);
+  console.log('Sample records:', allRecords.slice(0, 3));
   
   if (total === 0 && failed === REPOS.length) {
     setStatus('error', 'Could not load any data. Check browser console for details.');
@@ -1192,7 +1320,7 @@ function runSearch() {
     return;
   }
 
-  // Show ALL results (removed MAX_RESULTS limit)
+  // Show ALL results (no limit)
   resultsEl.innerHTML = matches.map(r => {
     const snippet = buildSnippet(r.text, terms);
     const pills   = (r.display || [])
