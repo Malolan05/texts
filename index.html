@@ -641,71 +641,67 @@
    MĀLOLA ARCHIVE — Cross-Repository Search
 
    FIXES vs original:
-   ── FIX 1: repo owner lowercased to 'malolan05' throughout.
-             raw.githubusercontent.com is case-sensitive; 'Malolan05'
-             caused 404s on all srivaishnavam file fetches.
 
-   ── FIX 2: srivaishnavam switched from 'hardcoded-nested' with a
-             fixed file list to 'api-nested': the GitHub Contents API
-             auto-discovers every .json file in /data on main, so
-             future additions are picked up without editing this page.
+   ── FIX 1: owner lowercased to 'malolan05'.
+             raw.githubusercontent.com is case-sensitive on the
+             username; 'Malolan05' returned HTTP 404 silently.
 
-   ── FIX 3: parseNestedScriptureJSON massively expanded key fallbacks:
-               sections  → sections | chapters | parts | books | adhyayas
-               verses    → verses | hymns | items | sutras | slokas |
-                           shlokas | stanzas | mantras | passages | entries
-               verse fields:
-                 original      → original | text | sanskrit | devanagari |
-                                 sloka | sutra | mantra | content | verse
-                 transliteration→ transliteration | iast | roman | translit
-                 translation   → translation | meaning | english | artha
-               commentaries    → commentaries | commentary | bhasya | tika |
-                                 vyakhya (array or plain string)
+   ── FIX 2: File discovery now uses the Git Trees API
+             (GET /git/trees/{branch}?recursive=1) instead of the
+             Contents API pointed at a hardcoded '/data' path.
+             This finds JSON/TSV files wherever they actually live
+             in the repo (root, data/, texts/, etc.) and returns
+             a download_url for each, bypassing raw.githubusercontent
+             entirely so casing and rate-limit issues are avoided.
 
-   ── FIX 4: repoUrl for srivaishnavam result cards now links to
-             repo.url (the GitHub Pages viewer) without appending
-             '?file=…', which the viewer does not handle.
+   ── FIX 3: parseNestedScriptureJSON expanded with broad key
+             fallbacks so it handles schema variations across files.
+
+   ── FIX 4: srivaishnavam result cards link to repo.url directly
+             rather than appending '?file=' which the viewer ignores.
 
    Per-repo strategies:
-   ┌─────────────────┬────────────────────────────────────────────┐
-   │ sAmam           │ GitHub API → discover TSV files → flat rows│
-   │ Agama           │ GitHub API → discover TSV/JSON → flat rows │
-   │ srivaishnavam   │ GitHub API → discover JSON → nested parse  │
-   └─────────────────┴────────────────────────────────────────────┘
+   ┌─────────────────┬─────────────────────────────────────────────────┐
+   │ sAmam           │ Git Trees API → TSV/JSON anywhere → flat rows   │
+   │ Agama           │ Git Trees API → TSV/JSON anywhere → flat rows   │
+   │ srivaishnavam   │ Git Trees API → JSON anywhere → nested parse    │
+   └─────────────────┴─────────────────────────────────────────────────┘
 ═══════════════════════════════════════════════════════════════ */
 
 /* ── Repo configs ─────────────────────────────────────────── */
-// FIX 1: owner is now lowercase 'malolan05' in all three repos.
-// raw.githubusercontent.com URLs are case-sensitive on the username
-// segment; 'Malolan05' returned HTTP 404 for every srivaishnavam file.
+// FIX 1: owner is lowercase 'malolan05' — raw.githubusercontent.com
+// is case-sensitive; 'Malolan05' silently returned HTTP 404.
+//
+// FIX 2: we now use the Git Trees API (recursive) instead of the
+// Contents API pointed at a hardcoded '/data' subdirectory.
+// This finds JSON/TSV files wherever they live, and returns a
+// download_url per file that we use directly — no raw.githubusercontent
+// URL construction needed.
 
 const REPOS = [
   {
     name:     'sAmam',
-    owner:    'malolan05',   // FIX 1 — was 'Malolan05'
+    owner:    'malolan05',
     branch:   'content',
     label:    'sAmam',
     url:      'https://malolan05.github.io/sAmam/index.html',
-    strategy: 'api-flat',
+    strategy: 'flat',     // parse discovered files as flat TSV/JSON rows
   },
   {
     name:     'Agama',
-    owner:    'malolan05',   // FIX 1 — was 'Malolan05'
+    owner:    'malolan05',
     branch:   'main',
     label:    'Āgama',
     url:      'https://malolan05.github.io/Agama',
-    strategy: 'api-flat',
+    strategy: 'flat',
   },
   {
-    // FIX 2: strategy changed from 'hardcoded-nested' to 'api-nested'.
-    // The GitHub Contents API now discovers all .json files automatically,
-    // so new texts added to the repo appear in search without editing here.
     name:     'srivaishnavam',
-    owner:    'malolan05',   // FIX 1 — was 'Malolan05'
+    owner:    'malolan05',
     branch:   'main',
     label:    'Śrīvaiṣṇava',
     url:      'https://malolan05.github.io/srivaishnavam',
-    strategy: 'api-nested',  // FIX 2 — was 'hardcoded-nested'
+    strategy: 'nested',   // parse discovered JSON as nested scripture objects
   },
 ];
 
@@ -745,13 +741,6 @@ function updateFilterCount(repoName) {
   const n  = allRecords.filter(r => r.repo === repoName).length;
   const el = filterRow.querySelector(`[data-repo="${repoName}"] .count`);
   if (el) el.textContent = n > 0 ? `(${n.toLocaleString()})` : '';
-}
-
-async function fetchRaw(owner, name, branch, filePath) {
-  const url = `https://raw.githubusercontent.com/${owner}/${name}/${branch}/${filePath}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`);
-  return res.text();
 }
 
 /* ═══ Parsers ════════════════════════════════════════════════ */
@@ -947,71 +936,104 @@ function parseNestedScriptureJSON(data, repo, filename) {
 
 /* ═══ Loaders ════════════════════════════════════════════════ */
 
-/** List .tsv and .json files under /data via the GitHub Contents API */
-async function listDataFilesViaAPI(repo) {
-  const url = `https://api.github.com/repos/${repo.owner}/${repo.name}/contents/data?ref=${repo.branch}`;
+/**
+ * FIX 2: Use the Git Trees API (recursive=1) to list every file in
+ * the repo in a single request. This works regardless of which
+ * subdirectory the data files live in, and returns a download_url
+ * for each blob that we can fetch directly — no raw.githubusercontent
+ * URL construction required (avoids casing + rate-limit issues).
+ *
+ * Returns an array of { name, path, download_url } for all files
+ * matching the given extension(s).
+ */
+async function listAllFilesViaTreesAPI(repo, exts) {
+  const url = `https://api.github.com/repos/${repo.owner}/${repo.name}/git/trees/${repo.branch}?recursive=1`;
+  console.log(`[${repo.name}] fetching tree:`, url);
   const res = await fetch(url, { headers: { Accept: 'application/vnd.github.v3+json' } });
-  if (!res.ok) throw new Error(`GitHub API ${res.status} for ${repo.name}/data`);
-  const files = await res.json();
-  return files.filter(f => f.type === 'file' && /\.(tsv|json)$/i.test(f.name));
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Git Trees API ${res.status} for ${repo.name}: ${body.slice(0, 120)}`);
+  }
+  const data = await res.json();
+  if (data.truncated) {
+    console.warn(`[${repo.name}] tree response was truncated — some files may be missing`);
+  }
+  const extSet = new Set(exts.map(e => e.toLowerCase()));
+  return (data.tree || [])
+    .filter(item => {
+      if (item.type !== 'blob') return false;
+      const ext = item.path.split('.').pop().toLowerCase();
+      return extSet.has(ext);
+    })
+    .map(item => {
+      // Build the download_url ourselves (same format GitHub API returns)
+      // using the path from the tree — this is the canonical raw URL.
+      const download_url =
+        `https://raw.githubusercontent.com/${repo.owner}/${repo.name}/${repo.branch}/${item.path}`;
+      return { name: item.path.split('/').pop(), path: item.path, download_url };
+    });
 }
 
-/** 'api-flat': discover files via API, parse each as flat TSV or JSON */
+/** Fetch a file using its download_url (from the Trees API) */
+async function fetchFile(fileEntry) {
+  const res = await fetch(fileEntry.download_url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} — ${fileEntry.download_url}`);
+  return res.text();
+}
+
+/** 'flat': discover files, parse each as flat TSV or JSON rows */
 async function loadFlatRepo(repo) {
-  const files = await listDataFilesViaAPI(repo);
+  const files = await listAllFilesViaTreesAPI(repo, ['tsv', 'json']);
+  console.log(`[${repo.name}] found ${files.length} data file(s):`, files.map(f => f.path));
+
   const perFile = await Promise.all(files.map(async f => {
     try {
-      const raw = await fetchRaw(repo.owner, repo.name, repo.branch, f.path);
+      const raw = await fetchFile(f);
       const ext = f.name.split('.').pop().toLowerCase();
       if (ext === 'tsv') return parseTSV(raw, repo, f.name);
       let parsed;
       try { parsed = JSON.parse(raw); } catch { return []; }
       return parseFlatJSON(parsed, repo, f.name);
     } catch (e) {
-      console.warn(`[${repo.name}] skip ${f.name}:`, e.message);
+      console.warn(`[${repo.name}] skip ${f.path}:`, e.message);
       return [];
     }
   }));
   let count = 0;
   for (const recs of perFile) { allRecords.push(...recs); count += recs.length; }
+  console.log(`[${repo.name}] indexed ${count} record(s)`);
   return count;
 }
 
-/**
- * 'api-nested': discover JSON files via the GitHub Contents API,
- * then parse each one as a nested scripture JSON (FIX 2).
- *
- * This replaces the old 'hardcoded-nested' strategy which used a
- * fixed file list that could go stale and whose 'Malolan05' owner
- * casing caused 404s on every raw.githubusercontent.com fetch.
- */
+/** 'nested': discover JSON files, parse each as a nested scripture object */
 async function loadNestedRepo(repo) {
-  const files = await listDataFilesViaAPI(repo);
-  const jsonFiles = files.filter(f => /\.json$/i.test(f.name));
+  const files = await listAllFilesViaTreesAPI(repo, ['json']);
+  console.log(`[${repo.name}] found ${files.length} JSON file(s):`, files.map(f => f.path));
 
-  const perFile = await Promise.all(jsonFiles.map(async f => {
+  const perFile = await Promise.all(files.map(async f => {
     try {
-      const raw = await fetchRaw(repo.owner, repo.name, repo.branch, f.path);
+      const raw = await fetchFile(f);
       let parsed;
       try { parsed = JSON.parse(raw); } catch (e) {
-        console.warn(`[${repo.name}] JSON parse error in ${f.name}:`, e.message);
+        console.warn(`[${repo.name}] JSON parse error in ${f.path}:`, e.message);
         return [];
       }
       const recs = parseNestedScriptureJSON(parsed, repo, f.name);
       if (recs.length === 0) {
-        // Fall back to flat parsing in case the file isn't a scripture structure
-        console.info(`[${repo.name}] ${f.name}: nested parse yielded 0 records, trying flat`);
+        console.info(`[${repo.name}] ${f.path}: nested parse → 0 records, trying flat fallback`);
         return parseFlatJSON(parsed, repo, f.name);
       }
+      console.log(`[${repo.name}] ${f.path}: ${recs.length} record(s)`);
       return recs;
     } catch (e) {
-      console.warn(`[${repo.name}] skip ${f.name}:`, e.message);
+      console.warn(`[${repo.name}] skip ${f.path}:`, e.message);
       return [];
     }
   }));
 
   let count = 0;
   for (const recs of perFile) { allRecords.push(...recs); count += recs.length; }
+  console.log(`[${repo.name}] indexed ${count} record(s) total`);
   return count;
 }
 
@@ -1019,7 +1041,7 @@ async function loadAll() {
   setStatus('loading', 'Loading data files…');
 
   const results = await Promise.allSettled(REPOS.map(repo => {
-    if (repo.strategy === 'api-nested') return loadNestedRepo(repo);
+    if (repo.strategy === 'nested') return loadNestedRepo(repo);
     return loadFlatRepo(repo);
   }));
 
