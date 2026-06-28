@@ -580,8 +580,33 @@
   }
 
   // ── JSON parser ─────────────────────────────────────────────────────────────
-  // Shape: { metadata, content: { title, sections: [{ title, number, verses: [{ verse_number, original_text, commentaries:[{author,commentary}] }] }] } }
+  // Tries the documented shape first:
+  //   { metadata, content: { title, sections: [{ title, number, verses: [{ verse_number, original_text, commentaries:[{author,commentary}] }] }] } }
+  // This was the assumption that worked for the format we expected — but Agama
+  // and srivaishnavam were coming back with ZERO records despite loading fine
+  // (no fetch error, no JSON.parse error — the shape just didn't line up, so
+  // every `for` loop below silently iterated over nothing). That's the actual
+  // bug: a schema mismatch that failed silently rather than a broken URL.
+  //
+  // Fix: if the strict parser finds nothing, fall back to a schema-agnostic
+  // walker that finds verse/commentary-like text wherever it lives in the
+  // tree, regardless of exact key names or nesting depth. This keeps the fast
+  // path for files that DO match the documented shape, while no longer going
+  // silently blank for files that don't.
   function parseJSON(data, repo, file) {
+    let records = parseJSONStrict(data, repo, file);
+    if (records.length === 0) {
+      records = parseJSONGeneric(data, repo, file);
+      if (records.length > 0) {
+        console.log(`[${repo.name}] ${file.path} — documented schema didn't match (0 records); used generic fallback parser instead (${records.length} records).`);
+      } else {
+        console.warn(`[${repo.name}] ${file.path} — neither the strict nor the generic parser found any text. Top-level keys:`, Object.keys(data || {}));
+      }
+    }
+    return records;
+  }
+
+  function parseJSONStrict(data, repo, file) {
     const records = [];
 
     const meta        = data.metadata || {};
@@ -620,6 +645,73 @@
       }
     }
 
+    return records;
+  }
+
+  // ── Generic recursive JSON walker (fallback) ────────────────────────────────
+  // Walks the *entire* JSON tree regardless of how it's organized. Any object
+  // that carries meaningful text (a string field longer than a few characters)
+  // becomes one searchable record. As it descends, it tracks a "breadcrumb" of
+  // title-like fields (title/name/scripture_name/etc.) so results still show
+  // useful context (e.g. "Aniruddha Samhita › Chapter 3 › #12"), even though
+  // we never had to know the exact key names in advance.
+  function walkJSONGeneric(node, breadcrumb, repo, file, records, depth) {
+    if (node == null || depth > 25) return;
+
+    if (Array.isArray(node)) {
+      for (const item of node) walkJSONGeneric(item, breadcrumb, repo, file, records, depth + 1);
+      return;
+    }
+    if (typeof node !== 'object') return;
+
+    const stringFields = [];
+    let titleLike  = null;
+    let numberLike = null;
+
+    for (const [key, val] of Object.entries(node)) {
+      if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (!trimmed) continue;
+        stringFields.push(trimmed);
+        if (titleLike === null && /title|name/i.test(key) && trimmed.length < 120) {
+          titleLike = trimmed;
+        }
+      } else if (typeof val === 'number' && numberLike === null && /number|num\b|index|^id$/i.test(key)) {
+        numberLike = val;
+      }
+    }
+
+    // Any object carrying real text (not just a number/id) becomes a record.
+    const textyFields = stringFields.filter(s => s.length > 3);
+    if (textyFields.length > 0) {
+      const display = breadcrumb.filter(Boolean).slice(-3).map(s => s.substring(0, 50));
+      if (numberLike !== null) display.push(`#${numberLike}`);
+
+      records.push({
+        repo:      repo.name,
+        repoLabel: repo.label,
+        repoUrl:   repo.baseUrl,
+        file:      file.path.split('/').pop(),
+        section:   breadcrumb.join(' › '),
+        verseNum:  numberLike !== null ? String(numberLike) : '',
+        text:      textyFields.join('\n'),
+        display,
+      });
+    }
+
+    const nextBreadcrumb = titleLike ? [...breadcrumb, titleLike] : breadcrumb;
+    for (const val of Object.values(node)) {
+      if (Array.isArray(val) || (val && typeof val === 'object')) {
+        walkJSONGeneric(val, nextBreadcrumb, repo, file, records, depth + 1);
+      }
+    }
+  }
+
+  function parseJSONGeneric(data, repo, file) {
+    const records = [];
+    const scriptName = (data && data.metadata && data.metadata.scripture_name)
+      || file.path.split('/').pop().replace('.json', '');
+    walkJSONGeneric(data, [scriptName], repo, file, records, 0);
     return records;
   }
 
