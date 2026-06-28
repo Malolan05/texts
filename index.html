@@ -28,9 +28,7 @@
       --lora: 'Lora', Georgia, serif;
       --mono: 'JetBrains Mono', monospace;
     }
-    html {
-      scroll-behavior: smooth;
-    }
+    html { scroll-behavior: smooth; }
     body {
       background: var(--parchment);
       color: var(--ink);
@@ -46,12 +44,7 @@
       justify-content: flex-end;
       padding: 0 48px 64px;
     }
-    .hero-rule {
-      width: 64px;
-      height: 2px;
-      background: var(--saffron);
-      margin-bottom: 28px;
-    }
+    .hero-rule { width: 64px; height: 2px; background: var(--saffron); margin-bottom: 28px; }
     .hero-eyebrow {
       font-family: var(--mono);
       font-size: 11px;
@@ -69,9 +62,7 @@
       color: var(--parchment);
       margin-bottom: 32px;
     }
-    .hero-name .accent {
-      color: var(--saffron);
-    }
+    .hero-name .accent { color: var(--saffron); }
     .hero-tagline {
       font-family: var(--lora);
       font-size: clamp(1rem, 2.2vw, 1.2rem);
@@ -80,17 +71,13 @@
       max-width: 560px;
       margin-bottom: 36px;
     }
-    .hero-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
+    .hero-pills { display: flex; flex-wrap: wrap; gap: 12px; }
     .hero-pill {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 3px;
       padding: 8px 16px;
       font-family: var(--mono);
@@ -98,18 +85,8 @@
       color: var(--star);
       letter-spacing: 0.04em;
     }
-    .hero-pill .dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--saffron);
-      flex-shrink: 0;
-    }
-    .body-wrap {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 80px 40px 120px;
-    }
+    .hero-pill .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--saffron); flex-shrink: 0; }
+    .body-wrap { max-width: 900px; margin: 0 auto; padding: 80px 40px 120px; }
     .sec-label {
       display: flex;
       align-items: center;
@@ -121,36 +98,12 @@
       color: var(--saffron);
       margin-bottom: 32px;
     }
-    .sec-label::before {
-      content: '';
-      width: 28px;
-      height: 1.5px;
-      background: var(--saffron);
-      flex-shrink: 0;
-    }
-    .sec-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--parchment-dim);
-    }
-    section {
-      margin-bottom: 72px;
-    }
-    .lede {
-      font-size: 1.05rem;
-      color: var(--ink-soft);
-      max-width: 680px;
-    }
-    .lede strong {
-      color: var(--ink);
-      font-weight: 600;
-    }
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 14px;
-    }
+    .sec-label::before { content: ''; width: 28px; height: 1.5px; background: var(--saffron); flex-shrink: 0; }
+    .sec-label::after  { content: ''; flex: 1; height: 1px; background: var(--parchment-dim); }
+    section { margin-bottom: 72px; }
+    .lede { font-size: 1.05rem; color: var(--ink-soft); max-width: 680px; }
+    .lede strong { color: var(--ink); font-weight: 600; }
+    .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
     .project-card {
       background: var(--night);
       border-radius: 6px;
@@ -161,46 +114,13 @@
       flex-direction: column;
       gap: 8px;
     }
-    .project-card:hover {
-      outline: 1.5px solid var(--saffron);
-    }
-    .project-icon {
-      font-size: 1.4rem;
-      line-height: 1;
-    }
-    .project-name {
-      font-family: var(--cinzel);
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--parchment);
-    }
-    .project-tag {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--sage-lt);
-      opacity: 0.75;
-    }
-    .project-desc {
-      font-family: var(--lora);
-      font-size: 0.82rem;
-      line-height: 1.55;
-      color: rgba(201, 209, 217, 0.78);
-      flex: 1;
-    }
-    .project-url {
-      font-family: var(--mono);
-      font-size: 0.68rem;
-      color: var(--saffron);
-      opacity: 0.85;
-      margin-top: 4px;
-    }
-    .lang-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-      gap: 10px;
-    }
+    .project-card:hover { outline: 1.5px solid var(--saffron); }
+    .project-icon { font-size: 1.4rem; line-height: 1; }
+    .project-name { font-family: var(--cinzel); font-size: 1.05rem; font-weight: 600; color: var(--parchment); }
+    .project-tag { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage-lt); opacity: 0.75; }
+    .project-desc { font-family: var(--lora); font-size: 0.82rem; line-height: 1.55; color: rgba(201,209,217,0.78); flex: 1; }
+    .project-url { font-family: var(--mono); font-size: 0.68rem; color: var(--saffron); opacity: 0.85; margin-top: 4px; }
+    .lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
     .lang-card {
       background: white;
       border: 1px solid var(--parchment-dim);
@@ -211,30 +131,10 @@
       align-items: baseline;
       gap: 4px 8px;
     }
-    .lang-card:hover {
-      border-color: var(--sage);
-      background: var(--sage-lt);
-    }
-    .lang-name {
-      font-family: var(--cinzel);
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: var(--ink);
-    }
-    .lang-level {
-      font-family: var(--lora);
-      font-size: 0.75rem;
-      font-style: italic;
-      color: var(--ink-soft);
-      background: var(--parchment);
-      padding: 0 6px;
-      border-radius: 2px;
-    }
-    .contact-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
+    .lang-card:hover { border-color: var(--sage); background: var(--sage-lt); }
+    .lang-name { font-family: var(--cinzel); font-weight: 600; font-size: 0.95rem; color: var(--ink); }
+    .lang-level { font-family: var(--lora); font-size: 0.75rem; font-style: italic; color: var(--ink-soft); background: var(--parchment); padding: 0 6px; border-radius: 2px; }
+    .contact-grid { display: flex; flex-wrap: wrap; gap: 12px; }
     .contact-link {
       display: inline-flex;
       align-items: center;
@@ -248,14 +148,8 @@
       text-decoration: none;
       background: white;
     }
-    .contact-link:hover {
-      border-color: var(--night);
-      color: var(--night);
-      background: var(--parchment-dim);
-    }
-    .contact-link svg {
-      flex-shrink: 0;
-    }
+    .contact-link:hover { border-color: var(--night); color: var(--night); background: var(--parchment-dim); }
+    .contact-link svg { flex-shrink: 0; }
     footer {
       text-align: center;
       font-family: var(--mono);
@@ -267,10 +161,7 @@
     }
 
     /* --- search --- */
-    .search-wrapper {
-      position: relative;
-      margin-bottom: 20px;
-    }
+    .search-wrapper { position: relative; margin-bottom: 20px; }
     .search-input {
       width: 100%;
       padding: 14px 52px 14px 18px;
@@ -283,24 +174,9 @@
       outline: none;
       transition: border-color 0.15s;
     }
-    .search-input::placeholder {
-      color: var(--ink-soft);
-      font-style: italic;
-      opacity: 0.7;
-    }
-    .search-input:focus {
-      border-color: var(--saffron);
-      box-shadow: 0 0 0 3px rgba(232, 160, 32, 0.12);
-    }
-    .search-icon {
-      position: absolute;
-      right: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--ink-soft);
-      pointer-events: none;
-      opacity: 0.5;
-    }
+    .search-input::placeholder { color: var(--ink-soft); font-style: italic; opacity: 0.7; }
+    .search-input:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(232,160,32,0.12); }
+    .search-icon { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); pointer-events: none; opacity: 0.5; }
     .search-status {
       font-family: var(--mono);
       font-size: 10.5px;
@@ -311,39 +187,12 @@
       align-items: center;
       gap: 10px;
     }
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--parchment-dim);
-      flex-shrink: 0;
-      transition: background 0.2s;
-    }
-    .status-dot.loading {
-      background: var(--saffron);
-      animation: pulse 1s infinite;
-    }
-    .status-dot.ready {
-      background: var(--sage);
-    }
-    .status-dot.error {
-      background: #c0392b;
-    }
-    @keyframes pulse {
-      0%,
-      100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.4;
-      }
-    }
-    .search-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 22px;
-    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--parchment-dim); flex-shrink: 0; transition: background 0.2s; }
+    .status-dot.loading { background: var(--saffron); animation: pulse 1s infinite; }
+    .status-dot.ready  { background: var(--sage); }
+    .status-dot.error  { background: #c0392b; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .search-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
     .filter-btn {
       display: inline-flex;
       align-items: center;
@@ -361,20 +210,9 @@
       transition: border-color 0.12s, background 0.12s;
       user-select: none;
     }
-    .filter-btn.active {
-      border-color: var(--saffron);
-      background: rgba(232, 160, 32, 0.08);
-      color: var(--ink);
-    }
-    .filter-btn .count {
-      font-size: 9px;
-      opacity: 0.6;
-    }
-    .results-container {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    .filter-btn.active { border-color: var(--saffron); background: rgba(232,160,32,0.08); color: var(--ink); }
+    .filter-btn .count { font-size: 9px; opacity: 0.6; }
+    .results-container { display: flex; flex-direction: column; gap: 10px; }
     .result-card {
       background: white;
       border: 1px solid var(--parchment-dim);
@@ -386,164 +224,57 @@
       display: block;
       transition: border-color 0.12s;
     }
-    .result-card:hover {
-      border-color: var(--saffron);
-    }
-    .result-header {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-      margin-bottom: 4px;
-    }
-    .result-repo {
-      font-family: var(--mono);
-      font-size: 9.5px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--saffron);
-      flex-shrink: 0;
-    }
-    .result-file {
-      font-family: var(--mono);
-      font-size: 9.5px;
-      color: var(--ink-soft);
-      opacity: 0.7;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .result-body {
-      font-family: var(--lora);
-      font-size: 0.875rem;
-      line-height: 1.6;
-      color: var(--ink);
-    }
-    .result-body mark {
-      background: rgba(232, 160, 32, 0.3);
-      color: var(--ink);
-      border-radius: 2px;
-      padding: 0 2px;
-    }
-    .result-meta {
-      margin-top: 8px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .result-meta-pill {
-      font-family: var(--mono);
-      font-size: 9px;
-      letter-spacing: 0.05em;
-      padding: 2px 7px;
-      background: var(--parchment);
-      border-radius: 2px;
-      color: var(--ink-soft);
-    }
-    .no-results {
-      font-family: var(--lora);
-      font-style: italic;
-      color: var(--ink-soft);
-      text-align: center;
-      padding: 36px 0;
-      font-size: 0.95rem;
-    }
-    .search-spinner {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 32px 0;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--ink-soft);
-    }
-    .search-spinner::before {
-      content: '';
-      width: 16px;
-      height: 16px;
-      border: 2px solid var(--parchment-dim);
-      border-top-color: var(--saffron);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-    .results-count {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--ink-soft);
-      margin-bottom: 14px;
-    }
-    .results-count strong {
-      color: var(--ink);
-    }
+    .result-card:hover { border-color: var(--saffron); }
+    .result-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+    .result-repo { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--saffron); flex-shrink: 0; }
+    .result-file { font-family: var(--mono); font-size: 9.5px; color: var(--ink-soft); opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .result-body { font-family: var(--lora); font-size: 0.875rem; line-height: 1.6; color: var(--ink); }
+    .result-body mark { background: rgba(232,160,32,0.3); color: var(--ink); border-radius: 2px; padding: 0 2px; }
+    .result-meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .result-meta-pill { font-family: var(--mono); font-size: 9px; letter-spacing: 0.05em; padding: 2px 7px; background: var(--parchment); border-radius: 2px; color: var(--ink-soft); }
+    .no-results { font-family: var(--lora); font-style: italic; color: var(--ink-soft); text-align: center; padding: 36px 0; font-size: 0.95rem; }
+    .search-spinner { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 32px 0; font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
+    .search-spinner::before { content: ''; width: 16px; height: 16px; border: 2px solid var(--parchment-dim); border-top-color: var(--saffron); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .results-count { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-bottom: 14px; }
+    .results-count strong { color: var(--ink); }
+    .search-hint { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); opacity: 0.6; margin-top: 6px; display: flex; gap: 16px; flex-wrap: wrap; }
+    .search-hint kbd { background: var(--parchment-dim); padding: 0 6px; border-radius: 2px; font-family: var(--mono); font-size: 9px; }
     @media (max-width: 640px) {
-      .hero {
-        padding: 0 24px 48px;
-      }
-      .body-wrap {
-        padding: 56px 24px 80px;
-      }
+      .hero { padding: 0 24px 48px; }
+      .body-wrap { padding: 56px 24px 80px; }
     }
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        transition: none !important;
-        animation: none !important;
-      }
-    }
-
-    .search-hint {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--ink-soft);
-      opacity: 0.6;
-      margin-top: 6px;
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .search-hint kbd {
-      background: var(--parchment-dim);
-      padding: 0 6px;
-      border-radius: 2px;
-      font-family: var(--mono);
-      font-size: 9px;
-    }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition: none !important; animation: none !important; } }
   </style>
 </head>
 <body>
 
-  <header class="hero" role="banner">
-    <div class="hero-rule"></div>
-    <p class="hero-eyebrow">A Living Repository</p>
-    <h1 class="hero-name">
-      Mālola<br />
-      <span class="accent">Digitized Text</span> Archive
-    </h1>
-    <p class="hero-tagline">
-      Manuscripts, melodies, and scripture — recovered line by line
-      through OCR, correction, and careful re-typesetting on the web.
-    </p>
-    <div class="hero-pills">
-      <span class="hero-pill"><span class="dot"></span>Sanskrit · Tamil · Telugu</span>
-      <span class="hero-pill"><span class="dot"></span>OCR + Manual Correction</span>
-      <span class="hero-pill"><span class="dot"></span>3 Open Collections</span>
-    </div>
-  </header>
+<header class="hero" role="banner">
+  <div class="hero-rule"></div>
+  <p class="hero-eyebrow">A Living Repository</p>
+  <h1 class="hero-name">
+    Mālola<br />
+    <span class="accent">Digitized Text</span> Archive
+  </h1>
+  <p class="hero-tagline">
+    Manuscripts, melodies, and scripture — recovered line by line
+    through OCR, correction, and careful re-typesetting on the web.
+  </p>
+  <div class="hero-pills">
+    <span class="hero-pill"><span class="dot"></span>Sanskrit · Tamil · Telugu</span>
+    <span class="hero-pill"><span class="dot"></span>OCR + Manual Correction</span>
+    <span class="hero-pill"><span class="dot"></span>3 Open Collections</span>
+  </div>
+</header>
 
-  <main class="body-wrap">
+<main class="body-wrap">
 
-    <!-- SEARCH -->
-    <section aria-labelledby="search-label">
-      <p class="sec-label" id="search-label">Search the Archive</p>
+  <!-- SEARCH -->
+  <section aria-labelledby="search-label">
+    <p class="sec-label" id="search-label">Search the Archive</p>
 
-      <div class="search-wrapper">
-        <input
+    <div class="search-wrapper">
+      <input
         type="search"
         id="search-input"
         class="search-input"
@@ -551,10 +282,10 @@
         autocomplete="off"
         spellcheck="false"
         aria-label="Search archive texts"
-        />
-        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+      />
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
       </svg>
     </div>
 
@@ -646,16 +377,14 @@
       </a>
       <a class="contact-link" href="mailto:tsmalolan@gmail.com">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <rect x="2" y="4" width="20" height="16" rx="2"/>
-          <path d="M2 7l10 7 10-7"/>
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
         </svg>
         tsmalolan@gmail.com
       </a>
       <a class="contact-link" href="mailto:tsunderamalolan@gmail.com">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <rect x="2" y="4" width="20" height="16" rx="2"/>
-          <path d="M2 7l10 7 10-7"/>
-        </svg>a
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
+        </svg>
         tsunderamalolan@gmail.com
       </a>
     </div>
@@ -668,65 +397,92 @@
 </footer>
 
 <script>
-  /* =============================================================
-     MĀLOLA ARCHIVE — Fixed data loading for all repos
-     - Properly fetches from /data/ folder in each repo
-     - Handles TSV for sAmam, JSON for Agama and srivaishnavam
-     - Robust error handling with fallback file lists
-     ============================================================= */
+/* =============================================================
+   MĀLOLA ARCHIVE — Search engine (rewritten June 2026)
 
-  // ── repo config ──
-  const REPOS = [{
-    name: 'sAmam',
-    owner: 'malolan05',
-    branch: 'content',
-    label: 'sAmam',
-    baseUrl: 'https://malolan05.github.io/sAmam/index.html',
-    urlPattern: '?file={file}',
-    strategy: 'mixed',
-    dataPath: 'data/'
-  }, {
-    name: 'Agama',
-    owner: 'malolan05',
-    branch: 'main',
-    label: 'Āgama',
-    baseUrl: 'https://malolan05.github.io/Agama',
-    urlPattern: '?file={file}',
-    strategy: 'json',
-    dataPath: 'data/'
-  }, {
-    name: 'srivaishnavam',
-    owner: 'malolan05',
-    branch: 'main',
-    label: 'Śrīvaiṣṇava',
-    baseUrl: 'https://malolan05.github.io/srivaishnavam',
-    urlPattern: '?file={file}',
-    strategy: 'json',
-    dataPath: 'data/'
-  }];
+   Data sources (confirmed by inspecting each repo):
 
-  // ── state ──
-  let allRecords = [];
+   sAmam  — branch: master
+     data/AgnEyam-text.tsv   (Āgneya, ~293 rows)
+     data/Aindram-text.tsv   (Āindra, ~985 rows)
+     TSV columns: Ref No | Prapāthaka-Ard | Text | Ṛṣi | Chandas | Dēvata | padapāṭha--rik | Notes
+
+   Agama  — branch: main
+     data/agama-pramanyam.json
+     data/aniruddha-samhita.json
+     data/lakshmi-tantram.json
+     data/paramapurusha-samhita.json
+     data/paushkara-samhita.json
+     data/sriprashna-samhita.json
+     data/sri-vishvaksena-samhita.json
+     data/vishnu-samhita.json
+     data/sri-parameshvara-samhita.json
+     JSON shape: { metadata, content: { title, sections: [{ title, number, verses: [{ verse_number, original_text, commentaries }] }] } }
+
+   srivaishnavam — branch: main
+     data/gitarthasangraha.json
+     JSON shape: same as Agama
+   ============================================================= */
+
+  // ── Repo manifest ──────────────────────────────────────────────────────────
+  const RAW = 'https://raw.githubusercontent.com/Malolan05';
+
+  const REPOS = [
+    {
+      name:    'sAmam',
+      label:   'sAmam',
+      branch:  'master',
+      baseUrl: 'https://malolan05.github.io/sAmam/index.html',
+      files: [
+        { path: 'data/AgnEyam-text.tsv', type: 'tsv', label: 'Āgneya' },
+        { path: 'data/Aindram-text.tsv',  type: 'tsv', label: 'Āindra'  },
+      ],
+    },
+    {
+      name:    'Agama',
+      label:   'Āgama',
+      branch:  'main',
+      baseUrl: 'https://malolan05.github.io/Agama',
+      files: [
+        { path: 'data/agama-pramanyam.json',        type: 'json' },
+        { path: 'data/aniruddha-samhita.json',       type: 'json' },
+        { path: 'data/lakshmi-tantram.json',          type: 'json' },
+        { path: 'data/paramapurusha-samhita.json',    type: 'json' },
+        { path: 'data/paushkara-samhita.json',        type: 'json' },
+        { path: 'data/sriprashna-samhita.json',       type: 'json' },
+        { path: 'data/sri-vishvaksena-samhita.json',  type: 'json' },
+        { path: 'data/vishnu-samhita.json',           type: 'json' },
+        { path: 'data/sri-parameshvara-samhita.json', type: 'json' },
+      ],
+    },
+    {
+      name:    'srivaishnavam',
+      label:   'Śrīvaiṣṇava',
+      branch:  'main',
+      baseUrl: 'https://malolan05.github.io/srivaishnavam',
+      files: [
+        { path: 'data/gitarthasangraha.json', type: 'json' },
+      ],
+    },
+  ];
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let allRecords   = [];
   let activeFilter = 'all';
   let searchDebounce = null;
   const SNIPPET_WINDOW = 160;
 
-  // ── DOM refs ──
-  const searchInput = document.getElementById('search-input');
-  const statusDot = document.getElementById('status-dot');
-  const statusText = document.getElementById('status-text');
-  const resultsEl = document.getElementById('results-container');
-  const resultsCount = document.getElementById('results-count');
-  const filterRow = document.getElementById('filter-row');
+  // ── DOM ────────────────────────────────────────────────────────────────────
+  const searchInput   = document.getElementById('search-input');
+  const statusDot     = document.getElementById('status-dot');
+  const statusText    = document.getElementById('status-text');
+  const resultsEl     = document.getElementById('results-container');
+  const resultsCount  = document.getElementById('results-count');
+  const filterRow     = document.getElementById('filter-row');
 
-  // ── helpers ──
-  function escapeHTML(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-
-  function escapeRe(s) {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function esc(s)   { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 
   function setStatus(state, msg) {
     statusDot.className = 'status-dot ' + state;
@@ -734,389 +490,201 @@
   }
 
   function updateFilterCount(repoName) {
-    const n = allRecords.filter(r => r.repo === repoName).length;
+    const n  = allRecords.filter(r => r.repo === repoName).length;
     const el = filterRow.querySelector(`[data-repo="${repoName}"] .count`);
     if (el) el.textContent = n > 0 ? `(${n.toLocaleString()})` : '';
   }
 
-  function buildFileUrl(repo, filePath) {
-    const filename = filePath.split('/').pop();
-    const pattern = repo.urlPattern || '?file={file}';
-    return repo.baseUrl + pattern.replace('{file}', encodeURIComponent(filename));
+  function rawUrl(repo, filePath) {
+    return `${RAW}/${repo.name}/${repo.branch}/${filePath}`;
   }
 
-  // ── text extraction from JSON (deep) ──
-  function extractAllText(obj, maxDepth = 12, depth = 0) {
-    if (depth > maxDepth) return '';
-    if (typeof obj === 'string') return obj;
-    if (typeof obj === 'number') return String(obj);
-    if (typeof obj === 'boolean') return '';
-    if (!obj || typeof obj !== 'object') return '';
-
-    if (Array.isArray(obj)) {
-      return obj.map(item => extractAllText(item, maxDepth, depth + 1)).filter(Boolean).join(' ');
-    }
-
-    // priority text fields
-    const priority = ['text', 'original', 'sanskrit', 'devanagari', 'verse', 'sloka',
-      'content', 'translation', 'meaning', 'english', 'artha',
-      'transliteration', 'iast', 'roman', 'commentary', 'bhasya',
-      'description', 'notes', 'explanation', 'summary', 'body', 'verse_text'
-    ];
-    const parts = [];
-    for (const f of priority) {
-      if (obj[f]) {
-        if (typeof obj[f] === 'string') parts.push(obj[f]);
-        else if (Array.isArray(obj[f])) {
-          const text = obj[f].map(item => {
-            if (typeof item === 'string') return item;
-            if (typeof item === 'object' && item !== null) return item.text || item.content || item.body || '';
-            return '';
-          }).filter(Boolean).join(' ');
-          if (text) parts.push(text);
-        }
-      }
-    }
-
-    // other string fields
-    const skip = new Set([...priority, 'id', 'index', 'num', 'number', 'verse_num', 'page',
-      'title', 'name', 'heading', 'chapter', 'section', 'type', 'category', 'tags', 'metadata', 'url', 'link'
-    ]);
-    for (const [key, val] of Object.entries(obj)) {
-      if (skip.has(key)) continue;
-      if (typeof val === 'string' && val.length > 2) parts.push(val);
-    }
-    return parts.join(' ');
-  }
-
-  // ── JSON parser for Agama / srivaishnavam ──
-  function parseJSON(data, repo, filename) {
-    const records = [];
-    const fileTitle = filename.replace(/\.json$/i, '').replace(/-/g, ' ');
-
-    function createRecord(text, meta = {}) {
-      if (!text || text.trim().length < 2) return null;
-      const display = [];
-      if (meta.bookTitle) display.push(meta.bookTitle.substring(0, 40));
-      if (meta.sectionTitle) display.push(meta.sectionTitle.substring(0, 40));
-      if (meta.verseNum) display.push(`Verse ${meta.verseNum}`);
-      if (meta.textPreview) display.push(meta.textPreview.substring(0, 60));
-      if (display.length === 0) {
-        display.push(fileTitle);
-        if (meta.sectionKey) display.push(meta.sectionKey);
-      }
-      return {
-        repo: repo.name,
-        repoLabel: repo.label,
-        repoUrl: buildFileUrl(repo, filename),
-        file: filename,
-        fileTitle: fileTitle,
-        section: meta.sectionTitle || meta.bookTitle || '',
-        verseNum: String(meta.verseNum || ''),
-        text: text.trim(),
-        display: display.filter(Boolean)
-      };
-    }
-
-    // Process different JSON structures
-    function processItem(obj, context = {}) {
-      if (!obj || typeof obj !== 'object') return;
-
-      // If it's an array, process each item
-      if (Array.isArray(obj)) {
-        obj.forEach((item, idx) => {
-          processItem(item, { ...context, index: idx });
-        });
-        return;
-      }
-
-      // Check if this is a verse/sloka object
-      const verseText = obj.verse || obj.verse_text || obj.text || obj.content || obj.sloka;
-      if (verseText && typeof verseText === 'string') {
-        const rec = createRecord(verseText, {
-          bookTitle: context.bookTitle || obj.book || obj.chapter || '',
-          sectionTitle: context.sectionTitle || obj.section || obj.chapter || '',
-          verseNum: obj.num || obj.number || obj.verse_num || context.index + 1 || '',
-          textPreview: verseText.substring(0, 100)
-        });
-        if (rec) records.push(rec);
-        return;
-      }
-
-      // If it has verses array
-      if (obj.verses && Array.isArray(obj.verses)) {
-        obj.verses.forEach((v, i) => {
-          if (typeof v === 'string') {
-            const rec = createRecord(v, {
-              bookTitle: obj.title || obj.name || context.bookTitle || '',
-              sectionTitle: obj.section || obj.chapter || '',
-              verseNum: i + 1,
-              textPreview: v.substring(0, 100)
-            });
-            if (rec) records.push(rec);
-          } else if (typeof v === 'object') {
-            processItem(v, {
-              bookTitle: obj.title || obj.name || context.bookTitle || '',
-              sectionTitle: obj.section || obj.chapter || '',
-            });
-          }
-        });
-        return;
-      }
-
-      // If it has slokas array
-      if (obj.slokas && Array.isArray(obj.slokas)) {
-        obj.slokas.forEach((s, i) => {
-          if (typeof s === 'string') {
-            const rec = createRecord(s, {
-              bookTitle: obj.title || obj.name || context.bookTitle || '',
-              sectionTitle: obj.section || obj.chapter || '',
-              verseNum: i + 1,
-              textPreview: s.substring(0, 100)
-            });
-            if (rec) records.push(rec);
-          } else if (typeof s === 'object') {
-            processItem(s, {
-              bookTitle: obj.title || obj.name || context.bookTitle || '',
-              sectionTitle: obj.section || obj.chapter || '',
-            });
-          }
-        });
-        return;
-      }
-
-      // If it has chapters
-      if (obj.chapters && typeof obj.chapters === 'object') {
-        for (const [chName, chData] of Object.entries(obj.chapters)) {
-          processItem(chData, {
-            bookTitle: obj.title || obj.name || context.bookTitle || '',
-            sectionTitle: chName,
-          });
-        }
-        return;
-      }
-
-      // If it has sections
-      if (obj.sections && Array.isArray(obj.sections)) {
-        obj.sections.forEach((section, idx) => {
-          processItem(section, {
-            bookTitle: obj.title || obj.name || context.bookTitle || '',
-            sectionTitle: obj.section_names ? obj.section_names[idx] : `Section ${idx + 1}`,
-          });
-        });
-        return;
-      }
-
-      // If it has books
-      if (obj.books && typeof obj.books === 'object') {
-        for (const [bookName, bookData] of Object.entries(obj.books)) {
-          processItem(bookData, { bookTitle: bookName });
-        }
-        return;
-      }
-
-      // If it has a title and other fields, try to extract text
-      if (obj.title && typeof obj.title === 'string') {
-        // Check if there's any other text content
-        const text = extractAllText(obj);
-        if (text.trim()) {
-          const rec = createRecord(text, {
-            bookTitle: obj.title,
-            sectionTitle: obj.subtitle || obj.section || '',
-            textPreview: text.substring(0, 100)
-          });
-          if (rec) records.push(rec);
-        }
-        return;
-      }
-
-      // Generic object - extract all text
-      const text = extractAllText(obj);
-      if (text.trim()) {
-        const rec = createRecord(text, {
-          bookTitle: context.bookTitle || context.sectionTitle || fileTitle,
-          sectionTitle: context.sectionTitle || obj.section || obj.chapter || '',
-          textPreview: text.substring(0, 100)
-        });
-        if (rec) records.push(rec);
-      }
-    }
-
-    // Start processing
-    processItem(data);
-
-    // If no records found, try one more time with shallow extraction
-    if (records.length === 0) {
-      const text = extractAllText(data);
-      if (text.trim()) {
-        const rec = createRecord(text, {
-          bookTitle: fileTitle,
-          textPreview: text.substring(0, 100)
-        });
-        if (rec) records.push(rec);
-      }
-    }
-
-    return records;
-  }
-
-  // ── TSV parser for sAmam ──
-  function parseTSV(raw, repo, filename) {
+  // ── TSV parser ─────────────────────────────────────────────────────────────
+  // Columns: Ref No | Prapāthaka-Ard | Text | Ṛṣi | Chandas | Dēvata | padapāṭha--rik | Notes
+  function parseTSV(raw, repo, file) {
     const lines = raw.trim().split('\n');
     if (lines.length < 2) return [];
-    const headers = lines[0].split('\t').map(h => h.trim().toLowerCase());
+
+    const headers = lines[0].split('\t').map(h => h.trim());
+    const idxOf   = name => headers.findIndex(h => h === name);
+
+    const iRef   = idxOf('Ref No');
+    const iPrap  = idxOf('Prapāthaka-Ard');
+    const iText  = idxOf('Text');
+    const iRsi   = headers.findIndex(h => h.startsWith('R'));  // Ṛṣi — Unicode prefix varies
+    const iChan  = idxOf('Chandas');
+    const iDev   = idxOf('Dēvata');
+    const iPada  = idxOf('padapāṭha--rik');
+    const iNotes = idxOf('Notes');
+
     const records = [];
+
     for (let i = 1; i < lines.length; i++) {
-      const cells = lines[i].split('\t');
-      if (cells.every(c => !c.trim())) continue;
-      const fields = {};
-      headers.forEach((h, idx) => { fields[h] = (cells[idx] || '').trim(); });
-      const textParts = [];
-      const displayParts = [];
-      const textFields = ['verse', 'original', 'translation', 'meaning', 'sanskrit', 'english', 'text', 'content', 'transliteration', 'section', 'description', 'notes', 'commentary', 'hymn', 'mantra', 'title'];
-      for (const f of textFields) {
-        if (fields[f]) textParts.push(fields[f]);
-      }
-      if (fields.section) displayParts.push(`Section: ${fields.section.substring(0, 40)}`);
-      if (fields.verse) displayParts.push(`Verse: ${fields.verse}`);
-      if (fields.title) displayParts.push(fields.title.substring(0, 60));
-      if (fields.original) displayParts.push(fields.original.substring(0, 60));
-      if (!textParts.length) {
-        Object.values(fields).forEach(v => { if (v && typeof v === 'string') textParts.push(v); });
-      }
-      if (!displayParts.length) {
-        const entries = Object.entries(fields).filter(([, v]) => v && typeof v === 'string').slice(0, 3);
-        for (const [k, v] of entries) displayParts.push(`${k}: ${v.substring(0, 50)}`);
-      }
-      const text = textParts.join(' ');
-      if (!text.trim()) continue;
+      // Respect quoted fields (TSV may have "…" cells)
+      const cells = splitTSVLine(lines[i]);
+      if (!cells.length) continue;
+
+      const refNo  = (cells[iRef]   ?? '').trim();
+      const prap   = (cells[iPrap]  ?? '').trim();
+      const text   = (cells[iText]  ?? '').trim();
+      const rsi    = (cells[iRsi]   ?? '').trim();
+      const chan   = (cells[iChan]  ?? '').trim();
+      const dev    = (cells[iDev]   ?? '').trim();
+      const pada   = (cells[iPada]  ?? '').trim();
+      const notes  = (cells[iNotes] ?? '').trim();
+
+      // Combine searchable fields; Text is the main one
+      const searchText = [text, pada, notes].filter(Boolean).join(' ');
+      if (!searchText.trim()) continue;
+
+      const display = [];
+      if (file.label) display.push(file.label);
+      if (refNo)  display.push(`Ref: ${refNo}`);
+      if (prap)   display.push(`Prapaṭhaka: ${prap}`);
+      if (rsi)    display.push(`Ṛṣi: ${rsi.substring(0,40)}`);
+      if (chan)   display.push(`Chandas: ${chan}`);
+      if (dev)    display.push(`Devatā: ${dev.substring(0,40)}`);
+
       records.push({
-        repo: repo.name,
+        repo:      repo.name,
         repoLabel: repo.label,
-        repoUrl: buildFileUrl(repo, filename),
-        file: filename,
-        fileTitle: filename.replace(/\.[^.]+$/, ''),
-        section: fields.section || fields.title || '',
-        verseNum: fields.verse || '',
-        text: text,
-        display: displayParts
+        repoUrl:   repo.baseUrl,
+        file:      file.path.split('/').pop(),
+        section:   prap,
+        verseNum:  refNo,
+        text:      searchText,
+        display,
       });
     }
     return records;
   }
 
-  // ── jsDelivr fetch helpers ──
-  const JSDLVR_LIST = (owner, repo, branch) =>
-    `https://data.jsdelivr.com/v1/package/gh/${owner}/${repo}@${branch}/flat`;
-  const JSDLVR_FILE = (owner, repo, branch, path) =>
-    `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path.startsWith('/') ? path.slice(1) : path}`;
-
-  async function listDataFiles(repo) {
-    const url = JSDLVR_LIST(repo.owner, repo.name, repo.branch);
-    console.log(`[${repo.name}] listing files from ${url}`);
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`jsDelivr list ${res.status}`);
-      const data = await res.json();
-      const files = (data.files || [])
-        .filter(f => {
-          const path = f.name;
-          // Look for files in data/ folder
-          if (!path.startsWith(repo.dataPath || 'data/')) return false;
-          const ext = path.split('.').pop().toLowerCase();
-          return ext === 'tsv' || ext === 'json';
-        })
-        .map(f => f.name);
-      console.log(`[${repo.name}] found ${files.length} data files:`, files);
-      return files;
-    } catch (e) {
-      console.warn(`[${repo.name}] list failed:`, e.message);
-      // Fallback to known files for each repo
-      const fallbacks = {
-        'sAmam': ['data/sAmam.tsv'],
-        'Agama': ['data/texts.json', 'data/agamas.json', 'data/index.json'],
-        'srivaishnavam': ['data/gitarthasangraha.json', 'data/vedas.json', 'data/upanishads.json', 'data/puranas.json', 'data/itihasas.json', 'data/agamas.json', 'data/stotras.json', 'data/texts.json', 'data/scriptures.json']
-      };
-      return fallbacks[repo.name] || [];
-    }
-  }
-
-  async function fetchFile(repo, filePath) {
-    const url = JSDLVR_FILE(repo.owner, repo.name, repo.branch, filePath);
-    console.log(`[${repo.name}] fetching ${url}`);
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`);
-    return res.text();
-  }
-
-  // ── load a repo ──
-  async function loadRepo(repo) {
-    console.log(`[${repo.name}] loading...`);
-    const files = await listDataFiles(repo);
-    if (!files.length) {
-      console.warn(`[${repo.name}] no data files found`);
-      return 0;
-    }
-    let count = 0;
-    for (const f of files) {
-      try {
-        const raw = await fetchFile(repo, f);
-        const ext = f.split('.').pop().toLowerCase();
-        const basename = f.split('/').pop();
-        let parsed = [];
-        if (ext === 'tsv') {
-          parsed = parseTSV(raw, repo, basename);
-          console.log(`[${repo.name}] ${basename} → ${parsed.length} TSV records`);
-        } else if (ext === 'json') {
-          let data;
-          try { data = JSON.parse(raw); } catch (e) {
-            console.warn(`[${repo.name}] JSON parse error ${basename}`, e);
-            continue;
-          }
-          parsed = parseJSON(data, repo, basename);
-          console.log(`[${repo.name}] ${basename} → ${parsed.length} JSON records`);
-        }
-        if (parsed.length) {
-          allRecords.push(...parsed);
-          count += parsed.length;
-        }
-      } catch (e) {
-        console.warn(`[${repo.name}] failed ${f}:`, e.message);
+  // Handle quoted TSV cells (e.g. "text with\nnewline")
+  function splitTSVLine(line) {
+    const cells = [];
+    let cur = '';
+    let inQ  = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+        else inQ = !inQ;
+      } else if (ch === '\t' && !inQ) {
+        cells.push(cur); cur = '';
+      } else {
+        cur += ch;
       }
     }
-    console.log(`[${repo.name}] total indexed: ${count}`);
-    return count;
+    cells.push(cur);
+    return cells;
   }
 
-  // ── load all ──
+  // ── JSON parser ─────────────────────────────────────────────────────────────
+  // Shape: { metadata, content: { title, sections: [{ title, number, verses: [{ verse_number, original_text, commentaries:[{author,commentary}] }] }] } }
+  function parseJSON(data, repo, file) {
+    const records = [];
+
+    const meta        = data.metadata || {};
+    const scriptName  = meta.scripture_name || file.path.split('/').pop().replace('.json','');
+    const content     = data.content || {};
+    const sections    = content.sections || [];
+
+    for (const section of sections) {
+      const sectionTitle = section.title || `Section ${section.number ?? ''}`;
+      const verses       = section.verses || [];
+
+      for (const verse of verses) {
+        const vNum        = verse.verse_number ?? '';
+        const originalTxt = (verse.original_text || '').trim();
+        // Collect commentary text
+        const commentaryParts = (verse.commentaries || []).map(c => c.commentary || '').filter(Boolean);
+        const fullText = [originalTxt, ...commentaryParts].join('\n');
+
+        if (!fullText.trim()) continue;
+
+        const display = [];
+        display.push(scriptName.substring(0, 50));
+        if (sectionTitle) display.push(sectionTitle.substring(0, 50));
+        if (vNum !== '') display.push(`Verse ${vNum}`);
+
+        records.push({
+          repo:      repo.name,
+          repoLabel: repo.label,
+          repoUrl:   repo.baseUrl,
+          file:      file.path.split('/').pop(),
+          section:   sectionTitle,
+          verseNum:  String(vNum),
+          text:      fullText,
+          display,
+        });
+      }
+    }
+
+    return records;
+  }
+
+  // ── Load a single file ─────────────────────────────────────────────────────
+  async function loadFile(repo, file) {
+    const url = rawUrl(repo, file.path);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} – ${url}`);
+    const raw = await res.text();
+
+    if (file.type === 'tsv') {
+      return parseTSV(raw, repo, file);
+    } else {
+      let data;
+      try { data = JSON.parse(raw); }
+      catch (e) { throw new Error(`JSON parse error in ${file.path}: ${e.message}`); }
+      return parseJSON(data, repo, file);
+    }
+  }
+
+  // ── Load all repos ─────────────────────────────────────────────────────────
   async function loadAll() {
     setStatus('loading', 'Loading data files…');
-    let loaded = 0;
-    let failed = 0;
+
+    let loadedRepos = 0;
+    let failedRepos = 0;
+
     for (const repo of REPOS) {
-      try {
-        const n = await loadRepo(repo);
-        if (n > 0) loaded++;
-        else failed++;
-        updateFilterCount(repo.name);
-      } catch (e) {
-        console.error(`[${repo.name}] load error:`, e);
-        failed++;
+      let repoCount = 0;
+      let repoFailed = 0;
+
+      for (const file of repo.files) {
+        try {
+          const recs = await loadFile(repo, file);
+          allRecords.push(...recs);
+          repoCount += recs.length;
+          console.log(`[${repo.name}] ${file.path} → ${recs.length} records`);
+        } catch (e) {
+          repoFailed++;
+          console.warn(`[${repo.name}] failed ${file.path}:`, e.message);
+        }
       }
+
+      if (repoCount > 0) loadedRepos++;
+      else failedRepos++;
+
+      updateFilterCount(repo.name);
     }
+
     const total = allRecords.length;
-    console.log(`total records indexed: ${total}`);
-    if (total === 0 && failed === REPOS.length) {
-      setStatus('error', 'Could not load any data. Check console.');
-    } else if (failed > 0) {
-      setStatus('ready', `${total.toLocaleString()} records loaded (${failed} collection${failed > 1 ? 's' : ''} unavailable)`);
+    console.log(`Total records indexed: ${total}`);
+
+    if (total === 0) {
+      setStatus('error', 'Could not load any data — check the console for details.');
+    } else if (failedRepos > 0) {
+      setStatus('ready', `${total.toLocaleString()} records loaded (${failedRepos} collection${failedRepos > 1 ? 's' : ''} partially unavailable)`);
     } else {
-      setStatus('ready', `${total.toLocaleString()} records indexed from ${loaded} collection${loaded > 1 ? 's' : ''}`);
+      setStatus('ready', `${total.toLocaleString()} records indexed across ${loadedRepos} collection${loadedRepos !== 1 ? 's' : ''}`);
     }
+
+    // Run any pending search
     if (searchInput.value.trim().length >= 2) runSearch();
   }
 
-  // ── search & render ──
+  // ── Search & render ────────────────────────────────────────────────────────
   function buildSnippet(text, terms) {
     if (!text) return '';
     const lc = text.toLowerCase();
@@ -1125,12 +693,12 @@
       const idx = lc.indexOf(t.toLowerCase());
       if (idx !== -1 && idx < first) first = idx;
     }
-    const start = Math.max(0, first - 40);
-    const end = Math.min(text.length, start + SNIPPET_WINDOW);
-    let snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
-    let html = escapeHTML(snippet);
+    const start   = Math.max(0, first - 40);
+    const end     = Math.min(text.length, start + SNIPPET_WINDOW);
+    let snippet   = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
+    let html      = esc(snippet);
     for (const t of terms) {
-      const re = new RegExp(`(${escapeRe(escapeHTML(t))})`, 'gi');
+      const re = new RegExp(`(${escRe(esc(t))})`, 'gi');
       html = html.replace(re, '<mark>$1</mark>');
     }
     return html;
@@ -1144,21 +712,15 @@
       return;
     }
 
-    // Parse quoted phrases
+    // Parse quoted phrases and bare words
     const termMatches = raw.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g);
-    if (!termMatches) {
-      resultsEl.innerHTML = '';
-      resultsCount.hidden = true;
-      return;
-    }
+    if (!termMatches) { resultsEl.innerHTML = ''; resultsCount.hidden = true; return; }
     const terms = termMatches.map(t => t.replace(/^['"]|['"]$/g, '').trim()).filter(Boolean);
-    if (!terms.length) {
-      resultsEl.innerHTML = '';
-      resultsCount.hidden = true;
-      return;
-    }
+    if (!terms.length) { resultsEl.innerHTML = ''; resultsCount.hidden = true; return; }
 
-    const pool = activeFilter === 'all' ? allRecords : allRecords.filter(r => r.repo === activeFilter);
+    const pool = activeFilter === 'all'
+      ? allRecords
+      : allRecords.filter(r => r.repo === activeFilter);
 
     const matches = pool.filter(r => {
       const lc = r.text.toLowerCase();
@@ -1166,41 +728,43 @@
     });
 
     resultsCount.hidden = false;
-    resultsCount.innerHTML = matches.length === 0 ?
-      `No results for <strong>${escapeHTML(raw)}</strong>` :
-      `<strong>${matches.length.toLocaleString()}</strong> result${matches.length !== 1 ? 's' : ''} for <strong>${escapeHTML(raw)}</strong>`;
+    resultsCount.innerHTML = matches.length === 0
+      ? `No results for <strong>${esc(raw)}</strong>`
+      : `<strong>${matches.length.toLocaleString()}</strong> result${matches.length !== 1 ? 's' : ''} for <strong>${esc(raw)}</strong>`;
 
     if (matches.length === 0) {
-      resultsEl.innerHTML = `<p class="no-results">No texts matched <em>${escapeHTML(raw)}</em> in ${activeFilter === 'all' ? 'any collection' : 'this collection'}.</p>`;
+      resultsEl.innerHTML = `<p class="no-results">No texts matched <em>${esc(raw)}</em> in ${activeFilter === 'all' ? 'any collection' : 'this collection'}.</p>`;
       return;
     }
 
     resultsEl.innerHTML = matches.map(r => {
       const snippet = buildSnippet(r.text, terms);
-      const pills = (r.display || []).filter(Boolean).map(d => `<span class="result-meta-pill">${escapeHTML(d)}</span>`).join('');
+      const pills   = (r.display || []).filter(Boolean)
+        .map(d => `<span class="result-meta-pill">${esc(d)}</span>`)
+        .join('');
       return `
-        <a class="result-card" href="${escapeHTML(r.repoUrl)}" target="_blank" rel="noopener">
+        <a class="result-card" href="${esc(r.repoUrl)}" target="_blank" rel="noopener">
           <div class="result-header">
-            <span class="result-repo">${escapeHTML(r.repoLabel)}</span>
-            <span class="result-file">${escapeHTML(r.file)}</span>
+            <span class="result-repo">${esc(r.repoLabel)}</span>
+            <span class="result-file">${esc(r.file)}</span>
           </div>
           <div class="result-body">${snippet}</div>
           ${pills ? `<div class="result-meta">${pills}</div>` : ''}
         </a>`;
     }).join('');
+
+
   }
 
-  // ── events ──
+  // ── Events ─────────────────────────────────────────────────────────────────
   searchInput.addEventListener('input', () => {
     clearTimeout(searchDebounce);
     searchDebounce = setTimeout(runSearch, 200);
   });
 
   searchInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault();
-      runSearch(); }
-    if (e.key === 'Escape') { searchInput.value = '';
-      runSearch(); }
+    if (e.key === 'Enter')  { e.preventDefault(); runSearch(); }
+    if (e.key === 'Escape') { searchInput.value = ''; runSearch(); }
   });
 
   filterRow.addEventListener('click', e => {
@@ -1212,7 +776,7 @@
     runSearch();
   });
 
-  // ── boot ──
+  // ── Boot ───────────────────────────────────────────────────────────────────
   loadAll();
 </script>
 </body>
