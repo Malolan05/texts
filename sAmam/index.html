@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Malolan • Samavedic Text Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <style>
+    :root {
+      --gold-50: #fffbeb;
+      --gold-100: #fef3c7;
+      --gold-200: #fde68a;
+      --gold-300: #fcd34d;
+      --gold-400: #fbbf24;
+      --gold-500: #f59e0b;
+      --gold-600: #d97706;
+      --gold-700: #b45309;
+      --gold-800: #92400e;
+      --gold-900: #78350f;
+      --earth-950: #1c0d00;
+      --parchment: #fdf6e3;
+      --parchment-dark: #f5e6c8;
+      --ink: #1a0800;
+      --ink-muted: #4a2f00;
+      --ink-faint: #7c5c2e;
+      --divider: rgba(180,83,9,0.2);
+      --sidebar-width: 260px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--parchment);
+      color: var(--ink);
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 20% 10%, rgba(251,191,36,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 90%, rgba(180,83,9,0.06) 0%, transparent 50%);
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--gold-400); border-radius: 4px; }
+
+    /* ---- NAV ---- */
+    nav {
+      position: sticky; top: 0; z-index: 40;
+      background: rgba(253,246,227,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--divider);
+      padding: 0 1.5rem;
+    }
+    .nav-inner {
+      max-width: 100%; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px; gap: 1rem;
+    }
+    .nav-brand {
+      font-family: 'Noto Serif', serif;
+      font-size: 1.4rem; font-weight: 600;
+      color: var(--gold-800);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 0.5rem;
+      letter-spacing: 0.01em;
+      flex-shrink: 0;
+    }
+    .nav-brand:hover { color: var(--gold-600); }
+    #nav-file-badge {
+      display: none;
+      background: var(--gold-100);
+      border: 1px solid var(--gold-300);
+      color: var(--gold-800);
+      font-size: 0.75rem; font-weight: 500;
+      padding: 0.25rem 0.75rem; border-radius: 99px;
+      max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* ---- SITEWIDE SEARCH ---- */
+    .nav-search-wrap {
+      position: relative; flex: 1; max-width: 480px;
+      display: flex; align-items: center;
+    }
+    #global-search {
+      width: 100%; padding: 0.45rem 0.9rem 0.45rem 2.2rem;
+      background: white; border: 1px solid var(--gold-300);
+      border-radius: 99px; font-size: 0.85rem; color: var(--ink);
+      outline: none; font-family: 'Inter', sans-serif;
+      transition: border-color 0.15s, box-shadow 0.15s, border-radius 0.15s;
+    }
+    #global-search:focus {
+      border-color: var(--gold-500);
+      box-shadow: 0 0 0 3px rgba(251,191,36,0.2);
+    }
+    #global-search.results-open {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom-color: transparent;
+    }
+    .search-icon-left {
+      position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%);
+      color: var(--gold-600); font-size: 0.85rem; pointer-events: none;
+    }
+    #global-search-count {
+      position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%);
+      font-size: 0.7rem; color: var(--ink-faint); white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* Sitewide search dropdown */
+    #sitewide-results {
+      display: none;
+      position: absolute;
+      top: calc(100% - 1px);
+      left: 0; right: 0;
+      background: white;
+      border: 1px solid var(--gold-400);
+      border-top: none;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 12px 40px rgba(180,83,9,0.18);
+      z-index: 200;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+    #sitewide-results.open { display: block; }
+    .sw-status {
+      padding: 1rem 1.25rem;
+      font-size: 0.8rem; color: var(--ink-faint);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .sw-spinner {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid var(--gold-200);
+      border-top-color: var(--gold-500);
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    .sw-group-header {
+      padding: 0.5rem 1rem 0.3rem;
+      font-size: 0.6rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--gold-700);
+      font-weight: 600; background: var(--gold-50);
+      border-bottom: 1px solid var(--gold-100);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .sw-group-count {
+      background: var(--gold-200); color: var(--gold-900);
+      border-radius: 99px; padding: 0.05rem 0.5rem;
+      font-size: 0.65rem;
+    }
+    .sw-result {
+      padding: 0.7rem 1.1rem;
+      border-bottom: 1px solid var(--gold-50);
+      cursor: pointer;
+      transition: background 0.1s;
+      display: flex; flex-direction: column; gap: 0.2rem;
+    }
+    .sw-result:last-child { border-bottom: none; }
+    .sw-result:hover, .sw-result.active { background: var(--gold-50); }
+    .sw-result-ref {
+      font-size: 0.68rem; font-family: 'Inter', monospace;
+      color: var(--gold-700); font-weight: 600;
+    }
+    .sw-result-snippet {
+      font-family: 'Noto Serif', serif;
+      font-size: 0.82rem; line-height: 1.6;
+      color: var(--ink-muted);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .sw-result-snippet mark {
+      background: var(--gold-200); color: var(--ink);
+      border-radius: 2px; padding: 0 2px; font-weight: 600;
+    }
+    .sw-no-results {
+      padding: 1.25rem 1.1rem;
+      font-size: 0.82rem; color: var(--ink-faint);
+      text-align: center;
+    }
+    .sw-footer {
+      padding: 0.55rem 1rem;
+      font-size: 0.68rem; color: var(--ink-faint);
+      border-top: 1px solid var(--gold-100);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .sw-footer kbd {
+      display: inline-flex; align-items: center;
+      background: var(--gold-50); border: 1px solid var(--gold-200);
+      border-radius: 3px; padding: 0.05rem 0.35rem;
+      font-size: 0.65rem; font-family: 'Inter', sans-serif;
+      color: var(--gold-800);
+    }
+    .sw-loading-bar {
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold-300), var(--gold-500), var(--gold-300));
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    /* Index loading indicator in nav */
+    #index-status {
+      font-size: 0.68rem; color: var(--ink-faint);
+      display: none; align-items: center; gap: 0.35rem;
+      flex-shrink: 0;
+    }
+    #index-status.visible { display: flex; }
+    #index-status .mini-spinner {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 1.5px solid var(--gold-200);
+      border-top-color: var(--gold-500);
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* ---- HOMEPAGE ---- */
+    #homepage-view { display: none; }
+    .home-hero {
+      max-width: 800px; margin: 0 auto;
+      padding: 4rem 1.5rem 2rem;
+      text-align: center;
+    }
+    .home-hero h1 {
+      font-family: 'Noto Serif', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 600; color: var(--gold-900);
+      line-height: 1.2;
+    }
+    .home-hero p {
+      margin-top: 0.75rem;
+      color: var(--ink-muted); font-size: 1rem; line-height: 1.6;
+    }
+    .home-hero .search-hint {
+      margin-top: 0.5rem;
+      font-size: 0.8rem; color: var(--ink-faint);
+    }
+    .home-hero .search-hint kbd {
+      display: inline-flex; align-items: center;
+      background: var(--gold-100); border: 1px solid var(--gold-200);
+      border-radius: 3px; padding: 0.05rem 0.35rem;
+      font-size: 0.72rem; font-family: 'Inter', sans-serif;
+      color: var(--gold-800);
+    }
+    .gold-rule {
+      width: 60px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold-500), transparent);
+      margin: 1.5rem auto;
+    }
+    .file-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr));
+      gap: 1rem; max-width: 900px; margin: 0 auto 4rem;
+      padding: 0 1.5rem;
+    }
+    .file-card {
+      background: white; border: 1px solid var(--gold-200);
+      border-radius: 12px; padding: 1.5rem;
+      text-decoration: none; color: var(--ink);
+      display: flex; align-items: flex-start; gap: 1rem;
+      transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
+    }
+    .file-card:hover {
+      border-color: var(--gold-400);
+      box-shadow: 0 4px 20px rgba(180,83,9,0.12);
+      transform: translateY(-2px);
+    }
+    .file-icon {
+      font-size: 2rem; flex-shrink: 0;
+      width: 48px; height: 48px;
+      background: var(--gold-50); border: 1px solid var(--gold-200);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    }
+    .file-name {
+      font-family: 'Noto Serif', serif;
+      font-size: 1rem; font-weight: 600;
+      color: var(--gold-900); margin-bottom: 0.25rem;
+    }
+    .file-meta { font-size: 0.75rem; color: var(--ink-faint); }
+    .file-arrow {
+      margin-left: auto; font-size: 0.8rem;
+      color: var(--gold-600); align-self: center; flex-shrink: 0;
+    }
+
+    /* ---- READER VIEW ---- */
+    #reader-view { display: none; }
+    #reader-view.table-mode .reader-layout { grid-template-columns: 1fr; }
+    #reader-view.table-mode .sidebar { display: none; }
+    #reader-view.table-mode .reader-content {
+      padding: 1rem 2rem; max-width: 95vw; margin: 0 auto;
+    }
+    .reader-layout {
+      width: 100%; max-width: 100%; margin: 0;
+      display: grid;
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+      gap: 0;
+      min-height: calc(100vh - 60px);
+    }
+    .sidebar {
+      border-right: 1px solid var(--divider);
+      background: rgba(255,255,255,0.5);
+      padding: 1.25rem 0;
+      position: sticky; top: 60px;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
+    .sidebar-title {
+      font-size: 0.65rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--ink-faint);
+      font-weight: 600; padding: 0 1rem 0.5rem;
+    }
+    .sidebar-section { margin-bottom: 0.25rem; }
+    .sidebar-adhyaya {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.45rem 1rem;
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--gold-800); cursor: pointer;
+      transition: background 0.1s;
+      font-family: 'Noto Serif', serif;
+    }
+    .sidebar-adhyaya:hover { background: var(--gold-50); }
+    .sidebar-adhyaya.active { background: var(--gold-100); color: var(--gold-900); }
+    .sidebar-chevron { font-size: 0.6rem; transition: transform 0.2s; color: var(--gold-500); }
+    .sidebar-khandas { display: none; padding: 0 0 0 1rem; }
+    .sidebar-khandas.open { display: block; }
+    .sidebar-khanda {
+      padding: 0.3rem 0.75rem;
+      font-size: 0.78rem; color: var(--ink-muted);
+      cursor: pointer; border-radius: 4px;
+      transition: background 0.1s, color 0.1s;
+      border-left: 2px solid transparent;
+    }
+    .sidebar-khanda:hover { background: var(--gold-50); color: var(--gold-800); }
+    .sidebar-khanda.active {
+      background: var(--gold-50); color: var(--gold-800);
+      border-left-color: var(--gold-500);
+    }
+    .reader-content {
+      padding: 2rem 2.5rem; max-width: 100%; width: 100%;
+      overflow-y: auto; height: calc(100vh - 60px);
+      background: white;
+    }
+    .view-mode-bar {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-bottom: 1.75rem; flex-wrap: wrap;
+    }
+    .view-btn {
+      padding: 0.35rem 0.85rem; border-radius: 99px;
+      font-size: 0.78rem; font-weight: 500;
+      border: 1px solid var(--gold-300);
+      background: transparent; color: var(--ink-muted);
+      cursor: pointer; transition: all 0.15s; font-family: 'Inter', sans-serif;
+    }
+    .view-btn.active { background: var(--gold-600); color: white; border-color: var(--gold-600); }
+    .view-btn:not(.active):hover { background: var(--gold-50); color: var(--gold-800); }
+    .section-heading {
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 1.5rem; padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--divider);
+    }
+    .section-heading h2 {
+      font-family: 'Noto Serif', serif;
+      font-size: 1.15rem; font-weight: 600; color: var(--gold-900);
+    }
+    .section-badge {
+      font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+      background: var(--gold-100); color: var(--gold-800);
+      border: 1px solid var(--gold-200);
+      padding: 0.15rem 0.55rem; border-radius: 4px; font-weight: 600;
+    }
+    .khanda-block { margin-bottom: 3rem; }
+    .khanda-label {
+      font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--ink-faint); font-weight: 600; margin-bottom: 1rem;
+    }
+    .rik-card {
+      background: white; border: 1px solid var(--gold-200);
+      border-radius: 10px; margin-bottom: 1.5rem; overflow: hidden;
+    }
+    .rik-card.highlighted {
+      border-color: var(--gold-500);
+      box-shadow: 0 0 0 3px rgba(251,191,36,0.2);
+    }
+    .rik-header {
+      background: var(--gold-50); border-bottom: 1px solid var(--gold-100);
+      padding: 0.6rem 1rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.5rem;
+    }
+    .rik-ref {
+      font-size: 0.7rem; font-family: 'Inter', monospace;
+      color: var(--gold-700); font-weight: 600; letter-spacing: 0.06em;
+    }
+    .rik-meta-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .meta-tag {
+      font-size: 0.65rem; padding: 0.1rem 0.45rem;
+      border-radius: 3px; background: white;
+      border: 1px solid var(--gold-200); color: var(--ink-muted);
+    }
+    .meta-tag span { font-weight: 600; color: var(--gold-700); margin-right: 0.25rem; }
+    .rik-body { padding: 1rem; }
+    .rik-text {
+      font-family: 'Noto Serif', serif;
+      font-size: 1.05rem; line-height: 1.9;
+      color: var(--ink); margin-bottom: 0.75rem;
+    }
+    .rik-padapatha {
+      font-size: 0.85rem; color: var(--ink-muted);
+      font-family: 'Noto Serif', serif; line-height: 1.7;
+      padding: 0.6rem 0.75rem;
+      background: var(--gold-50); border-radius: 6px;
+      border-left: 3px solid var(--gold-300);
+    }
+    .padapatha-label {
+      font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--gold-600); font-weight: 600; margin-bottom: 0.25rem;
+      font-family: 'Inter', sans-serif;
+    }
+    .rik-notes {
+      font-size: 0.8rem; color: var(--ink-faint);
+      font-style: italic; margin-top: 0.75rem; line-height: 1.6;
+    }
+    .saamans-wrap { border-top: 1px solid var(--gold-100); }
+    .saamans-label {
+      padding: 0.45rem 1rem;
+      font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--gold-600); font-weight: 600;
+      background: var(--gold-50); border-bottom: 1px solid var(--gold-100);
+      font-family: 'Inter', sans-serif;
+    }
+    .saaman-item {
+      padding: 0.85rem 1rem; border-bottom: 1px solid var(--gold-100);
+    }
+    .saaman-item:last-child { border-bottom: none; }
+    .saaman-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .saaman-num {
+      font-size: 0.65rem; font-weight: 600;
+      background: var(--gold-200); color: var(--gold-900);
+      padding: 0.1rem 0.45rem; border-radius: 3px; font-family: 'Inter', sans-serif;
+    }
+    .saaman-ref { font-size: 0.65rem; color: var(--ink-faint); font-family: 'Inter', monospace; }
+    .saaman-text {
+      font-family: 'Noto Serif', serif;
+      font-size: 0.95rem; line-height: 1.85;
+      color: var(--ink-muted); padding-left: 0.5rem;
+      border-left: 2px solid var(--gold-200);
+    }
+    .saaman-meta { margin-top: 0.4rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+    /* Table view */
+    #table-fallback {
+      display: none; width: 100%; background: white;
+      border-radius: 12px; border: 1px solid var(--gold-200);
+      box-shadow: 0 2px 12px rgba(180,83,9,0.08); overflow: hidden;
+    }
+    .table-wrap { width: 100%; max-height: calc(100vh - 200px); overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 800px; }
+    thead th {
+      position: sticky; top: 0; z-index: 5;
+      background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%);
+      border-bottom: 2px solid var(--gold-300);
+      padding: 0.9rem 1.2rem; text-align: left;
+      font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--gold-800); font-weight: 600; white-space: nowrap;
+      cursor: pointer; transition: background 0.2s;
+    }
+    thead th:hover { background: linear-gradient(180deg, #fde68a 0%, #fcd34d 100%); }
+    tbody td {
+      padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--gold-50);
+      color: var(--ink-muted); vertical-align: top; line-height: 1.7;
+    }
+    tbody tr { transition: background 0.15s; }
+    tbody tr:hover { background: #fff9e6; }
+    tbody tr:nth-child(even) { background: #fef9f0; }
+    tbody tr:nth-child(even):hover { background: #fff9e6; }
+    tbody tr:last-child td { border-bottom: none; }
+    td:first-child, th:first-child { font-family: 'Inter', monospace; font-weight: 600; color: var(--gold-700); font-size: 0.8rem; }
+    td:nth-child(2), td:nth-child(3) { font-family: 'Noto Serif', serif; line-height: 1.9; }
+
+    mark.hl {
+      background: var(--gold-200); color: var(--ink);
+      border-radius: 3px; padding: 0 2px; font-weight: 600;
+    }
+
+    /* Status overlay */
+    #status-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(253,246,227,0.85); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 1rem;
+    }
+    #status-overlay.visible { display: flex; }
+    .spinner {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 3px solid var(--gold-200); border-top-color: var(--gold-500);
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status-text { font-family: 'Noto Serif', serif; color: var(--gold-800); }
+
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.8rem; color: var(--gold-700); text-decoration: none;
+      border: 1px solid var(--gold-200); border-radius: 99px;
+      padding: 0.35rem 0.8rem; background: white;
+      transition: all 0.15s; font-weight: 500;
+      margin: 0.75rem 0 0 1rem;
+    }
+    .back-btn:hover { border-color: var(--gold-400); background: var(--gold-50); }
+
+    @keyframes pulse-gold {
+      0% { box-shadow: 0 0 0 0 rgba(251,191,36,0.5); }
+      100% { box-shadow: 0 0 0 8px rgba(251,191,36,0); }
+    }
+    .search-flash { animation: pulse-gold 0.6s ease-out; }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .reader-content { padding: 1rem; }
+      table { font-size: 0.8rem; }
+      thead th, tbody td { padding: 0.6rem 0.8rem; }
+    }
+    @media (max-width: 700px) {
+      .reader-layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--divider); max-height: 40vh; }
+      .reader-content { padding: 1rem; height: auto; }
+      #reader-view.table-mode .reader-content { max-width: 100vw; padding: 0.5rem; }
+      .nav-brand { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">sAmaveda-kauthuma</a>
+
+    <div class="nav-search-wrap" id="global-search-wrap">
+      <span class="search-icon-left">⌕</span>
+      <input id="global-search" type="text" placeholder="Search all texts… (press / to focus)" autocomplete="off">
+      <span id="global-search-count"></span>
+
+      <!-- Sitewide results dropdown (homepage mode) -->
+      <div id="sitewide-results">
+        <div id="sw-loading-bar" class="sw-loading-bar" style="display:none"></div>
+        <div id="sw-content"></div>
+        <div class="sw-footer">
+          <span><kbd>↑</kbd><kbd>↓</kbd> navigate &nbsp; <kbd>↵</kbd> open &nbsp; <kbd>Esc</kbd> close</span>
+          <span id="sw-total-count"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="index-status">
+      <div class="mini-spinner"></div>
+      <span>Indexing…</span>
+    </div>
+    <div id="nav-file-badge"></div>
+  </div>
+</nav>
+
+<div id="status-overlay">
+  <div class="spinner"></div>
+  <p class="status-text" id="status-text">Loading sacred texts…</p>
+</div>
+
+<div id="homepage-view">
+  <div class="home-hero">
+    <h1>Samavedic Text Explorer</h1>
+    <div class="gold-rule"></div>
+    <p>Browse, read, and search the sacred recensions of the Samaveda — structured by Adhyāya, Khaṇḍa, and Ṛk, with each Sāman displayed in its commentarial tradition.</p>
+    <p class="search-hint">Press <kbd>/</kbd> to search across all texts instantly</p>
+  </div>
+  <div class="file-grid" id="file-list"></div>
+</div>
+
+<div id="reader-view">
+  <a href="index.html" class="back-btn" id="back-btn">← All datasets</a>
+  <div class="reader-layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">Contents</div>
+      <div id="sidebar-tree"></div>
+    </aside>
+    <main class="reader-content">
+      <div class="view-mode-bar">
+        <button class="view-btn active" id="btn-reader">Reader view</button>
+        <button class="view-btn" id="btn-table">Table view</button>
+      </div>
+      <div id="reader-body"></div>
+      <div id="table-fallback">
+        <div class="table-wrap">
+          <table id="raw-table"></table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+(function() {
+  const FILES = [
+    { name: "AgnEyam-text.tsv", label: "Āgneya", fileNum: 1, icon: "🔥" },
+    { name: "Aindram-text.tsv", label: "Āindra",  fileNum: 2, icon: "⚡" },
+  ];
+  const DATA_FOLDER = "../data/sAmam/";
+  const SITEWIDE_MAX_RESULTS_PER_FILE = 15;
+  const SNIPPET_CONTEXT = 60; // chars around match
+
+  const COL_ALIASES = {
+    ref:       ["ref","reference","id","num","number","sr","sno","sl"],
+    rik:       ["rik","rik_text","text","mantra","samhita","samhita_text","verse"],
+    padapatha: ["padapatha","pada","padapaatha","padap"],
+    rishi:     ["rishi","rsi","seer","drashta","drsta","sage"],
+    chandas:   ["chandas","chhandas","meter","chhanda"],
+    devata:    ["devata","deity","deva","god","devataa"],
+    notes:     ["notes","note","commentary","remarks","gloss","tikka"],
+  };
+
+  // ---- State ----
+  let allData = [];             // loaded file data (reader mode)
+  let sitewideIndex = [];       // [{fileObj, rows:[{ref, texts:[]}]}, ...]
+  let sitewideIndexReady = false;
+  let sitewideIndexLoading = false;
+  let currentFile = null;
+  let viewMode = "reader";
+  let searchMatches = [];
+  let searchPointer = -1;
+  let currentQuery = "";
+  let swResults = [];
+  let swPointer = -1;
+  let isHomepage = false;
+  let searchDebounceTimer = null;
+
+  // ---- DOM refs ----
+  const homepageView      = document.getElementById('homepage-view');
+  const readerView        = document.getElementById('reader-view');
+  const fileListEl        = document.getElementById('file-list');
+  const sidebarTree       = document.getElementById('sidebar-tree');
+  const readerBody        = document.getElementById('reader-body');
+  const tableFallback     = document.getElementById('table-fallback');
+  const rawTable          = document.getElementById('raw-table');
+  const statusOverlay     = document.getElementById('status-overlay');
+  const statusText        = document.getElementById('status-text');
+  const navBadge          = document.getElementById('nav-file-badge');
+  const globalSearch      = document.getElementById('global-search');
+  const globalSearchWrap  = document.getElementById('global-search-wrap');
+  const globalSearchCount = document.getElementById('global-search-count');
+  const btnReader         = document.getElementById('btn-reader');
+  const btnTable          = document.getElementById('btn-table');
+  const sidebar           = document.querySelector('.sidebar');
+  const sitewideResultsEl = document.getElementById('sitewide-results');
+  const swContent         = document.getElementById('sw-content');
+  const swTotalCount      = document.getElementById('sw-total-count');
+  const swLoadingBar      = document.getElementById('sw-loading-bar');
+  const indexStatus       = document.getElementById('index-status');
+
+  function showStatus(msg) { statusText.textContent = msg; statusOverlay.classList.add('visible'); }
+  function hideStatus()    { statusOverlay.classList.remove('visible'); }
+
+  // ============================================================
+  // ROUTING
+  // ============================================================
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const f = params.get('file');
+    const match = FILES.find(x => x.name === f);
+    if (match) {
+      isHomepage = false;
+      loadFile(match);
+      // Still build sitewide index in background for in-reader cross-search
+      buildSitewideIndex();
+    } else {
+      isHomepage = true;
+      renderHome();
+      buildSitewideIndex(); // eager load on homepage
+    }
+  });
+
+  // ============================================================
+  // HOMEPAGE
+  // ============================================================
+  function renderHome() {
+    homepageView.style.display = 'block';
+    readerView.style.display = 'none';
+    globalSearch.placeholder = 'Search all texts… (press / to focus)';
+    fileListEl.innerHTML = '';
+    FILES.forEach(f => {
+      const a = document.createElement('a');
+      a.href = `?file=${encodeURIComponent(f.name)}`;
+      a.className = 'file-card';
+      a.innerHTML = `
+        <div class="file-icon">${f.icon}</div>
+        <div style="flex:1">
+          <div class="file-name">${f.label}</div>
+          <div class="file-meta">${f.name}</div>
+        </div>
+        <div class="file-arrow">→</div>
+      `;
+      fileListEl.appendChild(a);
+    });
+  }
+
+  // ============================================================
+  // SITEWIDE INDEX  (loads all files in background)
+  // ============================================================
+  function buildSitewideIndex() {
+    if (sitewideIndexLoading || sitewideIndexReady) return;
+    sitewideIndexLoading = true;
+    indexStatus.classList.add('visible');
+
+    let pending = FILES.length;
+    sitewideIndex = [];
+
+    FILES.forEach(fileObj => {
+      fetch(DATA_FOLDER + fileObj.name)
+        .then(r => r.ok ? r.text() : Promise.reject())
+        .then(txt => new Promise(resolve => {
+          Papa.parse(txt, {
+            delimiter: "\t", skipEmptyLines: true,
+            complete: res => resolve(res.data),
+            error: () => resolve([]),
+          });
+        }))
+        .then(data => {
+          if (data.length > 1) {
+            const headers = data[0];
+            const rows = data.slice(1);
+            const cols = resolveColumns(headers);
+            const indexedRows = rows.map(row => {
+              const ref = row[cols.ref] || '';
+              // Collect all searchable text fields
+              const texts = [
+                cols.rik       !== undefined ? row[cols.rik]       : '',
+                cols.padapatha !== undefined ? row[cols.padapatha] : '',
+                cols.notes     !== undefined ? row[cols.notes]     : '',
+                cols.rishi     !== undefined ? row[cols.rishi]     : '',
+                cols.devata    !== undefined ? row[cols.devata]    : '',
+              ].filter(Boolean);
+              return { ref, texts, rawRow: row, headers };
+            });
+            sitewideIndex.push({ fileObj, rows: indexedRows });
+          }
+        })
+        .catch(() => {}) // silently skip missing files
+        .finally(() => {
+          pending--;
+          if (pending === 0) {
+            sitewideIndexReady = true;
+            sitewideIndexLoading = false;
+            indexStatus.classList.remove('visible');
+            // If user was already typing, run search now
+            if (currentQuery && isHomepage) {
+              doSitewideSearch(currentQuery);
+            }
+          }
+        });
+    });
+  }
+
+  // ============================================================
+  // SITEWIDE SEARCH (homepage dropdown)
+  // ============================================================
+  function doSitewideSearch(query) {
+    query = query.trim().toLowerCase();
+    if (!query) {
+      closeSitewideResults();
+      return;
+    }
+
+    swResults = [];
+    swPointer = -1;
+
+    openSitewideResults();
+
+    if (!sitewideIndexReady) {
+      swContent.innerHTML = `<div class="sw-status"><div class="sw-spinner"></div> Indexing texts, please wait…</div>`;
+      swLoadingBar.style.display = 'block';
+      return;
+    }
+
+    swLoadingBar.style.display = 'none';
+
+    // Search across all indexed files
+    let totalMatches = 0;
+    const groupedHtml = [];
+
+    sitewideIndex.forEach(({ fileObj, rows }) => {
+      const fileResults = [];
+      rows.forEach(row => {
+        // Find the first matching text field and build a snippet
+        let matchField = null;
+        let matchText = null;
+        for (const t of row.texts) {
+          if (t.toLowerCase().includes(query)) { matchField = t; matchText = t; break; }
+        }
+        if (!matchText) return;
+
+        const lower = matchText.toLowerCase();
+        const idx = lower.indexOf(query);
+        const start = Math.max(0, idx - SNIPPET_CONTEXT);
+        const end   = Math.min(matchText.length, idx + query.length + SNIPPET_CONTEXT);
+        let snippet = (start > 0 ? '…' : '') + escHtml(matchText.slice(start, idx))
+          + `<mark>${escHtml(matchText.slice(idx, idx + query.length))}</mark>`
+          + escHtml(matchText.slice(idx + query.length, end))
+          + (end < matchText.length ? '…' : '');
+
+        fileResults.push({ ref: row.ref, snippet, fileObj });
+      });
+
+      if (!fileResults.length) return;
+      totalMatches += fileResults.length;
+      const shown = fileResults.slice(0, SITEWIDE_MAX_RESULTS_PER_FILE);
+      swResults.push(...shown.map(r => ({ ...r })));
+
+      let groupHtml = `<div class="sw-group-header">
+        <span>${fileObj.icon} ${fileObj.label}</span>
+        <span class="sw-group-count">${fileResults.length} match${fileResults.length !== 1 ? 'es' : ''}</span>
+      </div>`;
+      shown.forEach((r, i) => {
+        const globalIdx = swResults.length - shown.length + i;
+        groupHtml += `<div class="sw-result" data-idx="${globalIdx}">
+          <div class="sw-result-ref">${escHtml(r.ref)}</div>
+          <div class="sw-result-snippet">${r.snippet}</div>
+        </div>`;
+      });
+      if (fileResults.length > SITEWIDE_MAX_RESULTS_PER_FILE) {
+        groupHtml += `<div class="sw-status" style="padding:0.5rem 1.1rem; font-style:italic">
+          … and ${fileResults.length - SITEWIDE_MAX_RESULTS_PER_FILE} more in ${fileObj.label}
+        </div>`;
+      }
+      groupedHtml.push(groupHtml);
+    });
+
+    if (swResults.length === 0) {
+      swContent.innerHTML = `<div class="sw-no-results">No results for "<strong>${escHtml(query)}</strong>" across all texts.</div>`;
+    } else {
+      swContent.innerHTML = groupedHtml.join('');
+      swTotalCount.textContent = `${totalMatches} total match${totalMatches !== 1 ? 'es' : ''}`;
+      // Attach click handlers
+      swContent.querySelectorAll('.sw-result').forEach(el => {
+        el.addEventListener('mousedown', e => {
+          e.preventDefault();
+          const idx = parseInt(el.dataset.idx);
+          openSwResult(idx);
+        });
+      });
+    }
+  }
+
+  function openSwResult(idx) {
+    const r = swResults[idx];
+    if (!r) return;
+    // Navigate to the file, passing query as a param so we can highlight on load
+    const url = `?file=${encodeURIComponent(r.fileObj.name)}&q=${encodeURIComponent(currentQuery)}`;
+    window.location.href = url;
+  }
+
+  function openSitewideResults() {
+    sitewideResultsEl.classList.add('open');
+    globalSearch.classList.add('results-open');
+  }
+
+  function closeSitewideResults() {
+    sitewideResultsEl.classList.remove('open');
+    globalSearch.classList.remove('results-open');
+    swContent.innerHTML = '';
+    swTotalCount.textContent = '';
+    swLoadingBar.style.display = 'none';
+    swResults = [];
+    swPointer = -1;
+  }
+
+  // Keyboard navigation for sitewide dropdown
+  function swNavigate(dir) {
+    const items = swContent.querySelectorAll('.sw-result');
+    if (!items.length) return;
+    items.forEach(el => el.classList.remove('active'));
+    swPointer = (swPointer + dir + items.length) % items.length;
+    items[swPointer].classList.add('active');
+    items[swPointer].scrollIntoView({ block: 'nearest' });
+  }
+
+  // ============================================================
+  // GLOBAL SEARCH INPUT handler — routes between modes
+  // ============================================================
+  globalSearch.addEventListener('input', e => {
+    currentQuery = e.target.value;
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      if (isHomepage) {
+        doSitewideSearch(currentQuery);
+      } else {
+        doInPageSearch(currentQuery);
+      }
+    }, 180);
+  });
+
+  globalSearch.addEventListener('keydown', e => {
+    if (isHomepage) {
+      // Dropdown keyboard nav
+      if (e.key === 'ArrowDown') { e.preventDefault(); swNavigate(1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); swNavigate(-1); }
+      else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (swPointer >= 0 && swResults[swPointer]) {
+          openSwResult(swPointer);
+        } else if (swResults.length > 0) {
+          openSwResult(0);
+        }
+      }
+      else if (e.key === 'Escape') { closeSitewideResults(); globalSearch.blur(); }
+    } else {
+      // In-page nav
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (searchMatches.length) navigateSearch(e.shiftKey ? -1 : 1);
+      } else if (e.key === 'Escape') { clearInPageSearch(); }
+    }
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('mousedown', e => {
+    if (!globalSearchWrap.contains(e.target)) {
+      closeSitewideResults();
+    }
+  });
+
+  // "/" shortcut to focus search
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== globalSearch) {
+      e.preventDefault(); globalSearch.focus();
+      if (isHomepage && currentQuery) openSitewideResults();
+    }
+  });
+
+  // ============================================================
+  // FILE READER
+  // ============================================================
+  function loadFile(fileObj) {
+    showStatus("Loading " + fileObj.label + "…");
+    homepageView.style.display = 'none';
+    readerView.style.display = 'block';
+    navBadge.textContent = fileObj.label;
+    navBadge.style.display = 'block';
+    globalSearch.placeholder = `Search in ${fileObj.label}…`;
+    currentFile = fileObj;
+
+    fetch(DATA_FOLDER + fileObj.name)
+      .then(r => { if (!r.ok) throw new Error('not found'); return r.text(); })
+      .then(txt => {
+        Papa.parse(txt, {
+          delimiter: "\t", skipEmptyLines: true,
+          complete: res => {
+            processData(res.data, fileObj);
+            hideStatus();
+            // Auto-search if query param present (coming from sitewide result)
+            const params = new URLSearchParams(window.location.search);
+            const q = params.get('q');
+            if (q) {
+              globalSearch.value = q;
+              currentQuery = q;
+              setTimeout(() => doInPageSearch(q), 100);
+            }
+          },
+          error: () => { showStatus("Parse error."); }
+        });
+      })
+      .catch(() => showStatus('Could not load "' + fileObj.name + '"'));
+  }
+
+  function processData(data, fileObj) {
+    if (!data.length) return;
+    const headers = data[0];
+    const rows = data.slice(1);
+    const cols = resolveColumns(headers);
+    const parsed = rows.map(row => parseRow(row, headers, cols, fileObj));
+    const hierarchy = buildHierarchy(parsed);
+    const entry = { headers, rows, parsed, hierarchy, cols, file: fileObj };
+    allData = [entry];
+    renderSidebar(hierarchy);
+    renderReader(hierarchy, entry);
+    renderTable(headers, rows);
+    setViewMode('reader');
+  }
+
+  function resolveColumns(headers) {
+    const map = {};
+    const nh = h => String(h||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    const lc = headers.map(nh);
+    for (const [key, aliases] of Object.entries(COL_ALIASES)) {
+      for (const alias of aliases) {
+        const idx = lc.indexOf(nh(alias));
+        if (idx !== -1) { map[key] = idx; break; }
+      }
+    }
+    if (map.ref === undefined) map.ref = 0;
+    return map;
+  }
+
+  function parseRef(refStr) {
+    if (!refStr) return null;
+    const parts = String(refStr).trim().split('.');
+    if (parts.length < 4) return null;
+    return {
+      file:    parseInt(parts[0]) || 0,
+      adhyaya: parseInt(parts[1]) || 0,
+      khanda:  parseInt(parts[2]) || 0,
+      rik:     parseInt(parts[3]) || 0,
+      saaman:  parts.length >= 5 ? parseInt(parts[4]) : 0,
+      raw:     refStr,
+    };
+  }
+
+  function parseRow(row, headers, cols, fileObj) {
+    const get = key => (cols[key] !== undefined ? (row[cols[key]] || '') : '');
+    const ref = parseRef(get('ref'));
+    return {
+      ref, rawRef: get('ref'),
+      rik: get('rik'), padapatha: get('padapatha'),
+      rishi: get('rishi'), chandas: get('chandas'),
+      devata: get('devata'), notes: get('notes'),
+      rawRow: row, headers,
+      isRik:    ref && ref.saaman === 0,
+      isSaaman: ref && ref.saaman > 0,
+    };
+  }
+
+  function buildHierarchy(rows) {
+    const hier = {};
+    rows.forEach(r => {
+      if (!r.ref) return;
+      const { adhyaya, khanda, rik, saaman } = r.ref;
+      if (!hier[adhyaya]) hier[adhyaya] = {};
+      if (!hier[adhyaya][khanda]) hier[adhyaya][khanda] = { riks: [], byRik: {} };
+      const kh = hier[adhyaya][khanda];
+      if (saaman === 0) {
+        if (!kh.byRik[rik]) { kh.byRik[rik] = { rik: r, saamans: [] }; kh.riks.push(rik); }
+        else kh.byRik[rik].rik = r;
+      } else {
+        if (!kh.byRik[rik]) { kh.byRik[rik] = { rik: null, saamans: [] }; kh.riks.push(rik); }
+        kh.byRik[rik].saamans.push(r);
+      }
+    });
+    return hier;
+  }
+
+  function renderSidebar(hier) {
+    sidebarTree.innerHTML = '';
+    Object.keys(hier).sort((a,b)=>+a-+b).forEach(adh => {
+      const khandas = Object.keys(hier[adh]).sort((a,b)=>+a-+b);
+      const section = document.createElement('div');
+      section.className = 'sidebar-section';
+      const adhBtn = document.createElement('div');
+      adhBtn.className = 'sidebar-adhyaya';
+      adhBtn.innerHTML = `<span>Adhyāya ${adh}</span><span class="sidebar-chevron">▶</span>`;
+      section.appendChild(adhBtn);
+      const khandasEl = document.createElement('div');
+      khandasEl.className = 'sidebar-khandas';
+      khandas.forEach(kh => {
+        const khBtn = document.createElement('div');
+        khBtn.className = 'sidebar-khanda';
+        khBtn.textContent = `Khaṇḍa ${kh}`;
+        khBtn.dataset.adhyaya = adh;
+        khBtn.dataset.khanda = kh;
+        khBtn.addEventListener('click', () => {
+          scrollToSection(adh, kh);
+          document.querySelectorAll('.sidebar-khanda').forEach(el => el.classList.remove('active'));
+          khBtn.classList.add('active');
+        });
+        khandasEl.appendChild(khBtn);
+      });
+      section.appendChild(khandasEl);
+      adhBtn.addEventListener('click', () => {
+        const open = khandasEl.classList.toggle('open');
+        adhBtn.classList.toggle('active', open);
+        adhBtn.querySelector('.sidebar-chevron').style.transform = open ? 'rotate(90deg)' : '';
+      });
+      sidebarTree.appendChild(section);
+    });
+  }
+
+  function scrollToSection(adh, kh) {
+    const el = document.getElementById(`section-${adh}-${kh}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderReader(hier, entry) {
+    readerBody.innerHTML = '';
+    const fileLabel = entry.file.label;
+    const fileNum = entry.file.fileNum;
+    Object.keys(hier).sort((a,b)=>+a-+b).forEach(adh => {
+      const adhEl = document.createElement('div');
+      adhEl.id = `adhyaya-${adh}`;
+      adhEl.style.marginBottom = '3rem';
+      const heading = document.createElement('div');
+      heading.className = 'section-heading';
+      heading.innerHTML = `<h2>Adhyāya ${adh} — ${fileLabel}</h2><span class="section-badge">${fileNum}.${adh}</span>`;
+      adhEl.appendChild(heading);
+      const khandas = Object.keys(hier[adh]).sort((a,b)=>+a-+b);
+      khandas.forEach(kh => {
+        const khEl = document.createElement('div');
+        khEl.className = 'khanda-block';
+        khEl.id = `section-${adh}-${kh}`;
+        const khLabel = document.createElement('div');
+        khLabel.className = 'khanda-label';
+        khLabel.textContent = `Khaṇḍa ${kh}`;
+        khEl.appendChild(khLabel);
+        const khData = hier[adh][kh];
+        khData.riks.sort((a,b)=>a-b).forEach(rikNum => {
+          const { rik, saamans } = khData.byRik[rikNum];
+          khEl.appendChild(buildRikCard(rik, saamans, fileNum, adh, kh, rikNum));
+        });
+        adhEl.appendChild(khEl);
+      });
+      readerBody.appendChild(adhEl);
+    });
+  }
+
+  function buildRikCard(rik, saamans, fileNum, adh, kh, rikNum) {
+    const card = document.createElement('div');
+    card.className = 'rik-card';
+    card.dataset.adh = adh; card.dataset.kh = kh; card.dataset.rik = rikNum;
+    card.id = `rik-${adh}-${kh}-${rikNum}`;
+    const refStr = `${fileNum}.${adh}.${kh}.${rikNum}.0`;
+    let metaTags = '';
+    if (rik) {
+      if (rik.rishi)   metaTags += `<span class="meta-tag"><span>Ṛṣi</span>${escHtml(rik.rishi)}</span>`;
+      if (rik.chandas) metaTags += `<span class="meta-tag"><span>Chandas</span>${escHtml(rik.chandas)}</span>`;
+      if (rik.devata)  metaTags += `<span class="meta-tag"><span>Devatā</span>${escHtml(rik.devata)}</span>`;
+    }
+    card.innerHTML = `
+      <div class="rik-header">
+        <span class="rik-ref">${escHtml(rik ? rik.rawRef : refStr)}</span>
+        <div class="rik-meta-tags">${metaTags}</div>
+      </div>
+      <div class="rik-body">
+        ${rik && rik.rik ? `<div class="rik-text" data-searchable>${escHtml(rik.rik)}</div>` : ''}
+        ${rik && rik.padapatha ? `
+          <div class="rik-padapatha">
+            <div class="padapatha-label">Padapāṭha</div>
+            <div data-searchable>${escHtml(rik.padapatha)}</div>
+          </div>` : ''}
+        ${rik && rik.notes ? `<div class="rik-notes" data-searchable>${escHtml(rik.notes)}</div>` : ''}
+      </div>
+      ${saamans.length ? buildSaamansHtml(saamans) : ''}
+    `;
+    return card;
+  }
+
+  function buildSaamansHtml(saamans) {
+    const items = saamans.sort((a,b)=>(a.ref?.saaman||0)-(b.ref?.saaman||0)).map(s => {
+      let mt = '';
+      if (s.rishi)   mt += `<span class="meta-tag"><span>Ṛṣi</span>${escHtml(s.rishi)}</span>`;
+      if (s.chandas) mt += `<span class="meta-tag"><span>Chandas</span>${escHtml(s.chandas)}</span>`;
+      if (s.devata)  mt += `<span class="meta-tag"><span>Devatā</span>${escHtml(s.devata)}</span>`;
+      const sNum = s.ref ? s.ref.saaman : '?';
+      return `
+        <div class="saaman-item">
+          <div class="saaman-header">
+            <span class="saaman-num">Sāman ${sNum}</span>
+            <span class="saaman-ref">${escHtml(s.rawRef)}</span>
+          </div>
+          ${s.rik ? `<div class="saaman-text" data-searchable>${escHtml(s.rik)}</div>` : ''}
+          ${s.notes ? `<div class="rik-notes" style="padding-left:0.5rem" data-searchable>${escHtml(s.notes)}</div>` : ''}
+          ${mt ? `<div class="saaman-meta">${mt}</div>` : ''}
+        </div>`;
+    }).join('');
+    return `<div class="saamans-wrap"><div class="saamans-label">Sāmans of this Ṛk</div>${items}</div>`;
+  }
+
+  function renderTable(headers, rows) {
+    let html = '<thead><tr>' + headers.map(h => `<th>${escHtml(h)}</th>`).join('') + '</tr></thead><tbody>';
+    rows.forEach(row => {
+      html += '<tr>' + row.map(cell => `<td>${escHtml(cell)}</td>`).join('') + '</tr>';
+    });
+    rawTable.innerHTML = html + '</tbody>';
+  }
+
+  function setViewMode(mode) {
+    viewMode = mode;
+    if (mode === 'reader') {
+      btnReader.classList.add('active'); btnTable.classList.remove('active');
+      readerBody.style.display = ''; tableFallback.style.display = 'none';
+      sidebar.style.display = ''; readerView.classList.remove('table-mode');
+    } else {
+      btnTable.classList.add('active'); btnReader.classList.remove('active');
+      readerBody.style.display = 'none'; tableFallback.style.display = 'block';
+      sidebar.style.display = 'none'; readerView.classList.add('table-mode');
+    }
+  }
+
+  btnReader.addEventListener('click', () => setViewMode('reader'));
+  btnTable.addEventListener('click', () => setViewMode('table'));
+
+  // ============================================================
+  // IN-PAGE SEARCH (reader/table mode)
+  // ============================================================
+  function doInPageSearch(query) {
+    const q = query.trim().toLowerCase();
+    // Clear previous highlights
+    document.querySelectorAll('.rik-card').forEach(c => c.classList.remove('highlighted'));
+    document.querySelectorAll('mark.hl').forEach(m => {
+      m.parentNode.replaceChild(document.createTextNode(m.textContent), m);
+    });
+    document.querySelectorAll('[data-searchable]').forEach(el => el.normalize());
+    if (viewMode === 'table') {
+      document.querySelectorAll('#raw-table td').forEach(td => {
+        td.querySelectorAll('mark.hl').forEach(m => {
+          m.parentNode.replaceChild(document.createTextNode(m.textContent), m);
+        });
+        td.normalize();
+      });
+    }
+
+    searchMatches = []; searchPointer = -1;
+    if (!q) { globalSearchCount.textContent = ''; return; }
+
+    document.querySelectorAll('[data-searchable]').forEach(el => highlightInNode(el, q));
+    if (viewMode === 'table') {
+      document.querySelectorAll('#raw-table td').forEach(td => highlightInNode(td, q));
+    }
+
+    searchMatches = Array.from(document.querySelectorAll('mark.hl'));
+    if (searchMatches.length) { searchPointer = 0; scrollToMatch(0); }
+    globalSearchCount.textContent = searchMatches.length
+      ? `${searchPointer+1}/${searchMatches.length}`
+      : '0 results';
+  }
+
+  function navigateSearch(dir) {
+    if (!searchMatches.length) return;
+    searchPointer = (searchPointer + dir + searchMatches.length) % searchMatches.length;
+    scrollToMatch(searchPointer);
+    globalSearchCount.textContent = `${searchPointer+1}/${searchMatches.length}`;
+  }
+
+  function scrollToMatch(idx) {
+    const el = searchMatches[idx];
+    if (!el) return;
+    document.querySelectorAll('.rik-card').forEach(c => c.classList.remove('highlighted'));
+    const card = el.closest('.rik-card');
+    if (card) { card.classList.add('highlighted'); card.classList.add('search-flash'); setTimeout(() => card.classList.remove('search-flash'), 700); }
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function clearInPageSearch() {
+    globalSearch.value = '';
+    doInPageSearch('');
+  }
+
+  function highlightInNode(container, query) {
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let node;
+    while ((node = walker.nextNode())) nodes.push(node);
+    nodes.forEach(textNode => {
+      const text = textNode.nodeValue;
+      const lower = text.toLowerCase();
+      let idx = lower.indexOf(query);
+      if (idx === -1) return;
+      const frag = document.createDocumentFragment();
+      let last = 0;
+      while (idx !== -1) {
+        if (idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+        const mark = document.createElement('mark');
+        mark.className = 'hl';
+        mark.textContent = text.slice(idx, idx + query.length);
+        frag.appendChild(mark);
+        last = idx + query.length;
+        idx = lower.indexOf(query, last);
+      }
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      textNode.parentNode.replaceChild(frag, textNode);
+    });
+  }
+
+  // ============================================================
+  // UTILS
+  // ============================================================
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+})();
+</script>
+</body>
+</html>

@@ -324,26 +324,26 @@
   <section aria-labelledby="proj-label">
     <p class="sec-label" id="proj-label">Collections</p>
     <div class="projects-grid">
-      <a class="project-card" href="https://malolan05.github.io/sAmam/index.html" target="_blank" rel="noopener">
+      <a class="project-card" href="sAmam/">
         <div class="project-icon">𝄞</div>
         <div class="project-tag">Sāmaveda</div>
         <div class="project-name">sAmam</div>
         <p class="project-desc">An interactive table exploring the Sāmaveda — its hymns, melodies, and structure, built as a living web project.</p>
-        <span class="project-url">malolan05.github.io/sAmam</span>
+        <span class="project-url">malolan05.github.io/texts/sAmam</span>
       </a>
-      <a class="project-card" href="https://malolan05.github.io/Agama" target="_blank" rel="noopener">
+      <a class="project-card" href="Agama/">
         <div class="project-icon">📜</div>
         <div class="project-tag">Vaiṣṇava Āgama</div>
         <div class="project-name">Āgama</div>
         <p class="project-desc">A repository of Vaiṣṇava Āgama texts, assembled by digitising and correcting OCR outputs of Sanskrit manuscripts.</p>
-        <span class="project-url">malolan05.github.io/Agama</span>
+        <span class="project-url">malolan05.github.io/texts/Agama</span>
       </a>
-      <a class="project-card" href="https://malolan05.github.io/srivaishnavam" target="_blank" rel="noopener">
+      <a class="project-card" href="srivaishnavam/">
         <div class="project-icon">📜</div>
         <div class="project-tag">Śrīvaiṣṇava</div>
         <div class="project-name">Śrīvaiṣṇava</div>
         <p class="project-desc">A repository of ŚrīVaiṣṇava texts, assembled by digitising and correcting OCR outputs of Sanskrit texts.</p>
-        <span class="project-url">malolan05.github.io/srivaishnavam</span>
+        <span class="project-url">malolan05.github.io/texts/srivaishnavam</span>
       </a>
     </div>
   </section>
@@ -398,70 +398,75 @@
 
 <script>
 /* =============================================================
-   MĀLOLA ARCHIVE — Search engine (rewritten June 2026)
+   MĀLOLA ARCHIVE — Search engine (rewritten July 2026)
 
-   Data sources (confirmed by inspecting each repo):
+   Single-repo layout — everything now lives under malolan05.github.io/texts:
 
-   sAmam  — branch: master
-     data/AgnEyam-text.tsv   (Āgneya, ~293 rows)
-     data/Aindram-text.tsv   (Āindra, ~985 rows)
+     /index.html              (this hub page)
+     /sAmam/index.html          subsection app
+     /Agama/index.html          subsection app
+     /srivaishnavam/index.html  subsection app
+     /data/sAmam/...            data for the sAmam subsection
+     /data/Agama/...            data for the Agama subsection
+     /data/srivaishnavam/...    data for the srivaishnavam subsection
+
+   Data sources (paths are site-relative — same origin, no cross-repo fetch):
+
+   sAmam
+     data/sAmam/AgnEyam-text.tsv   (Āgneya, ~293 rows)
+     data/sAmam/Aindram-text.tsv   (Āindra, ~985 rows)
      TSV columns: Ref No | Prapāthaka-Ard | Text | Ṛṣi | Chandas | Dēvata | padapāṭha--rik | Notes
 
-   Agama  — branch: main
-     data/agama-pramanyam.json
-     data/aniruddha-samhita.json
-     data/lakshmi-tantram.json
-     data/paramapurusha-samhita.json
-     data/paushkara-samhita.json
-     data/sriprashna-samhita.json
-     data/sri-vishvaksena-samhita.json
-     data/vishnu-samhita.json
-     data/sri-parameshvara-samhita.json
+   Agama
+     data/Agama/agama-pramanyam.json
+     data/Agama/aniruddha-samhita.json
+     data/Agama/lakshmi-tantram.json
+     data/Agama/paramapurusha-samhita.json
+     data/Agama/paushkara-samhita.json
+     data/Agama/sriprashna-samhita.json
+     data/Agama/sri-vishvaksena-samhita.json
+     data/Agama/vishnu-samhita.json
+     data/Agama/sri-parameshvara-samhita.json
      JSON shape: { metadata, content: { title, sections: [{ title, number, verses: [{ verse_number, original_text, commentaries }] }] } }
 
-   srivaishnavam — branch: main
-     data/gitarthasangraha.json
+   srivaishnavam
+     data/srivaishnavam/gitarthasangraha.json
      JSON shape: same as Agama
    ============================================================= */
 
   // ── Repo manifest ──────────────────────────────────────────────────────────
-  const RAW = 'https://raw.githubusercontent.com/Malolan05';
-
   const REPOS = [
     {
       name:    'sAmam',
       label:   'sAmam',
-      branch:  'master',
-      baseUrl: 'https://malolan05.github.io/sAmam/index.html',
+      baseUrl: 'sAmam/',
       files: [
-        { path: 'data/AgnEyam-text.tsv', type: 'tsv', label: 'Āgneya' },
-        { path: 'data/Aindram-text.tsv',  type: 'tsv', label: 'Āindra'  },
+        { path: 'data/sAmam/AgnEyam-text.tsv', type: 'tsv', label: 'Āgneya' },
+        { path: 'data/sAmam/Aindram-text.tsv',  type: 'tsv', label: 'Āindra'  },
       ],
     },
     {
       name:    'Agama',
       label:   'Āgama',
-      branch:  'main',
-      baseUrl: 'https://malolan05.github.io/Agama',
+      baseUrl: 'Agama/',
       files: [
-        { path: 'data/agama-pramanyam.json',        type: 'json' },
-        { path: 'data/aniruddha-samhita.json',       type: 'json' },
-        { path: 'data/lakshmi-tantram.json',          type: 'json' },
-        { path: 'data/paramapurusha-samhita.json',    type: 'json' },
-        { path: 'data/paushkara-samhita.json',        type: 'json' },
-        { path: 'data/sriprashna-samhita.json',       type: 'json' },
-        { path: 'data/sri-vishvaksena-samhita.json',  type: 'json' },
-        { path: 'data/vishnu-samhita.json',           type: 'json' },
-        { path: 'data/sri-parameshvara-samhita.json', type: 'json' },
+        { path: 'data/Agama/agama-pramanyam.json',        type: 'json' },
+        { path: 'data/Agama/aniruddha-samhita.json',       type: 'json' },
+        { path: 'data/Agama/lakshmi-tantram.json',          type: 'json' },
+        { path: 'data/Agama/paramapurusha-samhita.json',    type: 'json' },
+        { path: 'data/Agama/paushkara-samhita.json',        type: 'json' },
+        { path: 'data/Agama/sriprashna-samhita.json',       type: 'json' },
+        { path: 'data/Agama/sri-vishvaksena-samhita.json',  type: 'json' },
+        { path: 'data/Agama/vishnu-samhita.json',           type: 'json' },
+        { path: 'data/Agama/sri-parameshvara-samhita.json', type: 'json' },
       ],
     },
     {
       name:    'srivaishnavam',
       label:   'Śrīvaiṣṇava',
-      branch:  'main',
-      baseUrl: 'https://malolan05.github.io/srivaishnavam',
+      baseUrl: 'srivaishnavam/',
       files: [
-        { path: 'data/gitarthasangraha.json', type: 'json' },
+        { path: 'data/srivaishnavam/gitarthasangraha.json', type: 'json' },
       ],
     },
   ];
@@ -496,7 +501,9 @@
   }
 
   function rawUrl(repo, filePath) {
-    return `${RAW}/${repo.name}/${repo.branch}/${filePath}`;
+    // Everything now lives in this same repo, so the file path
+    // (e.g. "data/sAmam/AgnEyam-text.tsv") is already site-relative.
+    return filePath;
   }
 
   // ── TSV parser ─────────────────────────────────────────────────────────────
@@ -835,7 +842,7 @@
         .map(d => `<span class="result-meta-pill">${esc(d)}</span>`)
         .join('');
       return `
-        <a class="result-card" href="${esc(r.repoUrl)}" target="_blank" rel="noopener">
+        <a class="result-card" href="${esc(r.repoUrl)}">
           <div class="result-header">
             <span class="result-repo">${esc(r.repoLabel)}</span>
             <span class="result-file">${esc(r.file)}</span>
