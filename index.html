@@ -26,6 +26,7 @@
       --cinzel: 'Cinzel', Georgia, serif;
       --lora: 'Lora', Georgia, serif;
       --mono: 'JetBrains Mono', monospace;
+      --sidebar-w: 300px;
     }
     html { scroll-behavior: smooth; }
     body {
@@ -35,6 +36,201 @@
       font-size: 16px;
       line-height: 1.7;
     }
+
+    /* ---- Sitewide top bar ---- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      background: var(--night);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-toggle {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      width: 34px;
+      height: 30px;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .nav-toggle span {
+      display: block;
+      height: 2px;
+      width: 18px;
+      margin: 0 auto;
+      background: var(--parchment);
+      border-radius: 2px;
+    }
+    .topbar-title {
+      font-family: var(--cinzel);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--parchment);
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+    .topbar-title .accent { color: var(--saffron); }
+
+    /* ---- Sidebar ---- */
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 70;
+    }
+    .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: var(--sidebar-w);
+      max-width: 86vw;
+      background: var(--night);
+      z-index: 80;
+      transform: translateX(-100%);
+      transition: transform 0.22s ease;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 2px 0 24px rgba(0,0,0,0.3);
+    }
+    .sidebar.open { transform: translateX(0); }
+
+    .sidebar-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+    .sidebar-head-title {
+      font-family: var(--cinzel);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--parchment);
+    }
+    .sidebar-close {
+      background: none;
+      border: none;
+      color: var(--star);
+      font-size: 1.1rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+      opacity: 0.7;
+    }
+    .sidebar-close:hover { opacity: 1; }
+
+    .sidebar-body {
+      overflow-y: auto;
+      padding: 10px 8px 24px;
+      flex: 1;
+    }
+    .sidebar-status {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--star);
+      opacity: 0.55;
+      padding: 6px 12px 10px;
+    }
+
+    /* tree */
+    .tree-collection { margin-bottom: 4px; }
+    .tree-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      background: none;
+      border: none;
+      text-align: left;
+      cursor: pointer;
+      color: var(--parchment);
+      font-family: var(--lora);
+      padding: 9px 10px;
+      border-radius: 5px;
+      font-size: 0.92rem;
+    }
+    .tree-row:hover { background: rgba(255,255,255,0.06); }
+    .tree-row.collection-row {
+      font-family: var(--cinzel);
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--saffron);
+    }
+    .tree-caret {
+      display: inline-block;
+      width: 10px;
+      flex-shrink: 0;
+      transition: transform 0.15s ease;
+      color: var(--star);
+      opacity: 0.6;
+      font-size: 0.7rem;
+    }
+    .tree-caret.rotated { transform: rotate(90deg); }
+    .tree-caret.spacer { visibility: hidden; }
+
+    .tree-children {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.2s ease;
+      padding-left: 14px;
+      border-left: 1px solid rgba(255,255,255,0.08);
+      margin-left: 18px;
+    }
+    .tree-children.open { max-height: 3000px; }
+
+    .tree-file-row { font-size: 0.88rem; color: var(--star); }
+    .tree-file-row .tree-count { font-family: var(--mono); font-size: 9.5px; opacity: 0.5; margin-left: auto; }
+
+    .tree-chapter-link {
+      display: block;
+      padding: 6px 10px 6px 32px;
+      font-family: var(--lora);
+      font-size: 0.82rem;
+      color: var(--star);
+      opacity: 0.8;
+      text-decoration: none;
+      border-radius: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tree-chapter-link:hover { background: rgba(255,255,255,0.06); opacity: 1; }
+    .tree-view-all {
+      display: block;
+      margin: 2px 0 4px 32px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--saffron);
+      opacity: 0.85;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .tree-empty {
+      padding: 6px 10px 6px 32px;
+      font-family: var(--lora);
+      font-size: 0.8rem;
+      font-style: italic;
+      color: var(--star);
+      opacity: 0.4;
+    }
+
+    /* push page content a bit since topbar is sticky, no extra offset needed since it's in normal flow */
 
     /* ---- Header (plain, no drama) ---- */
     header.hero {
@@ -186,6 +382,24 @@
 </head>
 <body>
 
+<!-- SITEWIDE TOP BAR + SIDEBAR NAV -->
+<div class="topbar">
+  <button class="nav-toggle" id="nav-toggle" aria-label="Open site navigation" aria-expanded="false" aria-controls="sidebar">
+    <span></span><span></span><span></span>
+  </button>
+  <a class="topbar-title" href="./"><span class="accent">Mālola</span> Archive</a>
+</div>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<nav class="sidebar" id="sidebar" aria-label="Site navigation">
+  <div class="sidebar-head">
+    <span class="sidebar-head-title">Browse the Archive</span>
+    <button class="sidebar-close" id="sidebar-close" aria-label="Close navigation">✕</button>
+  </div>
+  <div class="sidebar-status" id="sidebar-status">Loading collections…</div>
+  <div class="sidebar-body" id="sidebar-tree"></div>
+</nav>
+
 <header class="hero" role="banner">
   <div class="hero-inner">
     <h1 class="hero-name">Mālola <span class="accent">Digitized Text</span> Archive</h1>
@@ -278,7 +492,7 @@
 
 <script>
 /* =============================================================
-   MĀLOLA ARCHIVE — Search engine
+   MĀLOLA ARCHIVE — Search engine + Sitewide Sidebar Nav
 
    Single-repo layout — everything lives under malolan05.github.io/texts:
 
@@ -363,6 +577,14 @@
   const resultsCount  = document.getElementById('results-count');
   const filterRow     = document.getElementById('filter-row');
 
+  // Sidebar DOM
+  const navToggle      = document.getElementById('nav-toggle');
+  const sidebar         = document.getElementById('sidebar');
+  const sidebarOverlay  = document.getElementById('sidebar-overlay');
+  const sidebarClose    = document.getElementById('sidebar-close');
+  const sidebarTree     = document.getElementById('sidebar-tree');
+  const sidebarStatus   = document.getElementById('sidebar-status');
+
   // ── Helpers ────────────────────────────────────────────────────────────────
   function esc(s)   { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
@@ -435,6 +657,7 @@
         repoLabel: repo.label,
         repoUrl:   repo.baseUrl,
         file:      file.path.split('/').pop(),
+        fileLabel: file.label || file.path.split('/').pop().replace(/\.[a-z]+$/i,''),
         section:   prap,
         verseNum:  refNo,
         text:      searchText,
@@ -516,6 +739,7 @@
           repoLabel: repo.label,
           repoUrl:   repo.baseUrl,
           file:      file.path.split('/').pop(),
+          fileLabel: scriptName,
           section:   sectionTitle,
           verseNum:  String(vNum),
           text:      fullText,
@@ -564,12 +788,16 @@
       const display = breadcrumb.filter(Boolean).slice(-3).map(s => s.substring(0, 50));
       if (numberLike !== null) display.push(`#${numberLike}`);
 
+      const fileLabelFallback = (breadcrumb[0] || file.path.split('/').pop().replace('.json',''));
+      const sectionTitle = breadcrumb.slice(1).join(' › ') || breadcrumb.join(' › ');
+
       records.push({
         repo:      repo.name,
         repoLabel: repo.label,
         repoUrl:   repo.baseUrl,
         file:      file.path.split('/').pop(),
-        section:   breadcrumb.join(' › '),
+        fileLabel: fileLabelFallback,
+        section:   sectionTitle,
         verseNum:  numberLike !== null ? String(numberLike) : '',
         text:      textyFields.join('\n'),
         display,
@@ -651,6 +879,9 @@
 
     // Run any pending search
     if (searchInput.value.trim().length >= 2) runSearch();
+
+    // Build the sidebar tree from whatever got loaded
+    buildSidebarTree();
   }
 
   // ── Search & render ────────────────────────────────────────────────────────
@@ -741,6 +972,108 @@
     btn.classList.add('active');
     activeFilter = btn.dataset.repo;
     runSearch();
+  });
+
+  // ── Sitewide sidebar: build a Collections → Files → Chapters tree ─────────
+  // Reuses allRecords (already parsed for search) so no extra network
+  // requests are needed. Chapters/sections are de-duplicated per file,
+  // preserving the order they first appear in the source data.
+  function buildSidebarTree() {
+    if (!allRecords.length) {
+      sidebarStatus.textContent = 'No collections could be loaded.';
+      return;
+    }
+    sidebarStatus.textContent = `${REPOS.length} collections`;
+
+    const html = REPOS.map(repo => {
+      // group this repo's records by file, preserving file order from REPOS.files
+      const filesHtml = repo.files.map(fileDef => {
+        const fileName = fileDef.path.split('/').pop();
+        const fileRecords = allRecords.filter(r => r.repo === repo.name && r.file === fileName);
+        if (!fileRecords.length) return '';
+
+        const fileLabel = fileDef.label || fileRecords[0].fileLabel || fileName.replace(/\.[a-z]+$/i, '');
+
+        // de-dupe sections/chapters, preserve first-seen order
+        const seen = new Set();
+        const chapters = [];
+        for (const r of fileRecords) {
+          const key = r.section || '';
+          if (!key || seen.has(key)) continue;
+          seen.add(key);
+          chapters.push(key);
+        }
+
+        const fileId = `f-${repo.name}-${fileName}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+        const chapterLinks = chapters.length
+          ? chapters.slice(0, 400).map(ch =>
+              `<a class="tree-chapter-link" href="${esc(repo.baseUrl)}" title="${esc(ch)}">${esc(ch)}</a>`
+            ).join('')
+          : `<div class="tree-empty">No named chapters</div>`;
+
+        return `
+          <div class="tree-file">
+            <button class="tree-row tree-file-row" data-target="${fileId}">
+              <span class="tree-caret">▶</span>
+              <span>${esc(fileLabel)}</span>
+              <span class="tree-count">${chapters.length || fileRecords.length}</span>
+            </button>
+            <div class="tree-children" id="${fileId}">
+              <a class="tree-view-all" href="${esc(repo.baseUrl)}">Open ${esc(fileLabel)} →</a>
+              ${chapterLinks}
+            </div>
+          </div>`;
+      }).join('');
+
+      const repoId = `r-${repo.name}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+      return `
+        <div class="tree-collection">
+          <button class="tree-row collection-row" data-target="${repoId}">
+            <span class="tree-caret">▶</span>
+            <span>${esc(repo.label)}</span>
+          </button>
+          <div class="tree-children" id="${repoId}">
+            <a class="tree-view-all" href="${esc(repo.baseUrl)}">Open ${esc(repo.label)} collection →</a>
+            ${filesHtml || '<div class="tree-empty">No files loaded</div>'}
+          </div>
+        </div>`;
+    }).join('');
+
+    sidebarTree.innerHTML = html;
+  }
+
+  // expand/collapse on click, delegated so it works for dynamically-added rows
+  sidebarTree.addEventListener('click', e => {
+    const row = e.target.closest('.tree-row');
+    if (!row) return;
+    const targetId = row.dataset.target;
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    const isOpen = target.classList.toggle('open');
+    const caret = row.querySelector('.tree-caret');
+    if (caret) caret.classList.toggle('rotated', isOpen);
+  });
+
+  // sidebar open/close
+  function openSidebar() {
+    sidebar.classList.add('open');
+    sidebarOverlay.classList.add('open');
+    navToggle.setAttribute('aria-expanded', 'true');
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('open');
+    navToggle.setAttribute('aria-expanded', 'false');
+  }
+  navToggle.addEventListener('click', () => {
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  sidebarClose.addEventListener('click', closeSidebar);
+  sidebarOverlay.addEventListener('click', closeSidebar);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) closeSidebar();
   });
 
   // ── Boot ───────────────────────────────────────────────────────────────────
