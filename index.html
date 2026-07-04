@@ -612,6 +612,15 @@
   function esc(s)   { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 
+  // Builds the URL to open a given file inside its collection reader.
+  // The sub-page readers (sAmam/, Agama/, srivaishnavam/) support a `file`
+  // query param that auto-opens that text, e.g.:
+  //   Agama/?file=agama-pramanyam.json
+  //   sAmam/?file=AgnEyam-text.tsv
+  function deepLink(baseUrl, fileName) {
+    return `${baseUrl}?file=${encodeURIComponent(fileName)}`;
+  }
+
   function setStatus(state, msg) {
     statusDot.className = 'status-dot ' + state;
     statusText.textContent = msg;
@@ -965,8 +974,9 @@
       const pills   = (r.display || []).filter(Boolean)
         .map(d => `<span class="result-meta-pill">${esc(d)}</span>`)
         .join('');
+      const url = deepLink(r.repoUrl, r.file);
       return `
-        <a class="result-card" href="${esc(r.repoUrl)}">
+        <a class="result-card" href="${esc(url)}">
           <div class="result-header">
             <span class="result-repo">${esc(r.repoLabel)}</span>
             <span class="result-file">${esc(r.file)}</span>
@@ -1028,10 +1038,11 @@
         }
 
         const fileId = `f-${repo.name}-${fileName}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const fileOpenUrl = deepLink(repo.baseUrl, fileName);
 
         const chapterLinks = chapters.length
           ? chapters.slice(0, 400).map(ch =>
-              `<a class="tree-chapter-link" href="${esc(repo.baseUrl)}" title="${esc(ch)}">${esc(ch)}</a>`
+              `<a class="tree-chapter-link" href="${esc(fileOpenUrl)}" title="${esc(ch)}">${esc(ch)}</a>`
             ).join('')
           : `<div class="tree-empty">No named chapters</div>`;
 
@@ -1043,7 +1054,7 @@
               <span class="tree-count">${chapters.length || fileRecords.length}</span>
             </button>
             <div class="tree-children" id="${fileId}">
-              <a class="tree-view-all" href="${esc(repo.baseUrl)}">Open ${esc(fileLabel)} →</a>
+              <a class="tree-view-all" href="${esc(fileOpenUrl)}">Open ${esc(fileLabel)} →</a>
               ${chapterLinks}
             </div>
           </div>`;
