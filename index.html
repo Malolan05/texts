@@ -15,7 +15,6 @@
     }
     :root {
       --night: #0d1117;
-      --night-mid: #161b22;
       --parchment: #f0ebe0;
       --parchment-dim: #e4ddd0;
       --ink: #1c1917;
@@ -34,137 +33,87 @@
       color: var(--ink);
       font-family: var(--lora);
       font-size: 16px;
-      line-height: 1.75;
+      line-height: 1.7;
     }
-    .hero {
+
+    /* ---- Header (plain, no drama) ---- */
+    header.hero {
       background: var(--night);
-      min-height: 100svh;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 0 48px 64px;
+      padding: 44px 32px 36px;
     }
-    .hero-rule { width: 64px; height: 2px; background: var(--saffron); margin-bottom: 28px; }
-    .hero-eyebrow {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--saffron);
-      margin-bottom: 20px;
-    }
+    .hero-inner { max-width: 760px; margin: 0 auto; }
     .hero-name {
       font-family: var(--cinzel);
-      font-size: clamp(2.6rem, 8vw, 6rem);
+      font-size: clamp(1.7rem, 4vw, 2.3rem);
       font-weight: 700;
-      line-height: 0.98;
-      letter-spacing: 0.02em;
       color: var(--parchment);
-      margin-bottom: 32px;
+      margin-bottom: 10px;
     }
     .hero-name .accent { color: var(--saffron); }
     .hero-tagline {
       font-family: var(--lora);
-      font-size: clamp(1rem, 2.2vw, 1.2rem);
-      font-style: italic;
+      font-size: 0.98rem;
       color: var(--star);
       max-width: 560px;
-      margin-bottom: 36px;
     }
-    .hero-pills { display: flex; flex-wrap: wrap; gap: 12px; }
-    .hero-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 3px;
-      padding: 8px 16px;
-      font-family: var(--mono);
-      font-size: 11.5px;
-      color: var(--star);
-      letter-spacing: 0.04em;
-    }
-    .hero-pill .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--saffron); flex-shrink: 0; }
-    .body-wrap { max-width: 900px; margin: 0 auto; padding: 80px 40px 120px; }
+
+    .body-wrap { max-width: 760px; margin: 0 auto; padding: 44px 32px 80px; }
     .sec-label {
-      display: flex;
-      align-items: center;
-      gap: 14px;
       font-family: var(--mono);
       font-size: 10px;
-      letter-spacing: 0.25em;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--saffron);
-      margin-bottom: 32px;
+      color: var(--ink-soft);
+      margin-bottom: 16px;
     }
-    .sec-label::before { content: ''; width: 28px; height: 1.5px; background: var(--saffron); flex-shrink: 0; }
-    .sec-label::after  { content: ''; flex: 1; height: 1px; background: var(--parchment-dim); }
-    section { margin-bottom: 72px; }
-    .lede { font-size: 1.05rem; color: var(--ink-soft); max-width: 680px; }
+    section { margin-bottom: 48px; }
+    .lede { font-size: 1rem; color: var(--ink-soft); max-width: 680px; }
     .lede strong { color: var(--ink); font-weight: 600; }
-    .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+
+    /* ---- Collections ---- */
+    .projects-grid { display: flex; flex-direction: column; gap: 8px; }
     .project-card {
-      background: var(--night);
-      border-radius: 6px;
-      padding: 22px 22px 18px;
-      text-decoration: none;
-      color: var(--star);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .project-card:hover { outline: 1.5px solid var(--saffron); }
-    .project-icon { font-size: 1.4rem; line-height: 1; }
-    .project-name { font-family: var(--cinzel); font-size: 1.05rem; font-weight: 600; color: var(--parchment); }
-    .project-tag { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage-lt); opacity: 0.75; }
-    .project-desc { font-family: var(--lora); font-size: 0.82rem; line-height: 1.55; color: rgba(201,209,217,0.78); flex: 1; }
-    .project-url { font-family: var(--mono); font-size: 0.68rem; color: var(--saffron); opacity: 0.85; margin-top: 4px; }
-    .lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
-    .lang-card {
       background: white;
       border: 1px solid var(--parchment-dim);
       border-radius: 4px;
-      padding: 12px 18px;
+      padding: 16px 18px;
+      text-decoration: none;
+      color: var(--ink);
       display: flex;
-      flex-wrap: wrap;
       align-items: baseline;
-      gap: 4px 8px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
-    .lang-card:hover { border-color: var(--sage); background: var(--sage-lt); }
-    .lang-name { font-family: var(--cinzel); font-weight: 600; font-size: 0.95rem; color: var(--ink); }
-    .lang-level { font-family: var(--lora); font-size: 0.75rem; font-style: italic; color: var(--ink-soft); background: var(--parchment); padding: 0 6px; border-radius: 2px; }
-    .contact-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+    .project-card:hover { border-color: var(--saffron); }
+    .project-name { font-family: var(--cinzel); font-size: 1rem; font-weight: 600; color: var(--ink); }
+    .project-desc { font-family: var(--lora); font-size: 0.88rem; color: var(--ink-soft); }
+
+    /* ---- Contact ---- */
+    .contact-grid { display: flex; flex-wrap: wrap; gap: 8px 20px; }
     .contact-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      padding: 11px 20px;
-      border: 1.5px solid var(--parchment-dim);
-      border-radius: 4px;
       font-family: var(--mono);
       font-size: 12px;
       color: var(--ink-soft);
-      text-decoration: none;
-      background: white;
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
-    .contact-link:hover { border-color: var(--night); color: var(--night); background: var(--parchment-dim); }
-    .contact-link svg { flex-shrink: 0; }
+    .contact-link:hover { color: var(--ink); }
+
     footer {
       text-align: center;
       font-family: var(--mono);
       font-size: 10.5px;
       color: var(--ink-soft);
       opacity: 0.5;
-      padding-top: 32px;
+      padding: 28px 20px 40px;
       border-top: 1px solid var(--parchment-dim);
     }
 
-    /* --- search --- */
-    .search-wrapper { position: relative; margin-bottom: 20px; }
+    /* ---- Search (simplified) ---- */
+    .search-wrapper { position: relative; margin-bottom: 14px; }
     .search-input {
       width: 100%;
-      padding: 14px 52px 14px 18px;
+      padding: 13px 46px 13px 16px;
       font-family: var(--lora);
       font-size: 1rem;
       background: white;
@@ -172,46 +121,39 @@
       border-radius: 5px;
       color: var(--ink);
       outline: none;
-      transition: border-color 0.15s;
     }
     .search-input::placeholder { color: var(--ink-soft); font-style: italic; opacity: 0.7; }
-    .search-input:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(232,160,32,0.12); }
-    .search-icon { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); pointer-events: none; opacity: 0.5; }
+    .search-input:focus { border-color: var(--saffron); }
+    .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); pointer-events: none; opacity: 0.5; }
+
     .search-status {
       font-family: var(--mono);
       font-size: 10.5px;
       color: var(--ink-soft);
-      margin-bottom: 18px;
-      min-height: 18px;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--parchment-dim); flex-shrink: 0; transition: background 0.2s; }
-    .status-dot.loading { background: var(--saffron); animation: pulse 1s infinite; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--parchment-dim); flex-shrink: 0; }
+    .status-dot.loading { background: var(--saffron); }
     .status-dot.ready  { background: var(--sage); }
     .status-dot.error  { background: #c0392b; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-    .search-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+
+    .search-filters { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
     .filter-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 13px;
+      padding: 0;
       font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      border: 1px solid var(--parchment-dim);
-      border-radius: 3px;
-      background: white;
+      font-size: 11px;
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: none;
       color: var(--ink-soft);
       cursor: pointer;
-      transition: border-color 0.12s, background 0.12s;
-      user-select: none;
     }
-    .filter-btn.active { border-color: var(--saffron); background: rgba(232,160,32,0.08); color: var(--ink); }
-    .filter-btn .count { font-size: 9px; opacity: 0.6; }
+    .filter-btn.active { border-color: var(--saffron); color: var(--ink); }
+    .filter-btn .count { opacity: 0.6; }
+
     .results-container { display: flex; flex-direction: column; gap: 10px; }
     .result-card {
       background: white;
@@ -222,52 +164,46 @@
       text-decoration: none;
       color: inherit;
       display: block;
-      transition: border-color 0.12s;
     }
     .result-card:hover { border-color: var(--saffron); }
     .result-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
-    .result-repo { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--saffron); flex-shrink: 0; }
+    .result-repo { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--saffron); flex-shrink: 0; }
     .result-file { font-family: var(--mono); font-size: 9.5px; color: var(--ink-soft); opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .result-body { font-family: var(--lora); font-size: 0.875rem; line-height: 1.6; color: var(--ink); }
     .result-body mark { background: rgba(232,160,32,0.3); color: var(--ink); border-radius: 2px; padding: 0 2px; }
     .result-meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
-    .result-meta-pill { font-family: var(--mono); font-size: 9px; letter-spacing: 0.05em; padding: 2px 7px; background: var(--parchment); border-radius: 2px; color: var(--ink-soft); }
-    .no-results { font-family: var(--lora); font-style: italic; color: var(--ink-soft); text-align: center; padding: 36px 0; font-size: 0.95rem; }
-    .search-spinner { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 32px 0; font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
-    .search-spinner::before { content: ''; width: 16px; height: 16px; border: 2px solid var(--parchment-dim); border-top-color: var(--saffron); border-radius: 50%; animation: spin 0.7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .results-count { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-bottom: 14px; }
+    .result-meta-pill { font-family: var(--mono); font-size: 9px; padding: 2px 7px; background: var(--parchment); border-radius: 2px; color: var(--ink-soft); }
+    .no-results { font-family: var(--lora); font-style: italic; color: var(--ink-soft); text-align: center; padding: 30px 0; font-size: 0.95rem; }
+    .results-count { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-bottom: 12px; }
     .results-count strong { color: var(--ink); }
-    .search-hint { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); opacity: 0.6; margin-top: 6px; display: flex; gap: 16px; flex-wrap: wrap; }
-    .search-hint kbd { background: var(--parchment-dim); padding: 0 6px; border-radius: 2px; font-family: var(--mono); font-size: 9px; }
+
     @media (max-width: 640px) {
-      .hero { padding: 0 24px 48px; }
-      .body-wrap { padding: 56px 24px 80px; }
+      header.hero { padding: 40px 24px 32px; }
+      .body-wrap { padding: 44px 24px 72px; }
     }
-    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition: none !important; animation: none !important; } }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
   </style>
 </head>
 <body>
 
 <header class="hero" role="banner">
-  <div class="hero-rule"></div>
-  <p class="hero-eyebrow">A Living Repository</p>
-  <h1 class="hero-name">
-    Mālola<br />
-    <span class="accent">Digitized Text</span> Archive
-  </h1>
-  <p class="hero-tagline">
-    Manuscripts, melodies, and scripture — recovered line by line
-    through OCR, correction, and careful re-typesetting on the web.
-  </p>
-  <div class="hero-pills">
-    <span class="hero-pill"><span class="dot"></span>Sanskrit · Tamil · Telugu</span>
-    <span class="hero-pill"><span class="dot"></span>OCR + Manual Correction</span>
-    <span class="hero-pill"><span class="dot"></span>3 Open Collections</span>
+  <div class="hero-inner">
+    <h1 class="hero-name">Mālola <span class="accent">Digitized Text</span> Archive</h1>
+    <p class="hero-tagline">Manuscripts, melodies, and scripture — recovered line by line through OCR and careful re-typesetting on the web.</p>
   </div>
 </header>
 
 <main class="body-wrap">
+
+  <!-- ABOUT -->
+  <section aria-labelledby="about-label">
+    <p class="sec-label" id="about-label">About</p>
+    <p class="lede">
+      The <strong>Mālola Digitized Text Archive</strong> gathers Sanskrit, Tamil, and
+      Telugu texts that survive only as scans, photocopies, or faded prints, and
+      brings them back as clean, searchable, citable text — three collections, fully text-searchable below.
+    </p>
+  </section>
 
   <!-- SEARCH -->
   <section aria-labelledby="search-label">
@@ -278,7 +214,7 @@
         type="search"
         id="search-input"
         class="search-input"
-        placeholder="Search across all collections — Sanskrit, Tamil, or English…"
+        placeholder="Search across all collections…"
         autocomplete="off"
         spellcheck="false"
         aria-label="Search archive texts"
@@ -301,23 +237,8 @@
       <button class="filter-btn" data-repo="srivaishnavam">Śrīvaiṣṇava <span class="count"></span></button>
     </div>
 
-    <div class="search-hint">
-      <span>🔍 <kbd>phrase</kbd> exact match · <kbd>word1 word2</kbd> all terms</span>
-      <span>⏎ press Enter to search</span>
-    </div>
-
     <div id="results-count" class="results-count" hidden></div>
     <div id="results-container" class="results-container" aria-live="polite" aria-label="Search results"></div>
-  </section>
-
-  <!-- ABOUT -->
-  <section aria-labelledby="about-label">
-    <p class="sec-label" id="about-label">About the Archive</p>
-    <p class="lede">
-      The <strong>Mālola Digitized Text Archive</strong> gathers Sanskrit and Tamil
-      texts that survive only as scans, photocopies, or faded prints, and
-      brings them back as clean, searchable, citable text.
-    </p>
   </section>
 
   <!-- COLLECTIONS -->
@@ -325,68 +246,27 @@
     <p class="sec-label" id="proj-label">Collections</p>
     <div class="projects-grid">
       <a class="project-card" href="sAmam/">
-        <div class="project-icon">𝄞</div>
-        <div class="project-tag">Sāmaveda</div>
-        <div class="project-name">sAmam</div>
-        <p class="project-desc">An interactive table exploring the Sāmaveda — its hymns, melodies, and structure, built as a living web project.</p>
-        <span class="project-url">malolan05.github.io/texts/sAmam</span>
+        <span class="project-name">sAmam</span>
+        <span class="project-desc">Sāmaveda — hymns, melodies, and structure.</span>
       </a>
       <a class="project-card" href="Agama/">
-        <div class="project-icon">📜</div>
-        <div class="project-tag">Vaiṣṇava Āgama</div>
-        <div class="project-name">Āgama</div>
-        <p class="project-desc">A repository of Vaiṣṇava Āgama texts, assembled by digitising and correcting OCR outputs of Sanskrit manuscripts.</p>
-        <span class="project-url">malolan05.github.io/texts/Agama</span>
+        <span class="project-name">Āgama</span>
+        <span class="project-desc">Vaiṣṇava Āgama texts, digitised from OCR of Sanskrit manuscripts.</span>
       </a>
       <a class="project-card" href="srivaishnavam/">
-        <div class="project-icon">📜</div>
-        <div class="project-tag">Śrīvaiṣṇava</div>
-        <div class="project-name">Śrīvaiṣṇava</div>
-        <p class="project-desc">A repository of ŚrīVaiṣṇava texts, assembled by digitising and correcting OCR outputs of Sanskrit texts.</p>
-        <span class="project-url">malolan05.github.io/texts/srivaishnavam</span>
+        <span class="project-name">Śrīvaiṣṇava</span>
+        <span class="project-desc">Śrīvaiṣṇava texts, digitised from OCR of Sanskrit sources.</span>
       </a>
-    </div>
-  </section>
-
-  <!-- SCRIPTS -->
-  <section aria-labelledby="lang-label">
-    <p class="sec-label" id="lang-label">Scripts &amp; Languages Covered</p>
-    <div class="lang-grid">
-      <div class="lang-card"><span class="lang-name">Sanskrit</span><span class="lang-level">Devanāgarī source texts</span></div>
-      <div class="lang-card"><span class="lang-name">Tamil</span><span class="lang-level">Maṇipravāḻam &amp; commentary</span></div>
-      <div class="lang-card"><span class="lang-name">Telugu</span><span class="lang-level">Grantha-derived editions</span></div>
-      <div class="lang-card"><span class="lang-name">English</span><span class="lang-level">Working &amp; reference text</span></div>
     </div>
   </section>
 
   <!-- CONTACT -->
   <section aria-labelledby="contact-label">
-    <p class="sec-label" id="contact-label">Contact the Archivist</p>
+    <p class="sec-label" id="contact-label">Contact</p>
     <div class="contact-grid">
-      <a class="contact-link" href="https://github.com/malolan05" target="_blank" rel="noopener">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17 5.1 18 5.4 18 5.4c.7 1.6.2 2.8.1 3.1.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/>
-        </svg>
-        github.com/malolan05
-      </a>
-      <a class="contact-link" href="https://www.linkedin.com/in/sunder-malolan-t-9423bb179/" target="_blank" rel="noopener">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M4.98 3.5C4.98 4.88 3.86 6 2.48 6S0 4.88 0 3.5 1.12 1 2.48 1s2.5 1.12 2.5 2.5zM0 8h5v16H0zM8 8h4.8v2.2h.1c.7-1.3 2.3-2.7 4.8-2.7 5.1 0 6.1 3.4 6.1 7.8V24h-5v-7.2c0-1.7 0-3.9-2.4-3.9-2.4 0-2.8 1.9-2.8 3.8V24H8z"/>
-        </svg>
-        LinkedIn
-      </a>
-      <a class="contact-link" href="mailto:tsmalolan@gmail.com">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
-        </svg>
-        tsmalolan@gmail.com
-      </a>
-      <a class="contact-link" href="mailto:tsunderamalolan@gmail.com">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
-        </svg>
-        tsunderamalolan@gmail.com
-      </a>
+      <a class="contact-link" href="https://github.com/malolan05" target="_blank" rel="noopener">GitHub</a>
+      <a class="contact-link" href="https://www.linkedin.com/in/sunder-malolan-t-9423bb179/" target="_blank" rel="noopener">LinkedIn</a>
+      <a class="contact-link" href="mailto:tsmalolan@gmail.com">tsmalolan@gmail.com</a>
     </div>
   </section>
 
@@ -398,9 +278,9 @@
 
 <script>
 /* =============================================================
-   MĀLOLA ARCHIVE — Search engine (rewritten July 2026)
+   MĀLOLA ARCHIVE — Search engine
 
-   Single-repo layout — everything now lives under malolan05.github.io/texts:
+   Single-repo layout — everything lives under malolan05.github.io/texts:
 
      /index.html              (this hub page)
      /sAmam/index.html          subsection app
@@ -409,8 +289,6 @@
      /data/sAmam/...            data for the sAmam subsection
      /data/Agama/...            data for the Agama subsection
      /data/srivaishnavam/...    data for the srivaishnavam subsection
-
-   Data sources (paths are site-relative — same origin, no cross-repo fetch):
 
    sAmam
      data/sAmam/AgnEyam-text.tsv   (Āgneya, ~293 rows)
@@ -501,7 +379,7 @@
   }
 
   function rawUrl(repo, filePath) {
-    // Everything now lives in this same repo, so the file path
+    // Everything lives in this same repo, so the file path
     // (e.g. "data/sAmam/AgnEyam-text.tsv") is already site-relative.
     return filePath;
   }
@@ -589,13 +467,7 @@
   // ── JSON parser ─────────────────────────────────────────────────────────────
   // Tries the documented shape first:
   //   { metadata, content: { title, sections: [{ title, number, verses: [{ verse_number, original_text, commentaries:[{author,commentary}] }] }] } }
-  // This was the assumption that worked for the format we expected — but Agama
-  // and srivaishnavam were coming back with ZERO records despite loading fine
-  // (no fetch error, no JSON.parse error — the shape just didn't line up, so
-  // every `for` loop below silently iterated over nothing). That's the actual
-  // bug: a schema mismatch that failed silently rather than a broken URL.
-  //
-  // Fix: if the strict parser finds nothing, fall back to a schema-agnostic
+  // If the strict parser finds nothing, falls back to a schema-agnostic
   // walker that finds verse/commentary-like text wherever it lives in the
   // tree, regardless of exact key names or nesting depth. This keeps the fast
   // path for files that DO match the documented shape, while no longer going
@@ -656,12 +528,10 @@
   }
 
   // ── Generic recursive JSON walker (fallback) ────────────────────────────────
-  // Walks the *entire* JSON tree regardless of how it's organized. Any object
-  // that carries meaningful text (a string field longer than a few characters)
-  // becomes one searchable record. As it descends, it tracks a "breadcrumb" of
-  // title-like fields (title/name/scripture_name/etc.) so results still show
-  // useful context (e.g. "Aniruddha Samhita › Chapter 3 › #12"), even though
-  // we never had to know the exact key names in advance.
+  // Walks the entire JSON tree regardless of how it's organized. Any object
+  // that carries meaningful text becomes one searchable record, while a
+  // breadcrumb of title-like fields keeps results readable
+  // (e.g. "Aniruddha Samhita › Chapter 3 › #12").
   function walkJSONGeneric(node, breadcrumb, repo, file, records, depth) {
     if (node == null || depth > 25) return;
 
@@ -851,8 +721,6 @@
           ${pills ? `<div class="result-meta">${pills}</div>` : ''}
         </a>`;
     }).join('');
-
-
   }
 
   // ── Events ─────────────────────────────────────────────────────────────────
