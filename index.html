@@ -6,7 +6,7 @@
   <title>Mālola · Digitized Text Archive</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
   <style>
     * {
       box-sizing: border-box;
@@ -14,17 +14,17 @@
       padding: 0;
     }
     :root {
-      --night: #0d1117;
-      --parchment: #f0ebe0;
-      --parchment-dim: #e4ddd0;
-      --ink: #1c1917;
-      --ink-soft: #57534e;
-      --saffron: #e8a020;
-      --sage: #4d7c5f;
-      --sage-lt: #dcf5e5;
-      --star: #c9d1d9;
+      --night: #1c160a;
+      --parchment: #fdf8ec;
+      --parchment-dim: #f5edcf;
+      --ink: #1c160a;
+      --ink-soft: #4a3a10;
+      --saffron: #d4960e;
+      --sage: #7c9a5e;
+      --sage-lt: #eef2df;
+      --star: #ecdfb0;
       --cinzel: 'Cinzel', Georgia, serif;
-      --lora: 'Lora', Georgia, serif;
+      --lora: 'EB Garamond', Georgia, serif;
       --mono: 'JetBrains Mono', monospace;
       --sidebar-w: 300px;
     }
@@ -79,6 +79,21 @@
       text-decoration: none;
     }
     .topbar-title .accent { color: var(--saffron); }
+    .topbar-texts-link {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--star);
+      opacity: 0.75;
+      text-decoration: none;
+      padding: 5px 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      transition: opacity 0.15s, border-color 0.15s;
+    }
+    .topbar-texts-link:hover { opacity: 1; border-color: var(--saffron); color: var(--saffron); }
 
     /* ---- Sidebar ---- */
     .sidebar-overlay {
@@ -388,6 +403,7 @@
     <span></span><span></span><span></span>
   </button>
   <a class="topbar-title" href="./"><span class="accent">Mālola</span> Archive</a>
+  <a class="topbar-texts-link" href="https://malolan05.github.io/texts">Texts</a>
 </div>
 
 <div class="sidebar-overlay" id="sidebar-overlay"></div>

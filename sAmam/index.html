@@ -6,27 +6,27 @@
   <title>Malolan • Samavedic Text Explorer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     :root {
-      --gold-50: #fffbeb;
-      --gold-100: #fef3c7;
-      --gold-200: #fde68a;
-      --gold-300: #fcd34d;
-      --gold-400: #fbbf24;
-      --gold-500: #f59e0b;
-      --gold-600: #d97706;
-      --gold-700: #b45309;
-      --gold-800: #92400e;
-      --gold-900: #78350f;
-      --earth-950: #1c0d00;
-      --parchment: #fdf6e3;
-      --parchment-dark: #f5e6c8;
-      --ink: #1a0800;
-      --ink-muted: #4a2f00;
-      --ink-faint: #7c5c2e;
-      --divider: rgba(180,83,9,0.2);
+      --gold-50: #fffcf2;
+      --gold-100: #fdf3d0;
+      --gold-200: #f0c040;
+      --gold-300: #d4960e;
+      --gold-400: #d4960e;
+      --gold-500: #b07c10;
+      --gold-600: #b07c10;
+      --gold-700: #7a5500;
+      --gold-800: #4a3a10;
+      --gold-900: #1c160a;
+      --earth-950: #1c160a;
+      --parchment: #fdf8ec;
+      --parchment-dark: #f5edcf;
+      --ink: #1c160a;
+      --ink-muted: #4a3a10;
+      --ink-faint: #8a7040;
+      --divider: rgba(176,124,16,0.22);
       --sidebar-width: 260px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,8 +58,8 @@
       height: 60px; gap: 1rem;
     }
     .nav-brand {
-      font-family: 'Noto Serif', serif;
-      font-size: 1.4rem; font-weight: 600;
+      font-family: 'Cinzel', 'EB Garamond', serif;
+      font-size: 1.15rem; font-weight: 700;
       color: var(--gold-800);
       text-decoration: none;
       display: flex; align-items: center; gap: 0.5rem;
@@ -67,6 +67,14 @@
       flex-shrink: 0;
     }
     .nav-brand:hover { color: var(--gold-600); }
+    .nav-texts-link {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--ink-faint); text-decoration: none;
+      padding: 0.3rem 0.6rem; border: 1px solid var(--divider); border-radius: 7px;
+      white-space: nowrap; transition: all 0.15s; flex-shrink: 0;
+    }
+    .nav-texts-link:hover { color: var(--gold-700); border-color: var(--gold-600); background: var(--gold-100); }
     #nav-file-badge {
       display: none;
       background: var(--gold-100);
@@ -163,7 +171,7 @@
       color: var(--gold-700); font-weight: 600;
     }
     .sw-result-snippet {
-      font-family: 'Noto Serif', serif;
+      font-family: 'EB Garamond', serif;
       font-size: 0.82rem; line-height: 1.6;
       color: var(--ink-muted);
       overflow: hidden;
@@ -225,7 +233,7 @@
       text-align: center;
     }
     .home-hero h1 {
-      font-family: 'Noto Serif', serif;
+      font-family: 'EB Garamond', serif;
       font-size: clamp(1.8rem, 4vw, 2.8rem);
       font-weight: 600; color: var(--gold-900);
       line-height: 1.2;
@@ -274,7 +282,7 @@
       border-radius: 8px; display: flex; align-items: center; justify-content: center;
     }
     .file-name {
-      font-family: 'Noto Serif', serif;
+      font-family: 'EB Garamond', serif;
       font-size: 1rem; font-weight: 600;
       color: var(--gold-900); margin-bottom: 0.25rem;
     }
@@ -318,7 +326,7 @@
       font-size: 0.82rem; font-weight: 600;
       color: var(--gold-800); cursor: pointer;
       transition: background 0.1s;
-      font-family: 'Noto Serif', serif;
+      font-family: 'EB Garamond', serif;
     }
     .sidebar-adhyaya:hover { background: var(--gold-50); }
     .sidebar-adhyaya.active { background: var(--gold-100); color: var(--gold-900); }
@@ -361,7 +369,7 @@
       border-bottom: 1px solid var(--divider);
     }
     .section-heading h2 {
-      font-family: 'Noto Serif', serif;
+      font-family: 'EB Garamond', serif;
       font-size: 1.15rem; font-weight: 600; color: var(--gold-900);
     }
     .section-badge {
@@ -402,13 +410,13 @@
     .meta-tag span { font-weight: 600; color: var(--gold-700); margin-right: 0.25rem; }
     .rik-body { padding: 1rem; }
     .rik-text {
-      font-family: 'Noto Serif', serif;
+      font-family: 'EB Garamond', serif;
       font-size: 1.05rem; line-height: 1.9;
       color: var(--ink); margin-bottom: 0.75rem;
     }
     .rik-padapatha {
       font-size: 0.85rem; color: var(--ink-muted);
-      font-family: 'Noto Serif', serif; line-height: 1.7;
+      font-family: 'EB Garamond', serif; line-height: 1.7;
       padding: 0.6rem 0.75rem;
       background: var(--gold-50); border-radius: 6px;
       border-left: 3px solid var(--gold-300);
@@ -442,7 +450,7 @@
     }
     .saaman-ref { font-size: 0.65rem; color: var(--ink-faint); font-family: 'Inter', monospace; }
     .saaman-text {
-      font-family: 'Noto Serif', serif;
+      font-family: 'EB Garamond', serif;
       font-size: 0.95rem; line-height: 1.85;
       color: var(--ink-muted); padding-left: 0.5rem;
       border-left: 2px solid var(--gold-200);
@@ -477,7 +485,7 @@
     tbody tr:nth-child(even):hover { background: #fff9e6; }
     tbody tr:last-child td { border-bottom: none; }
     td:first-child, th:first-child { font-family: 'Inter', monospace; font-weight: 600; color: var(--gold-700); font-size: 0.8rem; }
-    td:nth-child(2), td:nth-child(3) { font-family: 'Noto Serif', serif; line-height: 1.9; }
+    td:nth-child(2), td:nth-child(3) { font-family: 'EB Garamond', serif; line-height: 1.9; }
 
     mark.hl {
       background: var(--gold-200); color: var(--ink);
@@ -498,7 +506,7 @@
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .status-text { font-family: 'Noto Serif', serif; color: var(--gold-800); }
+    .status-text { font-family: 'EB Garamond', serif; color: var(--gold-800); }
 
     .back-btn {
       display: inline-flex; align-items: center; gap: 0.4rem;
@@ -536,6 +544,7 @@
 <nav>
   <div class="nav-inner">
     <a href="index.html" class="nav-brand">sAmaveda-kauthuma</a>
+    <a href="https://malolan05.github.io/texts" class="nav-texts-link">Texts</a>
 
     <div class="nav-search-wrap" id="global-search-wrap">
       <span class="search-icon-left">⌕</span>
