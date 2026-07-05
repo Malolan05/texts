@@ -859,59 +859,102 @@
     return records;
   }
 
-  // ── Load a single file ─────────────────────────────────────────────────────
-  async function loadFile(repo, file) {
+  // ── Load a single file (with one retry on transient failure) ───────────────
+  async function loadFile(repo, file, attempt = 0) {
     const url = rawUrl(repo, file.path);
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status} – ${url}`);
-    const raw = await res.text();
+    try {
+      const res = await fetch(url, { cache: 'force-cache' });
+      if (!res.ok) throw new Error(`HTTP ${res.status} – ${url}`);
+      const raw = await res.text();
 
-    if (file.type === 'tsv') {
-      return parseTSV(raw, repo, file);
-    } else {
-      let data;
-      try { data = JSON.parse(raw); }
-      catch (e) { throw new Error(`JSON parse error in ${file.path}: ${e.message}`); }
-      return parseJSON(data, repo, file);
+      if (file.type === 'tsv') {
+        return parseTSV(raw, repo, file);
+      } else {
+        let data;
+        try { data = JSON.parse(raw); }
+        catch (e) { throw new Error(`JSON parse error in ${file.path}: ${e.message}`); }
+        return parseJSON(data, repo, file);
+      }
+    } catch (e) {
+      if (attempt < 1) return loadFile(repo, file, attempt + 1);
+      throw e;
     }
   }
 
-  // ── Load all repos ─────────────────────────────────────────────────────────
+  // ── Concurrency-limited task runner ─────────────────────────────────────────
+  // Runs `tasks` (an array of functions returning promises) with at most
+  // `limit` in flight at once, calling onSettle(result|error, isError) as
+  // each one finishes — so the UI (status line, filter counts) can update
+  // progressively instead of waiting for the very last file to land.
+  async function runPool(tasks, limit, onSettle) {
+    let i = 0;
+    const workers = new Array(Math.min(limit, tasks.length)).fill(0).map(async () => {
+      while (i < tasks.length) {
+        const idx = i++;
+        try {
+          const result = await tasks[idx]();
+          onSettle(idx, null, result);
+        } catch (e) {
+          onSettle(idx, e, null);
+        }
+      }
+    });
+    await Promise.all(workers);
+  }
+
+  // ── Load all repos in parallel ──────────────────────────────────────────────
+  // Every file, across every collection, is fetched concurrently (capped pool)
+  // rather than one-at-a-time per repo — this is the main speedup, since the
+  // previous version awaited each of the ~35 files sequentially even though
+  // they're all independent same-origin requests.
   async function loadAll() {
     setStatus('loading', 'Loading data files…');
 
-    let loadedRepos = 0;
-    let failedRepos = 0;
-
+    // Flatten every (repo, file) pair into one job list so the whole archive
+    // loads on one shared pool instead of collection-by-collection.
+    const jobs = [];
     for (const repo of REPOS) {
-      let repoCount = 0;
-      let repoFailed = 0;
-
-      for (const file of repo.files) {
-        try {
-          const recs = await loadFile(repo, file);
-          allRecords.push(...recs);
-          repoCount += recs.length;
-          console.log(`[${repo.name}] ${file.path} → ${recs.length} records`);
-        } catch (e) {
-          repoFailed++;
-          console.warn(`[${repo.name}] failed ${file.path}:`, e.message);
-        }
-      }
-
-      if (repoCount > 0) loadedRepos++;
-      else failedRepos++;
-
-      updateFilterCount(repo.name);
+      for (const file of repo.files) jobs.push({ repo, file });
     }
 
+    const repoCounts  = Object.fromEntries(REPOS.map(r => [r.name, 0]));
+    const repoFails   = Object.fromEntries(REPOS.map(r => [r.name, 0]));
+    let done = 0;
+
+    const CONCURRENCY = 8;
+    await runPool(
+      jobs.map(job => () => loadFile(job.repo, job.file)),
+      CONCURRENCY,
+      (idx, err, recs) => {
+        const { repo, file } = jobs[idx];
+        done++;
+        if (err) {
+          repoFails[repo.name]++;
+          console.warn(`[${repo.name}] failed ${file.path}:`, err.message);
+        } else {
+          // Precompute the lowercase text once, up front, so every keystroke
+          // during search doesn't re-lowercase the same string repeatedly.
+          for (const r of recs) r.textLC = r.text.toLowerCase();
+          allRecords.push(...recs);
+          repoCounts[repo.name] += recs.length;
+          console.log(`[${repo.name}] ${file.path} → ${recs.length} records`);
+        }
+        setStatus('loading', `Indexing… ${done.toLocaleString()}/${jobs.length} files (${allRecords.length.toLocaleString()} records)`);
+        updateFilterCount(repo.name);
+      }
+    );
+
     const total = allRecords.length;
+    const loadedRepos = REPOS.filter(r => repoCounts[r.name] > 0).length;
+    const failedRepos = REPOS.filter(r => repoCounts[r.name] === 0).length;
+    const partialRepos = REPOS.filter(r => repoFails[r.name] > 0 && repoCounts[r.name] > 0).length;
     console.log(`Total records indexed: ${total}`);
 
     if (total === 0) {
       setStatus('error', 'Could not load any data — check the console for details.');
-    } else if (failedRepos > 0) {
-      setStatus('ready', `${total.toLocaleString()} records loaded (${failedRepos} collection${failedRepos > 1 ? 's' : ''} partially unavailable)`);
+    } else if (failedRepos > 0 || partialRepos > 0) {
+      const issues = failedRepos + partialRepos;
+      setStatus('ready', `${total.toLocaleString()} records indexed across ${loadedRepos} collection${loadedRepos !== 1 ? 's' : ''} (${issues} collection${issues > 1 ? 's' : ''} partially unavailable)`);
     } else {
       setStatus('ready', `${total.toLocaleString()} records indexed across ${loadedRepos} collection${loadedRepos !== 1 ? 's' : ''}`);
     }
@@ -924,12 +967,13 @@
   }
 
   // ── Search & render ────────────────────────────────────────────────────────
-  function buildSnippet(text, terms) {
+  const MAX_RENDERED = 300; // cap DOM writes; searching stays exhaustive, rendering doesn't
+
+  function buildSnippet(text, textLC, terms) {
     if (!text) return '';
-    const lc = text.toLowerCase();
     let first = text.length;
     for (const t of terms) {
-      const idx = lc.indexOf(t.toLowerCase());
+      const idx = textLC.indexOf(t);
       if (idx !== -1 && idx < first) first = idx;
     }
     const start   = Math.max(0, first - 40);
@@ -951,33 +995,44 @@
       return;
     }
 
-    // Parse quoted phrases and bare words
+    // Parse quoted phrases and bare words, lowercase once up front since
+    // every record's text is already cached lowercase (r.textLC).
     const termMatches = raw.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g);
     if (!termMatches) { resultsEl.innerHTML = ''; resultsCount.hidden = true; return; }
-    const terms = termMatches.map(t => t.replace(/^['"]|['"]$/g, '').trim()).filter(Boolean);
+    const terms = termMatches.map(t => t.replace(/^['"]|['"]$/g, '').trim().toLowerCase()).filter(Boolean);
     if (!terms.length) { resultsEl.innerHTML = ''; resultsCount.hidden = true; return; }
 
-    const pool = activeFilter === 'all'
-      ? allRecords
-      : allRecords.filter(r => r.repo === activeFilter);
-
-    const matches = pool.filter(r => {
-      const lc = r.text.toLowerCase();
-      return terms.every(t => lc.includes(t.toLowerCase()));
-    });
+    // Single pass: filter-by-collection and term-match together, instead of
+    // building an intermediate filtered array first. r.textLC is precomputed
+    // at load time, so no per-keystroke re-lowercasing of the whole corpus.
+    const matches = [];
+    const filterAll = activeFilter === 'all';
+    for (let i = 0; i < allRecords.length; i++) {
+      const r = allRecords[i];
+      if (!filterAll && r.repo !== activeFilter) continue;
+      const lc = r.textLC;
+      let ok = true;
+      for (let t = 0; t < terms.length; t++) {
+        if (lc.indexOf(terms[t]) === -1) { ok = false; break; }
+      }
+      if (ok) matches.push(r);
+    }
 
     resultsCount.hidden = false;
     resultsCount.innerHTML = matches.length === 0
       ? `No results for <strong>${esc(raw)}</strong>`
-      : `<strong>${matches.length.toLocaleString()}</strong> result${matches.length !== 1 ? 's' : ''} for <strong>${esc(raw)}</strong>`;
+      : `<strong>${matches.length.toLocaleString()}</strong> result${matches.length !== 1 ? 's' : ''} for <strong>${esc(raw)}</strong>` +
+        (matches.length > MAX_RENDERED ? ` <span style="opacity:.7">— showing first ${MAX_RENDERED}, refine to narrow down</span>` : '');
 
     if (matches.length === 0) {
       resultsEl.innerHTML = `<p class="no-results">No texts matched <em>${esc(raw)}</em> in ${activeFilter === 'all' ? 'any collection' : 'this collection'}.</p>`;
       return;
     }
 
-    resultsEl.innerHTML = matches.map(r => {
-      const snippet = buildSnippet(r.text, terms);
+    const toRender = matches.length > MAX_RENDERED ? matches.slice(0, MAX_RENDERED) : matches;
+
+    resultsEl.innerHTML = toRender.map(r => {
+      const snippet = buildSnippet(r.text, r.textLC, terms);
       const pills   = (r.display || []).filter(Boolean)
         .map(d => `<span class="result-meta-pill">${esc(d)}</span>`)
         .join('');
