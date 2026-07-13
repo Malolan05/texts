@@ -16,32 +16,29 @@ sAmam
     AgnEyam-text.html
     Aindram-text.html
 srivaishnavam
-    bhavaprakasha-ked.html
     brahma-sutra-adhyaya-four.html
     brahma-sutra-adhyaya-one.html
     brahma-sutra-adhyaya-three.html
     brahma-sutra-adhyaya-two.html
     brihadaranyaka-upanishad.html
     chandogya-upanishad.html
-    gitarthasangraha.html
     katha-upanishad.html
     kaushitaki-upanishad.html
-    mata-prakriya.html
-    mimamsa-paribasha.html
     mundaka-upanishad.html
+    shvetasvatara-upanishad.html
+    taittiriya-upanishad.html
+    upanishad-one.html
+    vedarthasangraha.html
+    yatindramatadipika.html
+    mata-prakriya.html
+    bhavaprakasha-ked.html
+    gitarthasangraha.html
     natvacandrika-pramukhacapetika.html
+    shatadushani.html
     paratattvanirnaya-prameyamala.html
     purushakara-mimamsa.html
     rahasyatrayasara.html
     rahasyatrayasararthasangraha.html
-    shatadushani.html
-    shvetasvatara-upanishad.html
     siddhanta-ratnavali-and-vedanta-karika.html
-    smritimuktaphalam.html
     stotraratna.html
-    taittiriya-upanishad.html
-    tarkasangraha.html
     tattvamuktakalapam.html
-    upanishad-one.html
-    vedarthasangraha.html
-    yatindramatadipika.html
