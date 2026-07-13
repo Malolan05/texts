@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stotraratna</title>
+<style>
+:root{
+  --font-scale: 1;
+  --serif: Georgia, 'Noto Serif', 'Times New Roman', serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --deva: 'Noto Sans Devanagari', 'Sanskrit 2003', 'Siddhanta', 'Nirmala UI', sans-serif;
+
+  --bg: #faf6ef;
+  --bg-alt: #f2ead9;
+  --panel: #ffffff;
+  --text: #2b2420;
+  --text-soft: #6b5f52;
+  --accent: #8a4b26;
+  --accent-soft: #c98a53;
+  --border: #e4d7c0;
+  --shadow: 0 1px 3px rgba(60,40,10,0.08), 0 1px 2px rgba(60,40,10,0.06);
+  --highlight: #fff1a8;
+  --link: #8a4b26;
+}
+
+html[data-theme="dark"]{
+  --bg: #16130f;
+  --bg-alt: #1e1a14;
+  --panel: #201b15;
+  --text: #ece4d6;
+  --text-soft: #b6a892;
+  --accent: #e0a469;
+  --accent-soft: #a97540;
+  --border: #3a3226;
+  --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --highlight: #5a4a12;
+  --link: #e0a469;
+}
+
+*{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+body{
+  margin:0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: calc(16px * var(--font-scale));
+  line-height: 1.6;
+  transition: background .2s ease, color .2s ease;
+}
+
+a{ color: var(--link); }
+
+/* ---------- Top bar ---------- */
+.topbar{
+  position: sticky; top:0; z-index: 50;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.topbar-inner{
+  max-width: 980px; margin:0 auto;
+  padding: .6rem .9rem;
+  display:flex; flex-wrap: wrap; gap:.5rem;
+  align-items:center;
+}
+.brand{
+  font-family: var(--serif);
+  font-weight:700; font-size:1.05rem;
+  color: var(--accent);
+  text-decoration:none;
+  margin-right:auto;
+  white-space:nowrap;
+}
+.search-wrap{
+  flex: 1 1 220px; min-width: 140px; position:relative;
+}
+#searchInput{
+  width:100%;
+  padding:.5rem .7rem .5rem 2rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: .95rem;
+}
+.search-wrap::before{
+  content: "⌕";
+  position:absolute; left:.6rem; top:50%; transform:translateY(-50%);
+  color: var(--text-soft); font-size:1rem; pointer-events:none;
+}
+#searchCount{
+  font-size:.78rem; color:var(--text-soft); white-space:nowrap;
+}
+.btn{
+  border:1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 8px;
+  padding:.45rem .6rem;
+  font-size:.85rem;
+  cursor:pointer;
+  line-height:1;
+}
+.btn:hover{ border-color: var(--accent-soft); color: var(--accent); }
+.btn-group{ display:flex; gap:.25rem; }
+.icon-btn{ font-size:1rem; padding:.45rem .55rem; }
+
+/* ---------- Layout ---------- */
+.layout{
+  max-width: 980px; margin: 0 auto; padding: 0 .9rem 4rem;
+  display:flex; gap:1.4rem; align-items:flex-start;
+}
+.content{ flex:1; min-width:0; }
+
+/* ---------- Header / metadata ---------- */
+.doc-header{ padding: 1.4rem 0 .6rem; }
+.doc-title{
+  font-family: var(--serif);
+  font-size: 1.9rem;
+  margin: 0 0 .3rem;
+  color: var(--accent);
+}
+.doc-meta{
+  display:flex; flex-wrap:wrap; gap:.4rem .9rem;
+  font-size:.85rem; color: var(--text-soft); margin-bottom:.6rem;
+}
+.doc-meta span b{ color: var(--text); font-weight:600; }
+.doc-desc{ color: var(--text-soft); font-size:.95rem; max-width: 68ch; }
+
+/* ---------- TOC ---------- */
+.toc-toggle{ display:none; }
+.toc{
+  position: sticky; top: 4.2rem;
+  width: 220px; flex-shrink:0;
+  max-height: calc(100vh - 5rem);
+  overflow:auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .7rem .8rem;
+  box-shadow: var(--shadow);
+  margin-top: 1.4rem;
+}
+.toc h4{ margin:.1rem 0 .5rem; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-soft);}
+.toc ol{ list-style:none; margin:0; padding:0; counter-reset: item; }
+.toc li{ margin:0; }
+.toc a{
+  display:block; padding:.3rem .3rem; font-size:.85rem;
+  text-decoration:none; color:var(--text); border-radius:6px;
+}
+.toc a:hover{ background: var(--bg-alt); color:var(--accent); }
+
+/* ---------- Sections / chapters ---------- */
+.chapter{
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  margin: 1rem 0;
+  box-shadow: var(--shadow);
+  overflow:hidden;
+}
+.chapter > summary{
+  cursor:pointer;
+  list-style:none;
+  padding: .85rem 1.1rem;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  color: var(--accent);
+  background: var(--bg-alt);
+  display:flex; align-items:center; gap:.5rem;
+}
+.chapter > summary::-webkit-details-marker{ display:none; }
+.chapter > summary::before{
+  content: "▸";
+  display:inline-block;
+  transition: transform .15s ease;
+  color: var(--accent-soft);
+  font-size:.9rem;
+}
+.chapter[open] > summary::before{ transform: rotate(90deg); }
+.chapter-body{ padding: .3rem 1.1rem 1rem; }
+
+/* ---------- Verses ---------- */
+.verse{
+  padding: .9rem 0;
+  border-top: 1px dashed var(--border);
+}
+.verse:first-child{ border-top:none; }
+.verse-head{
+  display:flex; align-items:baseline; gap:.6rem; margin-bottom:.35rem;
+}
+.verse-num{
+  font-size:.75rem;
+  color: var(--bg);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding:.1rem .55rem;
+  font-weight:600;
+  white-space:nowrap;
+}
+.original-text{
+  font-family: var(--deva);
+  font-size: 1.25rem;
+  line-height: 2;
+  white-space: pre-wrap;
+  margin: .2rem 0 .4rem;
+}
+.iast-text{
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--text-soft);
+  white-space: pre-wrap;
+  margin: .2rem 0 .4rem;
+}
+.translation{
+  white-space: pre-wrap;
+  margin: .2rem 0 .5rem;
+}
+.translation b.lbl, .field-lbl{
+  font-size:.72rem; text-transform:uppercase; letter-spacing:.05em;
+  color: var(--text-soft); display:block; margin-bottom:.15rem;
+}
+
+/* ---------- Commentaries ---------- */
+.commentaries{ margin-top:.4rem; }
+.commentary{
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: .4rem 0;
+  background: var(--bg);
+}
+.commentary > summary{
+  cursor:pointer; list-style:none;
+  padding:.45rem .7rem;
+  font-size:.85rem; font-weight:600; color: var(--text);
+  display:flex; align-items:center; gap:.4rem;
+}
+.commentary > summary::-webkit-details-marker{ display:none; }
+.commentary > summary::before{ content:"+"; color:var(--accent); font-weight:700; width:1em; }
+.commentary[open] > summary::before{ content:"–"; }
+.commentary-body{
+  padding: .2rem .9rem .8rem;
+  white-space: pre-wrap;
+  font-size: .95rem;
+}
+
+/* ---------- Vedic (TSV) specific ---------- */
+.veda-row{
+  display:grid;
+  grid-template-columns: minmax(0,1fr);
+  gap:.3rem;
+  padding:.8rem 0;
+  border-top:1px dashed var(--border);
+}
+.veda-row:first-child{ border-top:none; }
+.veda-fields{
+  display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
+  gap:.3rem .8rem; font-size:.85rem; color:var(--text-soft); margin-top:.3rem;
+}
+.veda-fields div b{ color:var(--text); }
+
+/* ---------- highlight ---------- */
+mark{ background: var(--highlight); color: inherit; border-radius:3px; padding:0 .1em; }
+
+/* ---------- misc ---------- */
+.hidden{ display:none !important; }
+.empty-msg{ text-align:center; padding:2rem; color:var(--text-soft); }
+.back-top{
+  position: fixed; right:1rem; bottom:1rem;
+  border-radius:999px; width:2.6rem; height:2.6rem;
+  display:flex; align-items:center; justify-content:center;
+  background: var(--accent); color:#fff; border:none; cursor:pointer;
+  box-shadow: var(--shadow); font-size:1.1rem; opacity:0; pointer-events:none;
+  transition: opacity .2s ease;
+}
+.back-top.show{ opacity:1; pointer-events:auto; }
+
+footer.site-footer{
+  text-align:center; color:var(--text-soft); font-size:.8rem;
+  padding: 2rem 1rem 3rem;
+}
+
+/* ---------- Index page cards ---------- */
+.index-grid{
+  display:grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
+  gap:1rem; margin-top:1.2rem;
+}
+.card{
+  background:var(--panel); border:1px solid var(--border); border-radius:12px;
+  padding:1rem 1.1rem; box-shadow: var(--shadow); text-decoration:none; color:var(--text);
+  display:flex; flex-direction:column; gap:.3rem;
+}
+.card:hover{ border-color: var(--accent-soft); }
+.card .cat{
+  font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--accent);
+  font-weight:700;
+}
+.card h3{ margin:.1rem 0; font-family:var(--serif); font-size:1.1rem; color:var(--text); }
+.card .desc{ font-size:.85rem; color:var(--text-soft); flex:1; }
+.card .stats{ font-size:.75rem; color:var(--text-soft); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 800px){
+  .layout{ flex-direction:column; }
+  .toc{
+    position: static; width:100%; max-height:none; margin-top:0;
+    order:-1;
+  }
+  .toc.collapsed .toc-body{ display:none; }
+  .toc-toggle{
+    display:flex; width:100%; justify-content:space-between; align-items:center;
+    background:none; border:none; color:var(--accent); font-weight:600;
+    padding:0; cursor:pointer; font-size:.85rem;
+  }
+  .brand{ font-size:.95rem; }
+  .doc-title{ font-size:1.5rem; }
+  .original-text{ font-size:1.12rem; }
+}
+@media (max-width: 480px){
+  .topbar-inner{ padding:.5rem .6rem; }
+  #searchCount{ display:none; }
+}
+</style>
+
+</head>
+<body>
+
+    <div class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="../index.html">☰ Sanskrit Library</a>
+        
+        <div class="search-wrap">
+          <input id="searchInput" type="text" placeholder="Search this text..." autocomplete="off" />
+        </div>
+        <span id="searchCount"></span>
+        <div class="btn-group">
+          <button class="btn" title="Collapse all" onclick="setAllDetails(false)">Collapse all</button>
+          <button class="btn" title="Expand all" onclick="setAllDetails(true)">Expand all</button>
+        </div>
+        
+        <div class="btn-group">
+          <button class="btn icon-btn" title="Decrease font size" onclick="bumpFont(-0.1)">A−</button>
+          <button class="btn icon-btn" title="Increase font size" onclick="bumpFont(0.1)">A+</button>
+          <button class="btn icon-btn" id="themeToggle" title="Toggle dark mode" onclick="toggleTheme()">☾</button>
+        </div>
+      </div>
+    </div>
+    
+
+    <div class="layout">
+      
+      <div class="content">
+        
+    <header class="doc-header">
+      <h1 class="doc-title">Stotraratna</h1>
+      <div class="doc-meta">
+      <span><b>Author:</b> Yāmunācārya</span>
+      <span><b>Composed:</b> ~1000 CE</span>
+      <span><b>Category:</b> Stotra</span>
+      <span><b>Language:</b> Sanskrit</span>
+      <span><b>Chapters:</b> 1</span>
+      <span><b>Verses:</b> 67</span>
+    </div>
+      <p class="doc-desc">The first stotragrantha of a Śrivaiṣṇava Ācārya, on Śriman Narayana and the essence of Rahasyatrayas.</p>
+    </header>
+    
+        <p id="emptyMsg" class="empty-msg hidden">No verses match your search.</p>
+        <details class="chapter" id="ch-1" open>
+<summary>1. Stotraratna</summary>
+<div class="chapter-body">
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 0</span></div>
+<div class="original-text">स्वादयन्निह सर्वेषां त्रय्यन्तार्थं सुदुर्ग्रहम् । 
+स्तोत्रयामास योगीन्द्रस्तं वन्दे यामुनाह्वयम् ॥ 
+नमो नमो यामुनाय यामुनाय नमो नमः । 
+नमो नमो यामुनाय यामुनाय नमो नमः ॥ 
+नमो यामुनपादाब्जरेणुभिः पावितात्मने । 
+विदिताखिलवेद्याय गुरवे विदितात्मने ॥</div>
+<div class="iast-text">svādayanniha sarveṣāṃ trayyantārthaṃ sudurgraham ।
+stotrayāmāsa yogīndrastaṃ vande yāmunāhvayam ॥
+namo namo yāmunāya yāmunāya namo namaḥ ।
+namo namo yāmunāya yāmunāya namo namaḥ ॥
+namo yāmunapādābjareṇubhiḥ pāvitātmane ।
+viditākhilavedyāya gurave viditātmane ॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 1</span></div>
+<div class="original-text">नमोऽचिन्त्याद्भुताक्लिष्टज्ञानवैराग्यराशये । 
+नाथाय मुनयेऽगाधभगवद्भक्तिसिन्धवे ॥ १॥</div>
+<div class="iast-text">namo'cintyādbhutākliṣṭajñānavairāgyarāśaye ।
+nāthāya munaye'gādhabhagavadbhaktisindhave ॥ 1॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 2</span></div>
+<div class="original-text">तस्मै नमो मधुजिदङ्घ्रिसरोजतत्त्वज्ञानानुरागमहिमातिशयान्तसीम्ने । 
+नाथाय नाथमुनयेऽत्र परत्र चापि नित्यं यदीयचरणौ शरणं मदीयम् ॥ २॥</div>
+<div class="iast-text">tasmai namo madhujidaṅghrisarojatattvajñānānurāgamahimātiśayāntasīmne ।
+nāthāya nāthamunaye'tra paratra cāpi nityaṃ yadīyacaraṇau śaraṇaṃ madīyam ॥ 2॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 3</span></div>
+<div class="original-text">भूयो नमोऽपरिमिताच्युतभक्तितत्त्वज्ञानामृताब्धिपरिवाहशुभैर्वचोभिः । 
+लोकेऽवतीर्णपरमार्थसमग्रभक्तियोगाय नाथमुनये यमिनां वराय ॥ ३॥</div>
+<div class="iast-text">bhūyo namo'parimitācyutabhaktitattvajñānāmṛtābdhiparivāhaśubhairvacobhiḥ ।
+loke'vatīrṇaparamārthasamagrabhaktiyogāya nāthamunaye yamināṃ varāya ॥ 3॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 4</span></div>
+<div class="original-text">तत्त्वेन यश्चिदचिदीश्वरतत्स्वभावभोगापवर्गतदुपायगतीरुदारः । 
+सन्दर्शयन्निरमिमीत पुराणरत्नं तस्मै नमो मुनिवराय पराशराय ॥ ४॥</div>
+<div class="iast-text">tattvena yaścidacidīśvaratatsvabhāvabhogāpavargatadupāyagatīrudāraḥ ।
+sandarśayanniramimīta purāṇaratnaṃ tasmai namo munivarāya parāśarāya ॥ 4॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 5</span></div>
+<div class="original-text">माता पिता युवतयस्तनया विभूतिस्सर्वं यदेव नियमेन मदन्वयानाम् । 
+आद्यस्य नः कुलपतेर्वकुलाभिरामं श्रीमत्तदङ्घ्रियुगलं प्रणमामि मूर्ध्ना ॥ ५॥</div>
+<div class="iast-text">mātā pitā yuvatayastanayā vibhūtissarvaṃ yadeva niyamena madanvayānām ।
+ādyasya naḥ kulapatervakulābhirāmaṃ śrīmattadaṅghriyugalaṃ praṇamāmi mūrdhnā ॥ 5॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 6</span></div>
+<div class="original-text">यन्मूर्ध्नि मे श्रुतिशिरस्सु च भाति यस्मिन्नस्मन्मनोरथपथस्सकलस्समेति । 
+स्तोष्यामि नः कुलधनं कुलदैवतं तत्पादारविन्दमरविन्दविलोचनस्य ॥ ६॥</div>
+<div class="iast-text">yanmūrdhni me śrutiśirassu ca bhāti yasminnasmanmanorathapathassakalassameti ।
+stoṣyāmi naḥ kuladhanaṃ kuladaivataṃ tatpādāravindamaravindavilocanasya ॥ 6॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 7</span></div>
+<div class="original-text">तत्त्वेन यस्य महिमार्णवशीकराणुः शक्यो न मातुमपि शर्वपितामहाद्यैः । 
+कर्तुं तदीयमहिमस्तुतिमुद्यताय मह्यं नमोऽस्तु कवये निरपत्रपाय ॥ ७॥</div>
+<div class="iast-text">tattvena yasya mahimārṇavaśīkarāṇuḥ śakyo na mātumapi śarvapitāmahādyaiḥ ।
+kartuṃ tadīyamahimastutimudyatāya mahyaṃ namo'stu kavaye nirapatrapāya ॥ 7॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 8</span></div>
+<div class="original-text">यद्वा श्रमावधि यथामति वाप्यशक्तः स्तौम्येवमेव खलु तेऽपि सदा स्तुवन्तः । 
+वेदाश्चतुर्मुखमुखाश्च महार्णवान्तः को मज्जतोरणुकुलाचलयोर्विशेषः ॥ ८॥</div>
+<div class="iast-text">yadvā śramāvadhi yathāmati vāpyaśaktaḥ staumyevameva khalu te'pi sadā stuvantaḥ ।
+vedāścaturmukhamukhāśca mahārṇavāntaḥ ko majjatoraṇukulācalayorviśeṣaḥ ॥ 8॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 9</span></div>
+<div class="original-text">किञ्चैष शक्त्यतिशयेन न तेऽनुकम्प्यः स्तोताऽपि तु स्तुतिकृतेन परिश्रमेण । 
+तत्र श्रुमस्तु सुलभो मम मन्दबुद्धेरित्युद्यमोऽयमुचितो मम चाब्जनेत्र ॥ ९॥</div>
+<div class="iast-text">kiñcaiṣa śaktyatiśayena na te'nukampyaḥ stotā'pi tu stutikṛtena pariśrameṇa ।
+tatra śrumastu sulabho mama mandabuddherityudyamo'yamucito mama cābjanetra ॥ 9॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 10</span></div>
+<div class="original-text">नावेक्षसे यदि ततो भुवनान्यमूनि नालं प्रभो भवितुमेव कुतः प्रवृत्तिः । 
+एवं निसर्गसुहृदि त्वयि सर्वजन्तोः स्वामिन्न चित्रमिदमाश्रितवत्सलत्वम् ॥ १०॥</div>
+<div class="iast-text">nāvekṣase yadi tato bhuvanānyamūni nālaṃ prabho bhavitumeva kutaḥ pravṛttiḥ ।
+evaṃ nisargasuhṛdi tvayi sarvajantoḥ svāminna citramidamāśritavatsalatvam ॥ 10॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 11</span></div>
+<div class="original-text">स्वाभाविकानवधिकातिशयेशितृत्वं नारायण त्वयि न मृष्यति वैदिकः कः । 
+ब्रह्मा शिवश्शतमखः परमस्वराडित्येतेऽपि यस्य महिमार्णवविप्रुषस्ते ॥ ११॥</div>
+<div class="iast-text">svābhāvikānavadhikātiśayeśitṛtvaṃ nārāyaṇa tvayi na mṛṣyati vaidikaḥ kaḥ ।
+brahmā śivaśśatamakhaḥ paramasvarāḍityete'pi yasya mahimārṇavavipruṣaste ॥ 11॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 12</span></div>
+<div class="original-text">कश्श्रीश्श्रियः परमसत्त्वसमाश्रयः कः कः पुण्डरीकनयनः पुरुषोत्तमः कः । 
+कस्यायुतायुतशतैककलांशकांशे विश्वं विचित्रचिदचित्प्रविभागवृत्तम् ॥ १२॥</div>
+<div class="iast-text">kaśśrīśśriyaḥ paramasattvasamāśrayaḥ kaḥ kaḥ puṇḍarīkanayanaḥ puruṣottamaḥ kaḥ ।
+kasyāyutāyutaśataikakalāṃśakāṃśe viśvaṃ vicitracidacitpravibhāgavṛttam ॥ 12॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 13</span></div>
+<div class="original-text">वेदापहारगुरुपातकदैत्यपीडाद्यापद्विमोचनमहिष्ठफलप्रदानैः । 
+कोऽन्यः प्रजापशुपती परिपाति कस्य पादोदकेन स शिवस्स्वशिरोधृतेन ॥ १३॥</div>
+<div class="iast-text">vedāpahāragurupātakadaityapīḍādyāpadvimocanamahiṣṭhaphalapradānaiḥ ।
+ko'nyaḥ prajāpaśupatī paripāti kasya pādodakena sa śivassvaśirodhṛtena ॥ 13॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 14</span></div>
+<div class="original-text">कस्योदरे हरविरिञ्चमुखः प्रपञ्चः को रक्षतीममजनिष्ट च कस्य नाभेः । 
+क्रान्त्वा निगीर्य पुनरुद्गिरति त्वदन्यः कः केन वैष परवानिति शक्यशङ्कः ॥ १४॥</div>
+<div class="iast-text">kasyodare haraviriñcamukhaḥ prapañcaḥ ko rakṣatīmamajaniṣṭa ca kasya nābheḥ ।
+krāntvā nigīrya punarudgirati tvadanyaḥ kaḥ kena vaiṣa paravāniti śakyaśaṅkaḥ ॥ 14॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 15</span></div>
+<div class="original-text">त्वां शीलरूपचरितैः परमप्रकृष्टसत्त्वेन सात्विकतया प्रबलैश्च शास्त्रैः । 
+प्रख्यातदैवपरमार्थविदां मतैश्च नैवासुरप्रकृतयः प्रभवन्ति बोद्धुम् ॥ १५॥</div>
+<div class="iast-text">tvāṃ śīlarūpacaritaiḥ paramaprakṛṣṭasattvena sātvikatayā prabalaiśca śāstraiḥ ।
+prakhyātadaivaparamārthavidāṃ mataiśca naivāsuraprakṛtayaḥ prabhavanti boddhum ॥ 15॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 16</span></div>
+<div class="original-text">उल्लङ्घितत्रिविधसीमसमातिशायिसम्भावनं तव परिब्रढिमस्वभावम् । 
+मायाबलेन भवताऽपि निगूह्यमानं पश्यन्ति केचिदनिशं त्वदनन्यभावाः ॥ १६॥</div>
+<div class="iast-text">ullaṅghitatrividhasīmasamātiśāyisambhāvanaṃ tava paribraḍhimasvabhāvam ।
+māyābalena bhavatā'pi nigūhyamānaṃ paśyanti kecidaniśaṃ tvadananyabhāvāḥ ॥ 16॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 17</span></div>
+<div class="original-text">यदण्डमण्डान्तरगोचरं च यद्दशोत्तराण्यावरणानि यानि च । 
+गुणाः प्रधानं पुरुषः परं पदं परात्परं ब्रह्म च ते विभूतयः ॥ १७॥</div>
+<div class="iast-text">yadaṇḍamaṇḍāntaragocaraṃ ca yaddaśottarāṇyāvaraṇāni yāni ca ।
+guṇāḥ pradhānaṃ puruṣaḥ paraṃ padaṃ parātparaṃ brahma ca te vibhūtayaḥ ॥ 17॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 18</span></div>
+<div class="original-text">वशी वदान्यो गुणवानृजुश्शुचिर्मृदुर्दयालुर्मधुरस्स्थिरस्समः । 
+कृती कृतज्ञस्त्वमसि स्वभावतस्समस्तकल्याणगुणामृतोदधिः ॥ १८॥</div>
+<div class="iast-text">vaśī vadānyo guṇavānṛjuśśucirmṛdurdayālurmadhurassthirassamaḥ ।
+kṛtī kṛtajñastvamasi svabhāvatassamastakalyāṇaguṇāmṛtodadhiḥ ॥ 18॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 19</span></div>
+<div class="original-text">उपर्युपर्यब्जभुवोऽपि पूरुषान्प्रकल्प्य ते ये शतमित्यनुक्रमात् । 
+गिरस्त्वदेकैकगुणावधीप्सया सदा स्थिता नोद्यमतोऽतिशेरते ॥ १९॥</div>
+<div class="iast-text">uparyuparyabjabhuvo'pi pūruṣānprakalpya te ye śatamityanukramāt ।
+girastvadekaikaguṇāvadhīpsayā sadā sthitā nodyamato'tiśerate ॥ 19॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 20</span></div>
+<div class="original-text">त्वदाश्रितानां जगदुद्भवस्थितिप्रणाशसंसारविमोचनादयः । 
+भवन्ति लीला विधयश्च वैदिकास्त्वदीयगम्भीरमनोऽनुसारिणः ॥ २०॥</div>
+<div class="iast-text">tvadāśritānāṃ jagadudbhavasthitipraṇāśasaṃsāravimocanādayaḥ ।
+bhavanti līlā vidhayaśca vaidikāstvadīyagambhīramano'nusāriṇaḥ ॥ 20॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 21</span></div>
+<div class="original-text">नमो नमो वाङ्मनसातिभूमये नमो नमो वाङ्मनसैकभूमये । 
+नमो नमोऽनन्तमहाविभूतये नमो नमोऽनन्तदयैकसिन्धवे ॥ २१॥</div>
+<div class="iast-text">namo namo vāṅmanasātibhūmaye namo namo vāṅmanasaikabhūmaye ।
+namo namo'nantamahāvibhūtaye namo namo'nantadayaikasindhave ॥ 21॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 22</span></div>
+<div class="original-text">न धर्मनिष्ठोऽस्मि न चात्मवेदी न भक्तिमांस्त्वच्चरणारविन्दे । 
+अकिञ्चनोऽनन्यगतिश्शरण्य त्वत्पादमूलं शरणं प्रपद्ये ॥ २२॥</div>
+<div class="iast-text">na dharmaniṣṭho'smi na cātmavedī na bhaktimāṃstvaccaraṇāravinde ।
+akiñcano'nanyagatiśśaraṇya tvatpādamūlaṃ śaraṇaṃ prapadye ॥ 22॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 23</span></div>
+<div class="original-text">न निन्दितं कर्म तदस्ति लोके सहस्रशो यन्न मया व्यधायि । 
+सोऽहं विपाकावसरे मुकुन्द क्रन्दामि सम्प्रत्यगतिस्तवाग्रे ॥ २३॥</div>
+<div class="iast-text">na ninditaṃ karma tadasti loke sahasraśo yanna mayā vyadhāyi ।
+so'haṃ vipākāvasare mukunda krandāmi sampratyagatistavāgre ॥ 23॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 24</span></div>
+<div class="original-text">निमज्जतोऽनन्त भवार्णवान्तश्चिराय मे कूलमिवासि लब्धः । 
+त्वयाऽपि लब्धं भगवन्निदानीमनुत्तमं पात्रमिदं दयायाः ॥ २४॥</div>
+<div class="iast-text">nimajjato'nanta bhavārṇavāntaścirāya me kūlamivāsi labdhaḥ ।
+tvayā'pi labdhaṃ bhagavannidānīmanuttamaṃ pātramidaṃ dayāyāḥ ॥ 24॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 25</span></div>
+<div class="original-text">अभूतपूर्वं मम भावि किं वा सर्वं सहे मे सहजं हि दुःखम् । 
+किन्तु त्वदग्रे शरणागतानां पराभवो नाथ न तेऽनुरूपः ॥ २५॥</div>
+<div class="iast-text">abhūtapūrvaṃ mama bhāvi kiṃ vā sarvaṃ sahe me sahajaṃ hi duḥkham ।
+kintu tvadagre śaraṇāgatānāṃ parābhavo nātha na te'nurūpaḥ ॥ 25॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 26</span></div>
+<div class="original-text">निरासकस्यापि न तावदुत्सहे महेश हातुं तव पादपङ्कजम् । 
+रुषा निरस्तोऽपि शिशुस्स्तनन्धयो न जातु मातुश्चरणौ जिहासति ॥ २६॥</div>
+<div class="iast-text">nirāsakasyāpi na tāvadutsahe maheśa hātuṃ tava pādapaṅkajam ।
+ruṣā nirasto'pi śiśusstanandhayo na jātu mātuścaraṇau jihāsati ॥ 26॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 27</span></div>
+<div class="original-text">तवामृतस्यन्दिनि पादपङ्कजे निवेशितात्मा कथमन्यदिच्छति । 
+स्थितेऽरविन्दे मकरन्दनिर्भरे मधुव्रतो नेक्षुरकं हि वीक्षते ॥ २७॥</div>
+<div class="iast-text">tavāmṛtasyandini pādapaṅkaje niveśitātmā kathamanyadicchati ।
+sthite'ravinde makarandanirbhare madhuvrato nekṣurakaṃ hi vīkṣate ॥ 27॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 28</span></div>
+<div class="original-text">त्वदङ्घ्रिमुद्दिश्य कदाऽपि केनचिद्यथा तथा वाऽपि सकृत्कृतोऽञ्जलिः । 
+तदैव मुष्णात्यशुभान्यशेषतश्शुभानि पुष्णाति न जातु हीयते ॥ २८॥</div>
+<div class="iast-text">tvadaṅghrimuddiśya kadā'pi kenacidyathā tathā vā'pi sakṛtkṛto'ñjaliḥ ।
+tadaiva muṣṇātyaśubhānyaśeṣataśśubhāni puṣṇāti na jātu hīyate ॥ 28॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 29</span></div>
+<div class="original-text">उदीर्णसंसारदवाशुशुक्षणिं क्षणेन निर्वाप्य परां च निर्वृतिम् । 
+प्रयच्छति त्वच्चरणारुणाम्बुजद्वयानुरागामृतसिन्धुशीकरः ॥ २९॥</div>
+<div class="iast-text">udīrṇasaṃsāradavāśuśukṣaṇiṃ kṣaṇena nirvāpya parāṃ ca nirvṛtim ।
+prayacchati tvaccaraṇāruṇāmbujadvayānurāgāmṛtasindhuśīkaraḥ ॥ 29॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 30</span></div>
+<div class="original-text">विलासविक्रान्तपरावरालयं नमस्यदार्तिक्षपणे कृतक्षणम् । 
+धनं मदीयं तव पादपङ्कजं कदा नु साक्षात्करवाणि चक्षुषा ॥ ३०॥</div>
+<div class="iast-text">vilāsavikrāntaparāvarālayaṃ namasyadārtikṣapaṇe kṛtakṣaṇam ।
+dhanaṃ madīyaṃ tava pādapaṅkajaṃ kadā nu sākṣātkaravāṇi cakṣuṣā ॥ 30॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 31</span></div>
+<div class="original-text">कदा पुनश्शङ्खरथाङ्गकल्पकध्वजारविन्दाङ्कुशवज्रलाञ्छनम् । 
+त्रिविक्रम त्वच्चरणाम्बुजद्वयं मदीयमूर्धानमलङ्करिष्यति ॥ ३१॥</div>
+<div class="iast-text">kadā punaśśaṅkharathāṅgakalpakadhvajāravindāṅkuśavajralāñchanam ।
+trivikrama tvaccaraṇāmbujadvayaṃ madīyamūrdhānamalaṅkariṣyati ॥ 31॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 32</span></div>
+<div class="original-text">विराजमानोज्ज्वलपीतवाससं स्मितातसीसूनसमामलच्छविम् । 
+निमग्ननाभिं तनुमध्यमुन्नतं विशालवक्षस्स्थलशोभिलक्षणम् ॥ ३२॥</div>
+<div class="iast-text">virājamānojjvalapītavāsasaṃ smitātasīsūnasamāmalacchavim ।
+nimagnanābhiṃ tanumadhyamunnataṃ viśālavakṣassthalaśobhilakṣaṇam ॥ 32॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 33</span></div>
+<div class="original-text">चकासतं ज्याकिणकर्कशैश्शुभैश्चतुर्भिराजानुविलम्बिभिर्भुजैः । 
+प्रियावतंसोत्पलकर्णभूषणश्लथालकाबन्धविमर्दशंसिभिः ॥ ३३॥</div>
+<div class="iast-text">cakāsataṃ jyākiṇakarkaśaiśśubhaiścaturbhirājānuvilambibhirbhujaiḥ ।
+priyāvataṃsotpalakarṇabhūṣaṇaślathālakābandhavimardaśaṃsibhiḥ ॥ 33॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 34</span></div>
+<div class="original-text">उदग्रपीनांसविलम्बिकुण्डलालकावलीबन्धुरकम्बुकन्धरम् । 
+मुखश्रिया न्यक्कृतपूर्णनिर्मलामृतांशुबिम्बाम्बुरुहोज्ज्वलश्रियम् ॥ ३४॥</div>
+<div class="iast-text">udagrapīnāṃsavilambikuṇḍalālakāvalībandhurakambukandharam ।
+mukhaśriyā nyakkṛtapūrṇanirmalāmṛtāṃśubimbāmburuhojjvalaśriyam ॥ 34॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 35</span></div>
+<div class="original-text">प्रबुद्धमुग्धाम्बुजचारुलोचनं सविभ्रमभ्रूलतमुज्ज्वलाधरम् । 
+शुचिस्मितं कोमलगण्डमुन्नसं ललाटपर्यन्तविलम्बितालकम् ॥ ३५॥</div>
+<div class="iast-text">prabuddhamugdhāmbujacārulocanaṃ savibhramabhrūlatamujjvalādharam ।
+śucismitaṃ komalagaṇḍamunnasaṃ lalāṭaparyantavilambitālakam ॥ 35॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 36</span></div>
+<div class="original-text">स्फुरत्किरीटाङ्गदहारकण्ठिकामणीन्द्रकाञ्चीगुणनूपुरादिभिः । 
+रथाङ्गशङ्खाऽसिगदाधनुर्वरैर्लसत्तुलस्या वनमालयोज्ज्वलम् ॥ ३६॥</div>
+<div class="iast-text">sphuratkirīṭāṅgadahārakaṇṭhikāmaṇīndrakāñcīguṇanūpurādibhiḥ ।
+rathāṅgaśaṅkhā'sigadādhanurvarairlasattulasyā vanamālayojjvalam ॥ 36॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 37</span></div>
+<div class="original-text">चकर्थ यस्या भवनं भुजान्तरं तव प्रियं धाम यदीयजन्मभूः । 
+जगत्समस्तं यदपाङ्गसंश्रयं यदर्थमम्भोधिरमन्थ्यबन्धि च ॥ ३७॥</div>
+<div class="iast-text">cakartha yasyā bhavanaṃ bhujāntaraṃ tava priyaṃ dhāma yadīyajanmabhūḥ ।
+jagatsamastaṃ yadapāṅgasaṃśrayaṃ yadarthamambhodhiramanthyabandhi ca ॥ 37॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 38</span></div>
+<div class="original-text">स्ववैश्वरूप्येण सदाऽनुभूतयाऽप्यपूर्ववद्विस्मयमादधानया । 
+गुणेन रूपेण विलासचेष्टितैस्सदा तवैवोचितया तव श्रिया ॥ ३८॥</div>
+<div class="iast-text">svavaiśvarūpyeṇa sadā'nubhūtayā'pyapūrvavadvismayamādadhānayā ।
+guṇena rūpeṇa vilāsaceṣṭitaissadā tavaivocitayā tava śriyā ॥ 38॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 39</span></div>
+<div class="original-text">तया सहासीनमनन्तभोगिनि प्रकृष्टविज्ञानबलैकधामनि । 
+फणामणिव्रातमयूखमण्डलप्रकाशमानोदरदिव्यधामनि ॥ ३९॥</div>
+<div class="iast-text">tayā sahāsīnamanantabhogini prakṛṣṭavijñānabalaikadhāmani ।
+phaṇāmaṇivrātamayūkhamaṇḍalaprakāśamānodaradivyadhāmani ॥ 39॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 40</span></div>
+<div class="original-text">निवासशय्याऽऽसनपादुकांशुकोपधानवर्षातपवारणादिभिः । 
+शरीरभेदैस्तव शेषतां गतैर्यथोचितं शेष इतीरिते जनैः ॥ ४०॥</div>
+<div class="iast-text">nivāsaśayyā''sanapādukāṃśukopadhānavarṣātapavāraṇādibhiḥ ।
+śarīrabhedaistava śeṣatāṃ gatairyathocitaṃ śeṣa itīrite janaiḥ ॥ 40॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 41</span></div>
+<div class="original-text">दासस्सखा वाहनमासनं ध्वजो यस्ते वितानं व्यजनं त्रयीमयः । 
+उपस्थितं तेन पुरो गरुत्मता त्वदङ्घ्रिसम्मर्दकिणाङ्कशोभिना ॥ ४१॥</div>
+<div class="iast-text">dāsassakhā vāhanamāsanaṃ dhvajo yaste vitānaṃ vyajanaṃ trayīmayaḥ ।
+upasthitaṃ tena puro garutmatā tvadaṅghrisammardakiṇāṅkaśobhinā ॥ 41॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 42</span></div>
+<div class="original-text">त्वदीयभुक्तोज्झितशेषभोजिना (त्वदङ्घ्रिसंस्पर्शसुखैककामिना) त्वया निसृष्टात्मभरेण यद्यथा । 
+प्रियेण सेनापतिना न्यवेदि तत्तथाऽनुजानन्तमुदारवीक्षणैः ॥ ४२॥</div>
+<div class="iast-text">tvadīyabhuktojjhitaśeṣabhojinā (tvadaṅghrisaṃsparśasukhaikakāminā) tvayā nisṛṣṭātmabhareṇa yadyathā ।
+priyeṇa senāpatinā nyavedi tattathā'nujānantamudāravīkṣaṇaiḥ ॥ 42॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 43</span></div>
+<div class="original-text">हताखिलक्लेशमलैस्स्वभावतस्सदानुकूल्यैकरसैस्तवोचितैः । 
+गृहीततत्तत्परिचारसाधनैर्निषेव्यमाणं सचिवैर्यथोचितम् ॥ ४३॥</div>
+<div class="iast-text">hatākhilakleśamalaissvabhāvatassadānukūlyaikarasaistavocitaiḥ ।
+gṛhītatattatparicārasādhanairniṣevyamāṇaṃ sacivairyathocitam ॥ 43॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 44</span></div>
+<div class="original-text">अपूर्वनानारसभावनिर्भरप्रबुद्धया मुग्धविदग्धलीलया । 
+क्षणाणुवत्क्षिप्तपरादिकालया प्रहर्षयन्तं महिषीं महाभुजम् ॥ ४४॥</div>
+<div class="iast-text">apūrvanānārasabhāvanirbharaprabuddhayā mugdhavidagdhalīlayā ।
+kṣaṇāṇuvatkṣiptaparādikālayā praharṣayantaṃ mahiṣīṃ mahābhujam ॥ 44॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 45</span></div>
+<div class="original-text">अचिन्त्यदिव्याद्भुतनित्ययौवनस्वभावलावण्यमयामृतोदधिम् । 
+श्रियश्श्रियं भक्तजनैकजीवितं समर्थमापत्सखमर्थिकल्पकम् ॥ ४५॥</div>
+<div class="iast-text">acintyadivyādbhutanityayauvanasvabhāvalāvaṇyamayāmṛtodadhim ।
+śriyaśśriyaṃ bhaktajanaikajīvitaṃ samarthamāpatsakhamarthikalpakam ॥ 45॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 46</span></div>
+<div class="original-text">भवन्तमेवानुचरन्निरन्तरं प्रशान्तनिश्शेषमनोरथान्तरः । 
+कदाऽहमैकान्तिकनित्यकिङ्करः प्रहर्षयिष्यामि सनाथजीवितः ॥ ४६॥</div>
+<div class="iast-text">bhavantamevānucarannirantaraṃ praśāntaniśśeṣamanorathāntaraḥ ।
+kadā'hamaikāntikanityakiṅkaraḥ praharṣayiṣyāmi sanāthajīvitaḥ ॥ 46॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 47</span></div>
+<div class="original-text">धिगशुचिमविनीतं निर्द(र्भ)यं मामलज्जं परमपुरुष योऽहं योगिवर्याग्रगण्यैः । 
+विधिशिवसनकाद्यैर्ध्यातुमत्यन्तदूरं तव परिजनभावं कामये कामवृत्तः ॥ ४७॥</div>
+<div class="iast-text">dhigaśucimavinītaṃ nirda(rbha)yaṃ māmalajjaṃ paramapuruṣa yo'haṃ yogivaryāgragaṇyaiḥ ।
+vidhiśivasanakādyairdhyātumatyantadūraṃ tava parijanabhāvaṃ kāmaye kāmavṛttaḥ ॥ 47॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 48</span></div>
+<div class="original-text">अपराधसहस्रभाजनं पतितं भीमभवार्णवोदरे । 
+अगतिं शरणागतं हरे कृपया केवलमात्मसात्कुरु ॥ ४८॥</div>
+<div class="iast-text">aparādhasahasrabhājanaṃ patitaṃ bhīmabhavārṇavodare ।
+agatiṃ śaraṇāgataṃ hare kṛpayā kevalamātmasātkuru ॥ 48॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 49</span></div>
+<div class="original-text">अविवेकघनान्धदिङ्मुखे बहुधा सन्ततदुःखवर्षिणि । 
+भगवन्भवदुर्दिने पथः स्खलितं मामवलोकयाच्युत ॥ ४९॥</div>
+<div class="iast-text">avivekaghanāndhadiṅmukhe bahudhā santataduḥkhavarṣiṇi ।
+bhagavanbhavadurdine pathaḥ skhalitaṃ māmavalokayācyuta ॥ 49॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 50</span></div>
+<div class="original-text">न मृषा परमार्थमेव मे शृणु विज्ञापनमेकमग्रतः । 
+यदि मे न दयिष्यसे ततो दयनीयस्तव नाथ दुर्लभः ॥ ५०॥</div>
+<div class="iast-text">na mṛṣā paramārthameva me śṛṇu vijñāpanamekamagrataḥ ।
+yadi me na dayiṣyase tato dayanīyastava nātha durlabhaḥ ॥ 50॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 51</span></div>
+<div class="original-text">तदहं त्वदृते न नाथवान्मदृते त्वं दयनीयवान्न च । 
+विधिनिर्मितमेतद(म)न्वयं भगवन्पालय मा स्म जीहपः ॥ ५१॥</div>
+<div class="iast-text">tadahaṃ tvadṛte na nāthavānmadṛte tvaṃ dayanīyavānna ca ।
+vidhinirmitametada(ma)nvayaṃ bhagavanpālaya mā sma jīhapaḥ ॥ 51॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 52</span></div>
+<div class="original-text">वपुरादिषु योऽपि कोऽपि वा गुणतोऽसानि यथातथाविधः । 
+तदयं तव पादपद्मयोरहमद्यैव मया समर्पितः ॥ ५२॥</div>
+<div class="iast-text">vapurādiṣu yo'pi ko'pi vā guṇato'sāni yathātathāvidhaḥ ।
+tadayaṃ tava pādapadmayorahamadyaiva mayā samarpitaḥ ॥ 52॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 53</span></div>
+<div class="original-text">मम नाथ यदस्ति योऽस्म्यहं सकलं तद्धि तवैव माधव । 
+नियतस्वमिति प्रबुद्धधीरथवा किन्नु समर्पयामि ते ॥ ५३॥</div>
+<div class="iast-text">mama nātha yadasti yo'smyahaṃ sakalaṃ taddhi tavaiva mādhava ।
+niyatasvamiti prabuddhadhīrathavā kinnu samarpayāmi te ॥ 53॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 54</span></div>
+<div class="original-text">अवबोधितवानिमां यथा मयि नित्यां भवदीयतां स्वयम् । 
+कृपयैवम(तद)नन्यभोग्यतां भगवन्भक्तिमपि प्रयच्छ मे ॥ ५४॥</div>
+<div class="iast-text">avabodhitavānimāṃ yathā mayi nityāṃ bhavadīyatāṃ svayam ।
+kṛpayaivama(tada)nanyabhogyatāṃ bhagavanbhaktimapi prayaccha me ॥ 54॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 55</span></div>
+<div class="original-text">तव दास्यसुखैकसङ्गिनां भवनेष्वस्त्वपि कीटजन्म मे । 
+इतरावसथेषु मा स्म भूदपि मे जन्म चतुर्मुखात्मना ॥ ५५॥</div>
+<div class="iast-text">tava dāsyasukhaikasaṅgināṃ bhavaneṣvastvapi kīṭajanma me ।
+itarāvasatheṣu mā sma bhūdapi me janma caturmukhātmanā ॥ 55॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 56</span></div>
+<div class="original-text">सकृत्त्वदाकारविलोकनाशया तृणीकृतानुत्तमभुक्तिमुक्तिभिः । 
+महात्मभिर्मामवलोक्यतां नय क्षणेऽपि ते यद्विरहोऽतिदुस्सहः ॥ ५६॥</div>
+<div class="iast-text">sakṛttvadākāravilokanāśayā tṛṇīkṛtānuttamabhuktimuktibhiḥ ।
+mahātmabhirmāmavalokyatāṃ naya kṣaṇe'pi te yadviraho'tidussahaḥ ॥ 56॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 57</span></div>
+<div class="original-text">न देहं न प्राणान्न च सुखमशेषाभिलषितं न चात्मानं नान्यत्किमपि तव शेषत्वविभवात् । 
+बहिर्भूतं नाथ क्षणमपि सहे यातु शतधा विनाशं तत्सत्यं मधुमथन विज्ञापन(पित)मिदम् ॥ ५७॥</div>
+<div class="iast-text">na dehaṃ na prāṇānna ca sukhamaśeṣābhilaṣitaṃ na cātmānaṃ nānyatkimapi tava śeṣatvavibhavāt ।
+bahirbhūtaṃ nātha kṣaṇamapi sahe yātu śatadhā vināśaṃ tatsatyaṃ madhumathana vijñāpana(pita)midam ॥ 57॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 58</span></div>
+<div class="original-text">दुरन्तस्यानादेरपरिहरणीयस्य महतो निहीनाचारोऽहं नृपशुरशुभस्यास्पदमपि । 
+दयासिन्धो बन्धो निरवधिकवात्सल्यजलधे तव स्मारंस्मारं गुणगणमितीच्छामि गतभीः ॥ ५८॥</div>
+<div class="iast-text">durantasyānāderapariharaṇīyasya mahato nihīnācāro'haṃ nṛpaśuraśubhasyāspadamapi ।
+dayāsindho bandho niravadhikavātsalyajaladhe tava smāraṃsmāraṃ guṇagaṇamitīcchāmi gatabhīḥ ॥ 58॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 59</span></div>
+<div class="original-text">अनिच्छन्नप्येवं यदि पुनरितीच्छन्निव रजस्तमश्छन्नश्छद्मस्तुतिवचनभङ्गीमरचयम् । 
+तथाऽपीत्थंरूपं वचनमवलम्ब्यापि कृपया त्वमेवैवंभूतं धरणिधर मे शिक्षय मनः ॥ ५९॥</div>
+<div class="iast-text">anicchannapyevaṃ yadi punaritīcchanniva rajastamaśchannaśchadmastutivacanabhaṅgīmaracayam ।
+tathā'pītthaṃrūpaṃ vacanamavalambyāpi kṛpayā tvamevaivaṃbhūtaṃ dharaṇidhara me śikṣaya manaḥ ॥ 59॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 60</span></div>
+<div class="original-text">पिता त्वं माता त्वं दयिततनयस्त्वं प्रियसुहृत्त्वमेव त्वं मित्रं गुरुरसि गतिश्चासि जगताम् । 
+त्वदीयस्त्वद्भृत्यस्तव परिजनस्त्वद्गतिरहं प्रपन्नश्चैवं सत्यहमपि तवैवास्मि हि भरः ॥ ६०॥</div>
+<div class="iast-text">pitā tvaṃ mātā tvaṃ dayitatanayastvaṃ priyasuhṛttvameva tvaṃ mitraṃ gururasi gatiścāsi jagatām ।
+tvadīyastvadbhṛtyastava parijanastvadgatirahaṃ prapannaścaivaṃ satyahamapi tavaivāsmi hi bharaḥ ॥ 60॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 61</span></div>
+<div class="original-text">जनित्वाऽहं वंशे महति जगति ख्यातयशसां शुचीनां युक्तानां गुणपुरुषतत्त्वस्थितिविदाम् । 
+निसर्गादेव त्वच्चरणकमलैकान्तमनसामधोऽधः पापात्मा शरणद निमज्जामि तमसि ॥ ६१॥</div>
+<div class="iast-text">janitvā'haṃ vaṃśe mahati jagati khyātayaśasāṃ śucīnāṃ yuktānāṃ guṇapuruṣatattvasthitividām ।
+nisargādeva tvaccaraṇakamalaikāntamanasāmadho'dhaḥ pāpātmā śaraṇada nimajjāmi tamasi ॥ 61॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 62</span></div>
+<div class="original-text">अमर्यादः क्षुद्रश्चलमतिरसूयाप्रसवभूः कृतघ्नो दुर्मानी स्मरपरवशो वञ्चनपरः । 
+नृशंसः पापिष्ठः कथमहमितो दुःखजलधेरपारादुत्तीर्णस्तव परिचरेयं चरणयोः ॥ ६२॥</div>
+<div class="iast-text">amaryādaḥ kṣudraścalamatirasūyāprasavabhūḥ kṛtaghno durmānī smaraparavaśo vañcanaparaḥ ।
+nṛśaṃsaḥ pāpiṣṭhaḥ kathamahamito duḥkhajaladherapārāduttīrṇastava paricareyaṃ caraṇayoḥ ॥ 62॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 63</span></div>
+<div class="original-text">रघुवर यदभूस्त्वं तादृशो वायसस्य प्रणत इति दयालुर्यच्च चैद्यस्य कृष्ण । 
+प्रतिभवमपराद्धुर्मुग्धसायुज्यदोऽभूर्वद किमपदमागस्तस्य तेऽस्ति क्षमायाः ॥ ६३॥</div>
+<div class="iast-text">raghuvara yadabhūstvaṃ tādṛśo vāyasasya praṇata iti dayāluryacca caidyasya kṛṣṇa ।
+pratibhavamaparāddhurmugdhasāyujyado'bhūrvada kimapadamāgastasya te'sti kṣamāyāḥ ॥ 63॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 64</span></div>
+<div class="original-text">ननु प्रपन्नस्सकृदेव नाथ तवाहमस्मीति च याचमानः । 
+तवानुकम्प्यस्स्मरतः प्रतिज्ञां मदेकवर्जं किमिदं व्रतं ते ॥ ६४॥</div>
+<div class="iast-text">nanu prapannassakṛdeva nātha tavāhamasmīti ca yācamānaḥ ।
+tavānukampyassmarataḥ pratijñāṃ madekavarjaṃ kimidaṃ vrataṃ te ॥ 64॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 65</span></div>
+<div class="original-text">अकृत्रिमत्वच्चरणारविन्दप्रेमप्रकर्षावधिमात्मवन्तम् । 
+पितामहं नाथमुनिं विलोक्य प्रसीद मद्वृत्तमचिन्तयित्वा ॥ ६५॥</div>
+<div class="iast-text">akṛtrimatvaccaraṇāravindapremaprakarṣāvadhimātmavantam ।
+pitāmahaṃ nāthamuniṃ vilokya prasīda madvṛttamacintayitvā ॥ 65॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 66</span></div>
+<div class="original-text">यत्पदाम्भोरुहध्यानविध्वस्ताशेषकल्मषः । 
+वस्तुतामुपयातोऽहं यामुनेयं नमामि तम् ॥</div>
+<div class="iast-text">yatpadāmbhoruhadhyānavidhvastāśeṣakalmaṣaḥ ।
+vastutāmupayāto'haṃ yāmuneyaṃ namāmi tam ॥</div></article>
+</div>
+</details>
+      </div>
+    </div>
+    <footer class="site-footer">Stotraratna &middot; generated for offline / mobile reading</footer>
+    
+<button class="back-top" id="backTop" title="Back to top">↑</button>
+<script>
+(function(){
+  var root = document.documentElement;
+  var LS_THEME = 'scripture-theme';
+  var LS_FONT = 'scripture-font-scale';
+
+  // ---- Theme ----
+  function applyTheme(t){
+    root.setAttribute('data-theme', t);
+    try{ localStorage.setItem(LS_THEME, t); }catch(e){}
+    var btn = document.getElementById('themeToggle');
+    if(btn) btn.textContent = t === 'dark' ? '☀' : '☾';
+  }
+  function initTheme(){
+    var saved = null;
+    try{ saved = localStorage.getItem(LS_THEME); }catch(e){}
+    if(!saved){
+      saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+    applyTheme(saved);
+  }
+  window.toggleTheme = function(){
+    var cur = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(cur);
+  };
+
+  // ---- Font scale ----
+  function applyFont(scale){
+    scale = Math.min(1.6, Math.max(0.75, scale));
+    root.style.setProperty('--font-scale', scale);
+    try{ localStorage.setItem(LS_FONT, scale); }catch(e){}
+  }
+  function initFont(){
+    var saved = null;
+    try{ saved = parseFloat(localStorage.getItem(LS_FONT)); }catch(e){}
+    applyFont(saved && !isNaN(saved) ? saved : 1);
+  }
+  window.bumpFont = function(delta){
+    var cur = parseFloat(getComputedStyle(root).getPropertyValue('--font-scale')) || 1;
+    applyFont(cur + delta);
+  };
+
+  // ---- Expand / collapse all ----
+  window.setAllDetails = function(open){
+    document.querySelectorAll('details').forEach(function(d){ d.open = open; });
+  };
+
+  // ---- Search ----
+  var searchCache = null;
+  function buildCache(){
+    searchCache = [];
+    document.querySelectorAll('.searchable').forEach(function(el){
+      searchCache.push({el: el, text: el.textContent.toLowerCase()});
+    });
+  }
+  var debounceTimer = null;
+  function doSearch(q){
+    if(!searchCache) buildCache();
+    q = q.trim().toLowerCase();
+    var countEl = document.getElementById('searchCount');
+    var emptyMsg = document.getElementById('emptyMsg');
+    var chapters = document.querySelectorAll('.chapter');
+    if(!q){
+      searchCache.forEach(function(item){ item.el.classList.remove('hidden'); });
+      chapters.forEach(function(ch){ ch.classList.remove('hidden'); });
+      if(countEl) countEl.textContent = '';
+      if(emptyMsg) emptyMsg.classList.add('hidden');
+      return;
+    }
+    var matches = 0;
+    var chapterHasMatch = new Map();
+    searchCache.forEach(function(item){
+      var hit = item.text.indexOf(q) !== -1;
+      item.el.classList.toggle('hidden', !hit);
+      if(hit){
+        matches++;
+        var ch = item.el.closest('.chapter');
+        if(ch){ chapterHasMatch.set(ch, true); if(!ch.open) ch.open = true; }
+      }
+    });
+    chapters.forEach(function(ch){
+      ch.classList.toggle('hidden', !chapterHasMatch.get(ch));
+    });
+    if(countEl) countEl.textContent = matches + ' match' + (matches===1?'':'es');
+    if(emptyMsg) emptyMsg.classList.toggle('hidden', matches !== 0);
+  }
+  window.onSearchInput = function(val){
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function(){ doSearch(val); }, 220);
+  };
+
+  // ---- Mobile TOC toggle ----
+  window.toggleToc = function(){
+    var toc = document.getElementById('tocPanel');
+    if(toc) toc.classList.toggle('collapsed');
+  };
+
+  // ---- Back to top ----
+  function initBackTop(){
+    var btn = document.getElementById('backTop');
+    if(!btn) return;
+    window.addEventListener('scroll', function(){
+      btn.classList.toggle('show', window.scrollY > 500);
+    });
+    btn.addEventListener('click', function(){
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    initTheme();
+    initFont();
+    initBackTop();
+    var input = document.getElementById('searchInput');
+    if(input){
+      input.addEventListener('input', function(){ window.onSearchInput(input.value); });
+    }
+  });
+})();
+</script>
+</body>
+</html>

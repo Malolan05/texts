@@ -134,7 +134,9 @@
    supporting browser jumps straight to the match).
    ============================================================= */
 
-  const INDEX_TXT_URL = 'index.txt';
+  // Absolute path so this always resolves to the file at the site root,
+  // regardless of what page/path this script happens to be loaded from.
+  const INDEX_TXT_URL = '/index.txt';
 
   // ── State ──────────────────────────────────────────────────────────────────
   let COLLECTIONS   = [];   // [{ name, label, files:[{path,name}] }]

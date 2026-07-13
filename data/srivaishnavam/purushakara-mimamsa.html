@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puruṣakāra Mimāṃsā</title>
+<style>
+:root{
+  --font-scale: 1;
+  --serif: Georgia, 'Noto Serif', 'Times New Roman', serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --deva: 'Noto Sans Devanagari', 'Sanskrit 2003', 'Siddhanta', 'Nirmala UI', sans-serif;
+
+  --bg: #faf6ef;
+  --bg-alt: #f2ead9;
+  --panel: #ffffff;
+  --text: #2b2420;
+  --text-soft: #6b5f52;
+  --accent: #8a4b26;
+  --accent-soft: #c98a53;
+  --border: #e4d7c0;
+  --shadow: 0 1px 3px rgba(60,40,10,0.08), 0 1px 2px rgba(60,40,10,0.06);
+  --highlight: #fff1a8;
+  --link: #8a4b26;
+}
+
+html[data-theme="dark"]{
+  --bg: #16130f;
+  --bg-alt: #1e1a14;
+  --panel: #201b15;
+  --text: #ece4d6;
+  --text-soft: #b6a892;
+  --accent: #e0a469;
+  --accent-soft: #a97540;
+  --border: #3a3226;
+  --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --highlight: #5a4a12;
+  --link: #e0a469;
+}
+
+*{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+body{
+  margin:0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: calc(16px * var(--font-scale));
+  line-height: 1.6;
+  transition: background .2s ease, color .2s ease;
+}
+
+a{ color: var(--link); }
+
+/* ---------- Top bar ---------- */
+.topbar{
+  position: sticky; top:0; z-index: 50;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.topbar-inner{
+  max-width: 980px; margin:0 auto;
+  padding: .6rem .9rem;
+  display:flex; flex-wrap: wrap; gap:.5rem;
+  align-items:center;
+}
+.brand{
+  font-family: var(--serif);
+  font-weight:700; font-size:1.05rem;
+  color: var(--accent);
+  text-decoration:none;
+  margin-right:auto;
+  white-space:nowrap;
+}
+.search-wrap{
+  flex: 1 1 220px; min-width: 140px; position:relative;
+}
+#searchInput{
+  width:100%;
+  padding:.5rem .7rem .5rem 2rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: .95rem;
+}
+.search-wrap::before{
+  content: "⌕";
+  position:absolute; left:.6rem; top:50%; transform:translateY(-50%);
+  color: var(--text-soft); font-size:1rem; pointer-events:none;
+}
+#searchCount{
+  font-size:.78rem; color:var(--text-soft); white-space:nowrap;
+}
+.btn{
+  border:1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 8px;
+  padding:.45rem .6rem;
+  font-size:.85rem;
+  cursor:pointer;
+  line-height:1;
+}
+.btn:hover{ border-color: var(--accent-soft); color: var(--accent); }
+.btn-group{ display:flex; gap:.25rem; }
+.icon-btn{ font-size:1rem; padding:.45rem .55rem; }
+
+/* ---------- Layout ---------- */
+.layout{
+  max-width: 980px; margin: 0 auto; padding: 0 .9rem 4rem;
+  display:flex; gap:1.4rem; align-items:flex-start;
+}
+.content{ flex:1; min-width:0; }
+
+/* ---------- Header / metadata ---------- */
+.doc-header{ padding: 1.4rem 0 .6rem; }
+.doc-title{
+  font-family: var(--serif);
+  font-size: 1.9rem;
+  margin: 0 0 .3rem;
+  color: var(--accent);
+}
+.doc-meta{
+  display:flex; flex-wrap:wrap; gap:.4rem .9rem;
+  font-size:.85rem; color: var(--text-soft); margin-bottom:.6rem;
+}
+.doc-meta span b{ color: var(--text); font-weight:600; }
+.doc-desc{ color: var(--text-soft); font-size:.95rem; max-width: 68ch; }
+
+/* ---------- TOC ---------- */
+.toc-toggle{ display:none; }
+.toc{
+  position: sticky; top: 4.2rem;
+  width: 220px; flex-shrink:0;
+  max-height: calc(100vh - 5rem);
+  overflow:auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .7rem .8rem;
+  box-shadow: var(--shadow);
+  margin-top: 1.4rem;
+}
+.toc h4{ margin:.1rem 0 .5rem; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-soft);}
+.toc ol{ list-style:none; margin:0; padding:0; counter-reset: item; }
+.toc li{ margin:0; }
+.toc a{
+  display:block; padding:.3rem .3rem; font-size:.85rem;
+  text-decoration:none; color:var(--text); border-radius:6px;
+}
+.toc a:hover{ background: var(--bg-alt); color:var(--accent); }
+
+/* ---------- Sections / chapters ---------- */
+.chapter{
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  margin: 1rem 0;
+  box-shadow: var(--shadow);
+  overflow:hidden;
+}
+.chapter > summary{
+  cursor:pointer;
+  list-style:none;
+  padding: .85rem 1.1rem;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  color: var(--accent);
+  background: var(--bg-alt);
+  display:flex; align-items:center; gap:.5rem;
+}
+.chapter > summary::-webkit-details-marker{ display:none; }
+.chapter > summary::before{
+  content: "▸";
+  display:inline-block;
+  transition: transform .15s ease;
+  color: var(--accent-soft);
+  font-size:.9rem;
+}
+.chapter[open] > summary::before{ transform: rotate(90deg); }
+.chapter-body{ padding: .3rem 1.1rem 1rem; }
+
+/* ---------- Verses ---------- */
+.verse{
+  padding: .9rem 0;
+  border-top: 1px dashed var(--border);
+}
+.verse:first-child{ border-top:none; }
+.verse-head{
+  display:flex; align-items:baseline; gap:.6rem; margin-bottom:.35rem;
+}
+.verse-num{
+  font-size:.75rem;
+  color: var(--bg);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding:.1rem .55rem;
+  font-weight:600;
+  white-space:nowrap;
+}
+.original-text{
+  font-family: var(--deva);
+  font-size: 1.25rem;
+  line-height: 2;
+  white-space: pre-wrap;
+  margin: .2rem 0 .4rem;
+}
+.iast-text{
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--text-soft);
+  white-space: pre-wrap;
+  margin: .2rem 0 .4rem;
+}
+.translation{
+  white-space: pre-wrap;
+  margin: .2rem 0 .5rem;
+}
+.translation b.lbl, .field-lbl{
+  font-size:.72rem; text-transform:uppercase; letter-spacing:.05em;
+  color: var(--text-soft); display:block; margin-bottom:.15rem;
+}
+
+/* ---------- Commentaries ---------- */
+.commentaries{ margin-top:.4rem; }
+.commentary{
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: .4rem 0;
+  background: var(--bg);
+}
+.commentary > summary{
+  cursor:pointer; list-style:none;
+  padding:.45rem .7rem;
+  font-size:.85rem; font-weight:600; color: var(--text);
+  display:flex; align-items:center; gap:.4rem;
+}
+.commentary > summary::-webkit-details-marker{ display:none; }
+.commentary > summary::before{ content:"+"; color:var(--accent); font-weight:700; width:1em; }
+.commentary[open] > summary::before{ content:"–"; }
+.commentary-body{
+  padding: .2rem .9rem .8rem;
+  white-space: pre-wrap;
+  font-size: .95rem;
+}
+
+/* ---------- Vedic (TSV) specific ---------- */
+.veda-row{
+  display:grid;
+  grid-template-columns: minmax(0,1fr);
+  gap:.3rem;
+  padding:.8rem 0;
+  border-top:1px dashed var(--border);
+}
+.veda-row:first-child{ border-top:none; }
+.veda-fields{
+  display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
+  gap:.3rem .8rem; font-size:.85rem; color:var(--text-soft); margin-top:.3rem;
+}
+.veda-fields div b{ color:var(--text); }
+
+/* ---------- highlight ---------- */
+mark{ background: var(--highlight); color: inherit; border-radius:3px; padding:0 .1em; }
+
+/* ---------- misc ---------- */
+.hidden{ display:none !important; }
+.empty-msg{ text-align:center; padding:2rem; color:var(--text-soft); }
+.back-top{
+  position: fixed; right:1rem; bottom:1rem;
+  border-radius:999px; width:2.6rem; height:2.6rem;
+  display:flex; align-items:center; justify-content:center;
+  background: var(--accent); color:#fff; border:none; cursor:pointer;
+  box-shadow: var(--shadow); font-size:1.1rem; opacity:0; pointer-events:none;
+  transition: opacity .2s ease;
+}
+.back-top.show{ opacity:1; pointer-events:auto; }
+
+footer.site-footer{
+  text-align:center; color:var(--text-soft); font-size:.8rem;
+  padding: 2rem 1rem 3rem;
+}
+
+/* ---------- Index page cards ---------- */
+.index-grid{
+  display:grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
+  gap:1rem; margin-top:1.2rem;
+}
+.card{
+  background:var(--panel); border:1px solid var(--border); border-radius:12px;
+  padding:1rem 1.1rem; box-shadow: var(--shadow); text-decoration:none; color:var(--text);
+  display:flex; flex-direction:column; gap:.3rem;
+}
+.card:hover{ border-color: var(--accent-soft); }
+.card .cat{
+  font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--accent);
+  font-weight:700;
+}
+.card h3{ margin:.1rem 0; font-family:var(--serif); font-size:1.1rem; color:var(--text); }
+.card .desc{ font-size:.85rem; color:var(--text-soft); flex:1; }
+.card .stats{ font-size:.75rem; color:var(--text-soft); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 800px){
+  .layout{ flex-direction:column; }
+  .toc{
+    position: static; width:100%; max-height:none; margin-top:0;
+    order:-1;
+  }
+  .toc.collapsed .toc-body{ display:none; }
+  .toc-toggle{
+    display:flex; width:100%; justify-content:space-between; align-items:center;
+    background:none; border:none; color:var(--accent); font-weight:600;
+    padding:0; cursor:pointer; font-size:.85rem;
+  }
+  .brand{ font-size:.95rem; }
+  .doc-title{ font-size:1.5rem; }
+  .original-text{ font-size:1.12rem; }
+}
+@media (max-width: 480px){
+  .topbar-inner{ padding:.5rem .6rem; }
+  #searchCount{ display:none; }
+}
+</style>
+
+</head>
+<body>
+
+    <div class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="../index.html">☰ Sanskrit Library</a>
+        
+        <div class="search-wrap">
+          <input id="searchInput" type="text" placeholder="Search this text..." autocomplete="off" />
+        </div>
+        <span id="searchCount"></span>
+        <div class="btn-group">
+          <button class="btn" title="Collapse all" onclick="setAllDetails(false)">Collapse all</button>
+          <button class="btn" title="Expand all" onclick="setAllDetails(true)">Expand all</button>
+        </div>
+        
+        <div class="btn-group">
+          <button class="btn icon-btn" title="Decrease font size" onclick="bumpFont(-0.1)">A−</button>
+          <button class="btn icon-btn" title="Increase font size" onclick="bumpFont(0.1)">A+</button>
+          <button class="btn icon-btn" id="themeToggle" title="Toggle dark mode" onclick="toggleTheme()">☾</button>
+        </div>
+      </div>
+    </div>
+    
+
+    <div class="layout">
+      
+      <div class="content">
+        
+    <header class="doc-header">
+      <h1 class="doc-title">Puruṣakāra Mimāṃsā</h1>
+      <div class="doc-meta">
+      <span><b>Author:</b> Nārāyaṇa Muni, The Fourteenth Jīyar of Ahobila Maṭha</span>
+      <span><b>Composed:</b> 1600's</span>
+      <span><b>Category:</b> Theology</span>
+      <span><b>Language:</b> Sanskrit</span>
+      <span><b>Chapters:</b> 1</span>
+      <span><b>Verses:</b> 182</span>
+    </div>
+      <p class="doc-desc">A book discussing the role of Puruṣakāra (human effort) in the context of Prapatti.</p>
+    </header>
+    
+        <p id="emptyMsg" class="empty-msg hidden">No verses match your search.</p>
+        <details class="chapter" id="ch-1" open>
+<summary>1. Chapter - 1</summary>
+<div class="chapter-body">
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 1</span></div>
+<div class="original-text">स्वतन्त्र: स्वेच्छया सृष्टिस्थितिसंहारमोक्षणै: ।
+यत्समक्षं क्रीडतीश​: तां भजे लोकमातरम् ॥१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 2</span></div>
+<div class="original-text">स्वयंव्यक्ते रङ्गधाम्नि तल्पे वातूलतूलके ।
+निवसन्तौ नमाम्याद्यौ दंपती जनकौ विधे: ॥२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 3</span></div>
+<div class="original-text">संकल्पेनैव यो विश्वं सृजत्यवति हन्ति च ।
+वेत्रस्पन्दास्तविघ्नं तं वन्दे सूत्रवतीसखम् ॥३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 4</span></div>
+<div class="original-text">श्रीपति: जगतो हेतु: प्रपत्तव्यो मुमुक्षुभि: ।
+साक्षान्मोक्षप्रदश्चेति श्रुतिसूत्रादिषु स्थितम् ॥४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 5</span></div>
+<div class="original-text">पत्न्याः पतिवदीदृक्त्वम् अस्ति नेति निरूप्यते ।
+कारणं जगतो लक्ष्मी: प्रपत्तव्या शरण्यवत् ॥५</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 6</span></div>
+<div class="original-text">साक्षान्मोक्षप्रदात्री च पतिसम्यागमादिभि: ।
+त्रय्यन्तदेशिकस्यायं सिद्धान्त इति केचन ॥५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 7</span></div>
+<div class="original-text">अत्र प्रतिवदन्त्यन्ये त्रयीमौलिगुरोर्मतम् ।
+श्रीश एव जगद्धेतु: प्रपत्तव्यश्च मुक्तये ॥६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 8</span></div>
+<div class="original-text">रक्षकश्च श्रिया सार्धं प्राप्यश्चेति विपश्चित​: ॥७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 9</span></div>
+<div class="original-text">अन्त: प्रविश्य सर्वेषां नियन्तुर्हि शरीरिण: ।
+"बहुस्याम्" इति संकल्पपूर्वसृष्ट्यादिसंभव​: ॥८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 10</span></div>
+<div class="original-text">कारणत्वप्रकरणे श्रियो नास्त्येव सन्निधि: ।
+नापि सर्वशरीरत्व​-जगन्नियमने श्रुते ॥९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 11</span></div>
+<div class="original-text">यत्सङ्कल्पात् जगत्सृष्टिः श्रूयते यत्र देहिनि ।
+समाधावेकलक्ष्यं तत् भाति श्रीपदलाञ्छितम् ॥१०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 12</span></div>
+<div class="original-text">श्रुतौ शारीरके सूत्रे श्रीभाष्ये गद्यसारयो: ।
+स्तोत्रेषु तत्तद्व्याख्यासु कारणत्वादि न श्रिय: ॥११॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 13</span></div>
+<div class="original-text">रहस्यत्रयसारादेर्व्याख्यानेषु निरूपकै: ।
+अर्वाचीननिबन्धेषु संचिन्त्योऽर्थ: क्वचित्क्वचित् ॥१२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 14</span></div>
+<div class="original-text">प्रपन्नपारिजाते च कारणत्वादि नेरितम् ।
+उक्तं पुरुषकारस्य कार्यं न्यासदशान्वयि ॥१३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 15</span></div>
+<div class="original-text">वृक्षादिसृष्टिसंहारशिक्षाहेतुरियं यदि ।
+अस्या: पुरुषकारत्वं मातृत्वञ्च कथं तदा ॥१४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 16</span></div>
+<div class="original-text">मित्रमौपयिकं कर्तुम् एवमादि विवक्षया ।
+नियन्त्रीत्यादिसामान्यशब्दानां दर्शिता गति: ॥१५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 17</span></div>
+<div class="original-text">अज्ञातनिग्रहायाश्च निग्रहादिषु कर्तृताम् ।
+वदता को गुणो लक्ष्म्या: अपूर्व​: प्रतिपादित​: ॥१६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 18</span></div>
+<div class="original-text">यस्माद्देव्या: रुचिर्नास्ति कदाचिदपि निग्रहे ।
+तत​: श्री: निरवद्येति गद्योक्ति: उपपादिता ॥१७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 19</span></div>
+<div class="original-text">ननु लक्ष्म्या: क्वचिदपि निग्रहो यदि नेष्यते ।
+दैत्यादिमर्दिनीत्यादिनामान्यस्या: कथं तदा ॥१८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 20</span></div>
+<div class="original-text">मैवम् स्वकीयदुर्गादिकर्मभिर्नामसंभवात् ।  
+रोष​: स्वदोषाद्दुर्गादे: न श्रीसंकल्पमूलक​: ॥१९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 21</span></div>
+<div class="original-text">क्वचित्तासां प्रसादो य​: श्रीसंकल्पात् भवेत्स तु ।
+न दोषो निग्रहो लक्ष्म्या: सापेक्षत्वेन चेदिदम् ॥२०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 22</span></div>
+<div class="original-text">श्रीश्रीशयोस्तुल्यमिति को विशेषोऽनयोस्तदा ।
+कान्तप्रसादशब्देन लक्ष्यते करुणागुण​: ॥२१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 23</span></div>
+<div class="original-text">द्वितीयसूत्रभावस्थकृत्स्नलक्षणसंग्रहे ।
+ब्रह्मेति लक्ष्यं शिष्टैस्तु तल्लक्षणसमाहृति: ॥२२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 24</span></div>
+<div class="original-text">समस्तकार्यहेतुत्वं मुमुक्षुभिरुपास्यता ।
+मोक्षप्रदत्वं त्रय्यन्तप्रधानप्रतिपाद्यता ॥२३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 25</span></div>
+<div class="original-text">श्रीपतित्वं चाद्यपद्ये परमप्राप्यतेति च । 
+ब्रह्मणो लक्षणानीति तत्त्वटीकाकृतो जगु: ॥२४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 26</span></div>
+<div class="original-text">कारणत्वादिलक्ष्माणि ब्रह्मत्वश्रीपतित्ववत् ।
+पतिमात्राश्रयाणीति लक्षणाभिज्ञनिर्णय: ॥२५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 27</span></div>
+<div class="original-text">ब्रह्मत्वश्रीपतित्वे हि वर्तेते पुरुषोत्तमे ।
+वल्लभाप्रीतिमुद्दिश्य तत्तल्लीला हरेरत: ॥२६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 28</span></div>
+<div class="original-text">तदन्वयोक्तिरप्यस्या: न विरुद्धेति देशिका: ॥२७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 29</span></div>
+<div class="original-text">सिद्धाञ्जनोक्तजीवेशलक्षणानां परीक्षणे ।
+लक्ष्म्यां नेश्वरलक्ष्मास्ति विद्यते जीवलक्षणम् ॥२८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 30</span></div>
+<div class="original-text">स्वज्ञानस्वेतराशेषशरीरा सेति को वदेत्? ।
+शेषत्वे सति बोद्धृत्वं लक्ष्म्या: को वा निवारयेत् ॥२९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 31</span></div>
+<div class="original-text">न्यायदृष्ट्या पश्य परमतभङ्गेऽपि देशिकै: ।
+उक्तजीवेशलक्ष्माणि पक्षपातं विना यथा ॥३०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 32</span></div>
+<div class="original-text">आधेयत्वविधेयत्वशेषत्वाणुत्वसंयुतम् ।
+चेतनत्वमहंत्वं वा जीवलक्ष्माष्टधोदितम् ॥३१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 33</span></div>
+<div class="original-text">मुमुक्षूपास्यतामोक्षप्रदत्वं प्राप्यतादि च ।
+अनन्याधारतास्तीशे स्वे महिम्नि प्रतिष्ठिते ॥३२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 34</span></div>
+<div class="original-text">तद्देहभूतलक्ष्म्यां तु साधारत्वमबाधितम् ॥३३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 35</span></div>
+<div class="original-text">श्रीधरोऽमृतशब्दार्थ​: तदाधारा च सा स्मृता । 
+तस्मादेषाऽमृताधारा लक्ष्मीनामसु पठ्यते ॥३४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 36</span></div>
+<div class="original-text">"निराश्रयेति" नामास्या: निस्सङ्कल्पेति नामवत् । 
+यथाकथञ्चिन्नेतव्यम् इति घण्टावतारगी: ॥३५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 37</span></div>
+<div class="original-text">सत्यज्ञानादिवाक्योक्तब्रह्मलक्षणयोगत​: ।
+श्रीरपि ब्रह्मशब्दार्थ इति केचित् न साधु तत् ॥३६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 38</span></div>
+<div class="original-text">अत एवानन्तपदव्यावृत्तिर्ब्रह्मलक्षणे ।
+गुणव्यापारतो लक्ष्म्या: परिच्छेदेन वर्ण्यते ॥३७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 39</span></div>
+<div class="original-text">स्वरूपेणानवधिकातिशयं सद्गुणैरपि ।
+तदनन्तं ब्रह्म वेद्यं तत् प्राप्यञ्चेति भाषणात् ॥३८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 40</span></div>
+<div class="original-text">सामानाधिकरण्यार्हा सर्वशेषितया समा ।
+विभ्वी नित्या च साथापि परिच्छिन्नैव वस्तुत​: ॥३९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 41</span></div>
+<div class="original-text">व्यापारतश्च गुणतो न्यूनत्वात् पत्यपेक्षया । 
+स्रष्टृत्वं न विभुत्वेन नाप्यणुत्वेन तत्क्षति: ॥४०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 42</span></div>
+<div class="original-text">शक्ति: श्रियोऽस्तु नेच्छेति नियन्त्रंशे व्यवस्थिति: ।
+शास्त्रप्रमाणकं ह्येतद् अक्लिष्टोऽयं महापथ​: ॥४१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 43</span></div>
+<div class="original-text">विभूतिद्वयशेषित्वमात्रेणेश्वरता समा ।
+हेतुत्वादिब्रह्मलक्ष्म पतिमात्रस्य, नोभयो: ॥४२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 44</span></div>
+<div class="original-text">साधारणानि दम्पत्यो: यान्युक्तानीह देशिकै: ।
+न तानि ब्रह्मलक्ष्माणीत्येष साधु विनिर्णय​: ॥४२ -१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 45</span></div>
+<div class="original-text">श्रेष्ठश्चेत्येतद्भाष्यार्थ​: चतुश्श्लोक्यधिकारत​: ।
+आनीदवातमित्यस्मिन् एकस्यैवोच्यते स्थिति: ॥४३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 46</span></div>
+<div class="original-text">स्वधा स्वधृतिसामर्थ्यं न तु श्रीरिति दर्शितम् ।
+स्वधाया श्रीत्वमाश्रित्य तदधीना प्रभो: स्थिति: ॥४४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 47</span></div>
+<div class="original-text">निरस्ता, कारणत्वं तु श्रियो नोक्तं न शङ्कितम् । 
+युक्तेरभावादत्रेदं शोधयन्तु विपश्चित​: ॥४५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 48</span></div>
+<div class="original-text">प्राक्कालसत्तया वाक्यप्रतिपादितयापि वा ।
+जगत्कारणता लक्ष्म्या: न कल्प्यातिप्रसङ्गत​: ॥४६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 49</span></div>
+<div class="original-text">साम्यस्वारस्यमात्रेण श्रियश्चेद्ब्रह्मलक्षणम् ।
+श्रुत्युक्तं परमं साम्यं यच्च​, तस्य कथं न तत् ॥४७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 50</span></div>
+<div class="original-text">श्रुतिसूत्रादिसंसिद्धै: विनैव ब्रह्मलक्षणै: ।
+श्रियस्साम्यादिनिर्वाह​: न्यायसिद्धाञ्जने कृत​: ॥४८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 51</span></div>
+<div class="original-text">आधेयत्वादिभि: लक्ष्म्या: शरीरत्वेन कार्यता ।
+साम्याद्यै: नेति शङ्कायाम् उक्तो निर्वाहसंग्रह​: ॥४९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 52</span></div>
+<div class="original-text">श्रिया सह तु दांपत्यं शाश्वतं तत एव तु ।
+तयोस्साम्यैक्यशक्तित्वतद्वत्तादिगिरां गति: ॥५०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 53</span></div>
+<div class="original-text">"तस्य शक्तिद्वयं तादृग्" "यस्यास्त" इति साम्यगी: ।
+मुक्तवत् परमं साम्यं ज्ञानानन्दादिभिर्गुणै: ॥५१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 54</span></div>
+<div class="original-text">पितृत्वाद्यै: साम्यमात्रं मुक्तव्यावृत्त​‍मीरितम् ।
+तत्रोक्तं जनकत्वं हि पितृत्वं श्रीतदीशयो: ॥५२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 55</span></div>
+<div class="original-text">तथासति  जगच्छब्द​: क्षेत्रज्ञानेव बोधयेत् ।
+अपि चात्र जगच्छब्द​: द्वन्द्वात्पूर्वं श्रुतस्तत​: ॥५३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 56</span></div>
+<div class="original-text">यथा ह्ययनशब्देनोपायोपेयत्वबोधने ।
+नारशब्दस्य जीवानां समूहोऽर्थ इतीष्यते ॥५४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 57</span></div>
+<div class="original-text">अथवा सामरस्येन प्रेरणात् सहकारिणी ।
+सृष्टौ लक्ष्मीरतस्साम्यं जनकत्वेन वर्णितम् ॥५५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 58</span></div>
+<div class="original-text">द्वयोर्विभूतिशेषित्वसाम्यमन्यत् परस्परम् ।
+पतिपत्नीशब्दगम्यं शेषित्वं चेति केचन ॥५६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 59</span></div>
+<div class="original-text">उक्तद्विरूपशेषित्वसाम्यं निर्वाह्यमत्र चेत् ।
+निर्वाह​: केन वास्येति विचार्यं सूक्ष्मदर्शिभि: ॥५७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 60</span></div>
+<div class="original-text">मुक्तस्य ब्रह्मणश्चैक्यं प्रकारैक्याद्यथोदितम् ।
+तथात्रापीति निश्चित्य तादृगैक्यं त्रिधाह च ॥५८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 61</span></div>
+<div class="original-text">द्वन्द्वतार्हात्यन्तसाम्यप्रकारैक्यादिहैकता ।
+विभूतिद्वयशेषित्वप्रकारैक्येन वानयो: ॥५९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 62</span></div>
+<div class="original-text">उद्देश्यदेवतात्वैक्याद्द्वयोर्वात्महवि: प्रति ॥६०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 63</span></div>
+<div class="original-text">प्रकारैक्येति मूलस्य पूर्वग्रन्थान्वयं स्वतः ।
+अनादृत्योत्तरेणैकवाक्यत्वोक्तिरसङ्गता ॥६१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 64</span></div>
+<div class="original-text">यदिद्वन्द्वैक्यगीराप्ता क्वचित् तस्या इयं गतिः ।
+चतुश्श्लोक्याद्यपद्यस्य भाष्यं साक्ष्यत्र तद्यथा ॥६२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 65</span></div>
+<div class="original-text">दम्पत्योर्लाघवादैक्ये स्यात् तत् सर्वात्मनामपि ।
+आत्मभेदमनिच्छन्तो भाष्यदिषु निराकृताः ॥६३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 66</span></div>
+<div class="original-text">सर्वेषामात्मनां यैस्तु भिन्नाभिन्नत्वमिष्यते ।
+लक्ष्मीनारायणैक्योक्तिः तेषां सद्भिरुपेक्ष्यते ॥६४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 67</span></div>
+<div class="original-text">यत्र कवचिदभेदोक्तिः यद्याप्तवचने भवेत् । 
+रामसुग्रीवयोरैक्यमित्यादिवदिहास्तु सा ॥६५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 68</span></div>
+<div class="original-text">व्याख्यत्रोक्तेष्वैक्यपरवचनेषु हि कानिचित् ।
+निर्वाहकान्तरापेक्षाण्यप्रमाणानि कानिचित् ॥६६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 69</span></div>
+<div class="original-text">श्रीश्शक्तिरिति सर्गादौ सहकारित्वमुच्यते ।
+तच्चेशप्रेरकतया सा चोक्ता सामरस्यतः ॥६७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 70</span></div>
+<div class="original-text">नाज्ञया न च दानेन प्रेरकत्वं न याच्ञया ॥६८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 71</span></div>
+<div class="original-text">तस्य शक्तिद्वयं तादृगमिश्रं भिन्नलक्षणम् ।
+इत्यादेश्शक्तिशब्दस्य निर्वाहो देशिकैः कृतः ॥६९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 72</span></div>
+<div class="original-text">श्रीप्रकृत्योरैक्यपरमिदं निर्वाह्यमन्यतः ।
+प्रकृतेः श्रीविभूतित्वात् एवं तादात्म्यमुच्यते ॥७०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 73</span></div>
+<div class="original-text">संकर्षणाद्यवस्था च विष्णोः सीतादिभावगीः ।
+स्वदेहभूतश्रीद्वारा सूनिर्वाह्येति देशिकाः ॥७१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 74</span></div>
+<div class="original-text">इच्छासंविदहन्तादि विष्णोः श्रीरिति वागपि ।
+इच्छाधीनस्वप्रकाशनिरूपकतया भवेत् ॥७२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 75</span></div>
+<div class="original-text">तद्वत्तादिपदव्याख्यानिर्वाहावाकरे स्थितौ ।
+अदृष्ट्वान्येऽन्यथा वाक्यनिर्वाहं च हि चक्रिरे ॥७३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 76</span></div>
+<div class="original-text">विष्णुर्नारीमय इति लक्ष्म्याधारतयोच्यते ।
+नारायणस्य पत्नीत्वात् देव्या नारायाणात्मता ॥७४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 77</span></div>
+<div class="original-text">द्वयोरर्धं श्रीतनुत्वं ऐच्छिकात्तनुमिश्रणात् ।
+विष्णुवैभवकारोक्तं नात्मैक्यमिति देशिकाः ॥७५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 78</span></div>
+<div class="original-text">विष्णोरेवं श्रीतनुत्वं परास्यं परजल्पितम् ॥७६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 79</span></div>
+<div class="original-text">समाधिकदरिद्रत्वं स्वान्याखिलनियन्त्रृता ।
+अशरण्यशरण्यत्वं चोभयोः नोपपद्यते ॥७७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 80</span></div>
+<div class="original-text">मोक्षार्थन्यासनिष्पत्तेः ये शरण्यार्थिनो नराः ।
+तेषां लक्ष्मीश्शरण्येति जगुः वेदान्तदेशिकाः ॥७८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 81</span></div>
+<div class="original-text">अलब्धस्वशरण्यानां शरण्यप्रापणाच्छ्रीयः ।
+अशरण्यशरण्यत्वं इत्याहुर्व्यासदेशिकाः ॥७९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 82</span></div>
+<div class="original-text">न्यासस्य लक्षणान्मन्त्रात्  विधेः वाक्यान्तरादपि ।
+भाष्यादेः संप्रदायाच्च प्रपत्तव्यः परः पुमान् ॥८०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 83</span></div>
+<div class="original-text">गुणविग्रहवल्लक्ष्मीः प्रपत्तव्यविशेषणम् ।
+रक्षायज्ञान्वयः पत्न्या ऋत्विजां च गुणात्मनाम् ॥८१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 84</span></div>
+<div class="original-text">वस्तुयोग्योपयोगो हि ज्ञेयस्सहृदयैरिह ।
+वात्सल्यादेस्तनोश्चार्यैरुपयोगो हि दर्शितः ॥८२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 85</span></div>
+<div class="original-text">मुमुक्षुत्वं च विश्वासप्रवृत्तिं चोपाजन्य सा ।
+धूत्वा प्रभोरधृष्यत्वं जनयत्यभिगम्यताम् ॥८३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 86</span></div>
+<div class="original-text">विशेषणतया न्यासदशायामपि तिष्ठति ।
+पापनाशं प्राप्यरुचिं प्रापकाध्यवसायिताम् ॥८४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 87</span></div>
+<div class="original-text">न्यासमीशप्रसादञ्च सोत्पाद्योपकरोति नः ।
+एवं सर्वासु विद्यासु श्रीरुपास्यविशेषनम्  ॥८५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 88</span></div>
+<div class="original-text">लक्ष्म्या विद्याविशेष्यत्वे कारणत्वं प्रसज्यते ।
+विशेषणत्वे वेद्यस्य नेन्द्रादेरिव तद् भवेत् ॥८६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 89</span></div>
+<div class="original-text">उपलक्षणतापक्षं लक्ष्म्या आक्षिप्य देशिकैः ।
+गुणादेरिव वैशिष्ट्यमात्रं सर्वत्र साधितम् ॥८७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 90</span></div>
+<div class="original-text">भरस्वीकरणाभावात् रक्षासंकल्पवर्जनात् ।
+विशेषणं शरण्यस्य श्रीर्नेत्यत्रैवमुत्तरम् ॥८८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 91</span></div>
+<div class="original-text">न स्वीकारो न सङ्कल्पः श्रियो ब्रह्मगुणस्य च ।
+द्वयोरप्युपयोगोऽस्ति सामरस्यं श्रियोऽधिकम् ॥८९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 92</span></div>
+<div class="original-text">भरस्वीकाररहितं रक्षासंकल्पवर्जितम् ।
+गुणादिकमिहेष्टं हि शारण्यस्य विशेषणम् ॥९०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 93</span></div>
+<div class="original-text">ऐकारस्यजुषोः शेषिदम्पत्योस्सर्वकर्मसु ।
+विशेषणविशेष्यत्वं श्रुतं कस्मान्न रोचते? ॥९१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 94</span></div>
+<div class="original-text">न साक्षान्मोक्षसङ्कल्पः परतन्त्रेषु कस्यचित् ।
+स तु नारायणस्यैव स्वतन्त्रस्य रमापतेः ॥९२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 95</span></div>
+<div class="original-text">विशेषणं शरण्यस्य श्रीः किं किं वोपलक्षणम् । 
+अत्रैतावत् चिन्तितं चेद् उपायत्वकथा कुतः ॥९३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 96</span></div>
+<div class="original-text">नोपायत्वं श्रुतं कॢप्तिरर्थसामर्थ्यबाधिता ।
+पापेभ्यो मोक्षणं कोपनिवृत्तिरिति दर्शितम् ॥९४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 97</span></div>
+<div class="original-text">तच्च दण्डधरस्यैव न मातुरुपपद्यते ।
+न साक्षान्मोक्षसङ्कल्पः परतन्त्रेषु कस्यचित् ॥९५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 98</span></div>
+<div class="original-text">रहस्यारत्नावल्याद्यगाथादेर्हृदयं जगुः ।
+विशेषेण विमृष्यैतद् विदांकुर्वन्तु साधवः ॥९६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 99</span></div>
+<div class="original-text">“साम्यप्रदानसङ्कल्पस्त्वीशस्यैवाथवोभ्योः” ।
+चतुःश्लोक्यधिकारादौ देशिकैरिति दर्शितम् ॥९७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 100</span></div>
+<div class="original-text">साक्षात् परम्परातो वा लक्ष्मीः सर्वफलप्रदा ।
+सर्वकामप्रदेत्याद्यैः औदार्यस्योपबृ‌ंहणात् ॥९८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 101</span></div>
+<div class="original-text">इति गद्याधिकारोक्तं विमृशन्तु विपश्चितः ॥९९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 102</span></div>
+<div class="original-text">ईशद्वारा बन्धहानेः धर्मादेस्साधनं स्वयम् ।
+विशेषणमुपायस्य श्रीः किं, किं वोपलक्षणम् ॥१००॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 103</span></div>
+<div class="original-text">अत्रैतावत् चिन्तितं चेत् उपायत्वकथा कुतः ॥१०१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 104</span></div>
+<div class="original-text">आलोड्याचार्यवाक्यानि सुनिष्पन्नार्थ उच्यते ।
+लक्ष्म्याः पुरुषकारत्वनित्ययोगौ सतां समौ ॥१०२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 105</span></div>
+<div class="original-text">विशेषणतया न्यासविषयत्वमिहाधिकम् ॥१०३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 106</span></div>
+<div class="original-text">विशेषणेन सम्बन्धे चैतन्ये चास्य देशिकैः ।
+दर्शिता श्रौतदृष्टान्ता घटकापेक्षरक्षितुः ॥१०४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 107</span></div>
+<div class="original-text">यथामहत्त्वमिन्द्रादेरग्निस्त्वर्थाद्विशेषणम् ।
+यथा विष्णोर्यथेन्द्रस्य वृत्रो वृत्रनिघातिनः ॥१०५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 108</span></div>
+<div class="original-text">व्याकुर्वन्न्यासतिलकमाहैवं वरदो गुरुः ॥१०६‌॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 109</span></div>
+<div class="original-text">‘वृद्धिह्रासे’ति सूत्रोक्तदृष्टान्तोभयनीतितः ।
+आत्रोक्तानेकदृष्टान्ता एवमेव हि संगताः ॥१०७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 110</span></div>
+<div class="original-text">श्रीवैशिष्ट्ये महत्वाग्निवृत्रैरुपमिते सति ।
+श्रीप्राधान्येऽग्निदृष्टान्त इति निश्चिनुयात् कथम् ॥१०८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 111</span></div>
+<div class="original-text">महेन्द्राग्नीषोमादिवत् लक्ष्मीवैशिष्ट्यमीशितुः ।
+न्यायसिद्धाञ्जने चेशपरिच्छेदे स्फुटोदितम् ॥१०९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 112</span></div>
+<div class="original-text">यद्यप्यात्महविर्यज्ञे प्राधान्यम् उभयोरपि ।
+विशेषणं शरण्यस्य भरन्यासे तथापि सा ॥११०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 113</span></div>
+<div class="original-text">भरात्मन्यासायोर्भेदादन्योन्यमतिचारतः ॥१११‌‌॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 114</span></div>
+<div class="original-text">स्थाने विशेषादुन्मानं प्रकाशाकाशवद्विभोः‌ ।
+यद्वन्निरूपितं सूत्रे तद्वदतत्रेति चाशयः ॥११२‌‌॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 115</span></div>
+<div class="original-text">गुरवोऽत्र वदन्त्यन्ये वेदान्तनयवेदिनः ।
+आग्नावैष्णवसम्बन्धो विष्णोरग्न्यात्मना सह ॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 116</span></div>
+<div class="original-text">एवमात्महविर्यज्ञे पत्युः पत्न्यात्मनश्च सः ॥११३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 117</span></div>
+<div class="original-text">विष्ण्वात्मनैव ह्युद्देश्या श्रीश्च मौद्गचरौ मता ।
+आदित्ये च चरौ विष्णुः देवतादितिरूपतः ॥११४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 118</span></div>
+<div class="original-text">लक्ष्मीयन्त्रे च लक्ष्म्याश्च प्राधान्यं पत्यपेक्षया ।
+धत्ते लक्ष्मीं तनौ विष्णुः इत्याचार्याः प्रचक्षते ॥११५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 119</span></div>
+<div class="original-text">यन्त्रे सौदर्शने तस्य प्राधान्यं विष्ण्वपेक्षया ।
+तदन्तर्यामिण इति न्यायसिद्धाञ्जने स्थितम् ॥११६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 120</span></div>
+<div class="original-text">श्रीशस्तस्मात् सर्वहेतुः सेव्यस्सर्वमुमुक्षुभिः ।
+रक्षकश्च श्रिया सार्धं प्राप्यश्चेति सतां मतम् ॥११७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 121</span></div>
+<div class="original-text">आचार्याणां सूक्तयश्च विलिख्यन्ते यथामति ।
+श्रीमान् स्वतन्त्रः स्वामी च सर्वत्रान्यानपेक्षया ॥११८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 122</span></div>
+<div class="original-text">निरपेक्षस्वतन्त्रत्वस्वाम्यमन्यस्य न क्वचित् ॥११९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 123</span></div>
+<div class="original-text">त्राणे स्वामित्वमौचित्यं न्यासाद्याः सहकारिणः ।
+प्रधानहेतुः स्वातन्त्र्यविशिष्टा करुणा विभोः ॥१२०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 124</span></div>
+<div class="original-text">केचित्त्विहैकशब्दार्थं शरण्यैक्यं प्रचक्षते ।
+विशिनष्टि तदापि श्रीः गुणविग्रहवत् प्रभुम्  ॥१२१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 125</span></div>
+<div class="original-text">भरस्वीकाररहितं रक्षासङ्कल्पवर्जितम् ।
+गुणदिकमिहेष्टं हि शरण्यस्य विशेषणम् ॥१२२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 126</span></div>
+<div class="original-text">ऐकरस्यजुषो शेषिदम्पत्योः सर्वकर्मसु ।
+विशेषणविशेष्यत्वं श्रुतं कस्मान्न रोचते ॥१२३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 127</span></div>
+<div class="original-text">प्रतर्दनादिविद्यासु वेद्येऽपि परमात्मनि ।
+अचेतनवदिच्छामः चेतनञ्च विशेषणम् ॥१२४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 128</span></div>
+<div class="original-text">इत्थं प्रपत्तिविद्यायां तत्तन्मन्त्रानुसारतः ।
+विभुः पत्न्या गुणाद्यैश्च विशिष्टो विषयोऽत्र नः ।
+विशेषणं शरण्यस्य भरन्यासे तथापि सा ॥१२५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 129</span></div>
+<div class="original-text">स्वाम्युपाय उपेयञ्च स्वरूपादिसमर्पणे ।
+प्रथितः प्रतिसंबन्धी श्रीमान्निगमचक्षुषाम् ॥१२६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 130</span></div>
+<div class="original-text">मुमुक्षुमात्रसामान्यं स्वरूपादिसमर्पणम् ।
+अकिञ्चने भरन्यासस्त्वधिकोऽङ्गितया स्थितः ॥१२७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 131</span></div>
+<div class="original-text">अत्र रक्षाभरन्यासः समः सर्वफलार्थिनाम् ।
+स्वरूपफलनिक्षेपस्त्वधिको मोक्षकाङ्क्षिणाम् ॥१२८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 132</span></div>
+<div class="original-text">प्रागुक्तेन सहैतेषु पक्षेष्वत्र चतुर्ष्वपि ।
+स्वतन्त्रपतिनित्येच्छासिद्धं सर्वमिदं श्रियः ॥१२९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 133</span></div>
+<div class="original-text">अपि चैवं न तस्येशे कश्चनेत्यादिदर्शनात् ।
+आर्थश्चतुर्भिरप्येतैः पत्यावैश्वर्यविश्रमः ॥१३०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 134</span></div>
+<div class="original-text">ज्ञानभोगसमानत्वे नित्यमुक्तेश्वरेषु च ।
+यथा वैषम्यनियतिः तथैवात्रेति नाविलम् ॥१३१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 135</span></div>
+<div class="original-text">उपायदानमेतस्याः तदिदं पतिसम्मतम् ।
+यथा तस्याः प्रसीदन्त्या हारदानं हनूमते ॥१३२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 136</span></div>
+<div class="original-text">विशेषणविशेषेणा ..कारत्रयशा (लिनः?) ।
+विशिष्टस्य परस्यैवोपायत्वेन परिग्रहः ॥१३३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 137</span></div>
+<div class="original-text">निरुपाधिकशेषित्वतदभिव्याप्तभेदकैः ।
+अजीवतत्त्वतद्दासत्रिविधात्माधिकत्वधीः ॥१३४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 138</span></div>
+<div class="original-text">यदिच्छयैव यत्प्रीत्यै शासनं निग्रहादि च ।
+तत्र निग्राह्यजातीयविसजातीयतामतिः ॥१३५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 139</span></div>
+<div class="original-text">एकेतरसमस्तानां स्वनिष्ठैकार्थतास्थितेः ।
+द्विष्ठे तदन्यशेषित्वे द्वैराज्यादिभयोज्झितिः ॥१३६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 140</span></div>
+<div class="original-text">प्रभादित्यप्रकारेण मिथोऽतिशयदायिनोः ।
+तदन्यवस्त्वसंभाव्यं स्वतोऽतिशयदर्शनम् ॥१३७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 141</span></div>
+<div class="original-text">अनन्यदेवतानन्योपायतानन्यसाध्यता ।
+शुद्धतत्परिवारेषु सपर्या भर्तृभृत्यवत् ॥१३८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 142</span></div>
+<div class="original-text">रहस्यत्रयसारश्च चतुःश्लोक्यधिकारकः ।
+श्रीमद्गद्याधिकारश्च निक्षेपस्य च रक्षणम् ॥१३९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 143</span></div>
+<div class="original-text">140 shloka missing</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 144</span></div>
+<div class="original-text">चतुःश्लोक्यधिकारान्ते पञ्च पक्षाः प्रकीर्तिताः ।
+तेषामन्योन्यसंवादविवादांशौ च दर्शितौ (141) ॥१४१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 145</span></div>
+<div class="original-text">श्रीर्जीवकोटिरण्वी च (प्राहु)र्नारार्थगद्यतः ।
+अस्याः सर्वगतत्वोक्तिः नानाविग्रहयोगतः ॥१४२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 146</span></div>
+<div class="original-text">यद्वा विभवी पारतन्त्यजीवलक्षणलक्षिता ।
+अन्ये तु पतिपुत्रान्यपत्नीवद्विष्णुपत्न्यपि ॥१४३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 147</span></div>
+<div class="original-text">अचिदन्या चेतनत्वात् जीवान्या च विभुत्वतः ।
+पारार्थ्यादीश्वरान्येति मध्यकोटिमिमां जगुः ॥१४४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 148</span></div>
+<div class="original-text">द्विधात्मसंविभागे तु त्रैविध्यं च विवक्षितम् ।
+यद्वेयमीशपत्नीत्वादीशानावचनादपि ॥१४५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 149</span></div>
+<div class="original-text">विभूतिद्वयशेषित्वमात्रेणेश्वरकोटिता ।
+गद्येऽस्याः नारवर्गेषु पाठः पारार्थ्यमात्रतः ॥१४६॥
+ 
+अस्याश्चेश्वरपारार्थ्यमीशेच्छामात्रतोऽथवा ।
+सिद्धं तदुभयेच्छातः सर्वैश्वर्यश्रुतेर्द्वयोः ॥१४७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 150</span></div>
+<div class="original-text">प्रमानवानेक एव पक्षेषूक्तेषु पञ्चमः ।
+पूर्वपूर्वोपमर्देन​ पक्षाणामुपवर्णनात् ॥१४८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 151</span></div>
+<div class="original-text">संशयोक्तिस्तु निश्चेतुम् अक्षमाणामधीमताम् ।
+यत्र पूर्वोपमर्देन​ नानापक्षाः प्रकीर्तिताः ॥१४९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 152</span></div>
+<div class="original-text">तत्र सर्वत्र चरमः सङ्ग्राह्य इति निर्णयः ।
+वाक्यान्वयाधिकरणपक्षेष्वप्यत एव हि ॥१५०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 153</span></div>
+<div class="original-text">सिद्धान्तश्चरमः पक्ष इति भाष्यादिवेदिनः ।
+पतिरेव जगद्धेतुः सर्वपक्षेष्वथापि सः ॥१५१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 154</span></div>
+<div class="original-text">पत्न्याः प्रीत्यै करोतीति सापि कारणमिष्यते ।
+श्रीरण्वी प्रथमे पक्षे विभ्वी च त्रिषु सम्मता ॥१५२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 155</span></div>
+<div class="original-text">द्वितीयादित्रिकेऽन्योन्यजीवाद्याख्याकृते यथा ।
+गुणभावे पतीच्छावत् पत्नीच्छापि प्रयोजिका ॥१५३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 156</span></div>
+<div class="original-text">उत नेति विवादस्तु त्रिकपञ्चमयोर्मिथः ।
+इहैवं क्वचिदंशे तु संशयेऽपि विपश्चिताम् ॥१५४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 157</span></div>
+<div class="original-text">उपयुक्तांशवैशद्यादुपायफलसंभवः ।
+चतुः श्लोक्यधिकारान्ते (?) पञ्चपक्षोपन्यासात् ॥१५५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 158</span></div>
+<div class="original-text">व्यावक्रोशिनिकर्षोक्तिं सर्वसाम्यविकत्थनम् ।
+लम्बनं धनदेत्यादेः व्यसनं नामकल्पने ।
+शमयामास विमतकथकानां नयेषुभिः ॥१५६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 159</span></div>
+<div class="original-text">चतुःश्लोकीसारमेकं पश्यन्त्वत्र विपश्चितः ।
+दिव्ययोर्यत्र दम्पत्योः आनुरूप्यं निरूपितम् ॥१५७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 160</span></div>
+<div class="original-text">नान्दीमारभ्य जिज्ञासा त्रय्यन्तार्यमते यदि ॥१५८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 161</span></div>
+<div class="original-text">अनन्याधीनकल्याणम् अन्यमङ्गळकारणम् ।
+जगन्निदानमद्वन्द्वं द्वन्द्वं वन्दामहे महः ॥१५९॥
+ 
+निदानमेकं जगतामिति चास्त्याप्तभाषितम् ।
+तस्य चान्यस्य निर्वाहो व्यक्तं पूर्वोक्तनीतितः ॥१६०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 162</span></div>
+<div class="original-text">लोकाचार्यप्रबन्धस्य त्रयीसारस्य चोभयोः ।
+प्रायो बुधैरैककण्ठ्यं ग्राह्यं ग्रन्थज्ञसम्मतम् ॥१६१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 163</span></div>
+<div class="original-text">धर्मत्यागविधौ दोषानाशङ्क्य परिहृत्य तैः ।
+उक्तोऽनुवादपक्षोऽपि वङ्गिवंशेशवाक्यतः ॥१६२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 164</span></div>
+<div class="original-text">युक्तमाप्तप्रबन्धानामैक्यतात्पर्यवर्णनात् ।
+न कार्यानाप्तवाक्यानामविरुद्धार्थवर्णना ॥१६३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 165</span></div>
+<div class="original-text">आप्तवाचो विरोधे स्यात् दृष्टिभेदादियं गतिः ।
+अनिश्चितप्तवाक्यानां निश्चिते स्यादनादरः ॥१६४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 166</span></div>
+<div class="original-text">प्राधान्याङ्गत्वपरयोः गद्यगीतान्तभष्ययोः ।
+द्वयोरन्यतरत् बाध्यं विरोधो हि स्फुटः ततः ॥१६५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 167</span></div>
+<div class="original-text">“आर्तोपच्छन्दनं गद्यं केचिदाहुर्विपश्चितः ।
+गीतान्तभाष्यमन्ये तु वदन्ति पररञ्जनम्” ॥१६६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 168</span></div>
+<div class="original-text">तात्पर्यार्थाविरोधेन नात्रैकेनान्यबाधनम् ।
+प्रमाणदार्ढ्यादत्रैवं गद्यभाष्योक्तसंग्रहः ॥१६७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 169</span></div>
+<div class="original-text">“आर्तोपच्छन्दनं गद्यं भाष्यं तु पररञ्जनम् ।
+इत्याविलधियो ह्येवं प्रसीदेयुः प्रमाणतः” ॥१६८॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 170</span></div>
+<div class="original-text">सुदुष्करेण शोचेद्यो येन येनेष्टहेतुना ।
+स स तस्याहमेवेति चरमश्लोकसंग्रहः” ॥१६९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 171</span></div>
+<div class="original-text">आप्तस्य ग्रन्थयोरेवं विरोधस्फुरणे यथा ।
+तात्पर्य कॢप्त्या निर्वाहो भिन्नकर्तृकयोस्तथा ॥१७०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 172</span></div>
+<div class="original-text">यथा च धर्ममीमांसाब्रह्ममीमांसयोर्द्वयोः ।
+अविरुद्धार्थतात्पर्यात् ऐकशास्त्र्यं समर्थितम्  ॥१७१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 173</span></div>
+<div class="original-text">अतिगम्भीरसन्दर्भं श्रीमद्वचनभूषणम् ।
+अन्यान्यपि रहस्यानि तादृशान्यत एव हि ॥१७२॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 174</span></div>
+<div class="original-text">रहस्यत्रयसारादौ तेषां तात्पर्यमूचिरे ।
+आपातप्रतिपन्नार्थो ह्यपास्तोऽनुपपत्तिभिः ।
+कुमारवरदाचार्यैः चुलुके चेत्थमीरितम् ॥१७३॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 175</span></div>
+<div class="original-text">रहस्यत्रयसारार्थविशदीकरणादिकम् ।
+प्रायेण सुन्दरवरमुनेः सूक्तिषु दृश्यते ॥१७४॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 176</span></div>
+<div class="original-text">प्रधानप्रतितन्त्रार्थान् भाष्यकारोपपादितान् ।
+इष्टार्थमन्यथा कर्तुं वागधीशोऽपि न क्षमः ॥१७५॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 177</span></div>
+<div class="original-text">उपयुक्तांशवैशिष्ट्यादुपायफलसंभवः ।
+अत्यन्तानुपयुक्तार्थविवादेऽपि हि न क्षतिः ॥१७६॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 178</span></div>
+<div class="original-text">भाष्यकाराव्यवहित शिष्टेष्वेव हि केचन ।
+कैवल्यं नित्यमित्याहुरनित्यमिति चापरे ॥१७७॥
+ 
+सिद्धाञ्जने च कुलिशे चन्द्रिकायाञ्च देशिकैः ।
+उक्तं मतद्वयं प्रायः स्वारस्यञ्चान्तिमे मते ॥१८७॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 179</span></div>
+<div class="original-text">व्यामिश्रगीताभाष्योक्तकैवल्येऽन्य उदासते ।
+प्रतिबुद्धैः परित्याज्यं कैवल्यं तन्निरूपणे ॥१७९॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 180</span></div>
+<div class="original-text">यदि नित्यं ततः किं स्याद्यद्यनित्यं ततोऽपि किम् ।
+ईदृक्संशयविच्छेदः तस्मिन् दृष्टे भवत्विति ॥१७०॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 181</span></div>
+<div class="original-text">यदिह रहस्यं विवृतं यच्च न्यूनं वचोऽधिकम् यद्वा ।
+कृपया तदिदं क्षमतां देवो देव्यौ च देशिकास्सन्तः ॥१७१॥</div></article>
+<article class="verse searchable"><div class="verse-head"><span class="verse-num">Verse 182</span></div>
+<div class="original-text">नारायणेन मुनिना श्रीवत्साङ्कविपश्चिता ।
+सैषा पुरुषकारस्य मीमांसा निर्मिता मता ॥१७२॥</div></article>
+</div>
+</details>
+      </div>
+    </div>
+    <footer class="site-footer">Puruṣakāra Mimāṃsā &middot; generated for offline / mobile reading</footer>
+    
+<button class="back-top" id="backTop" title="Back to top">↑</button>
+<script>
+(function(){
+  var root = document.documentElement;
+  var LS_THEME = 'scripture-theme';
+  var LS_FONT = 'scripture-font-scale';
+
+  // ---- Theme ----
+  function applyTheme(t){
+    root.setAttribute('data-theme', t);
+    try{ localStorage.setItem(LS_THEME, t); }catch(e){}
+    var btn = document.getElementById('themeToggle');
+    if(btn) btn.textContent = t === 'dark' ? '☀' : '☾';
+  }
+  function initTheme(){
+    var saved = null;
+    try{ saved = localStorage.getItem(LS_THEME); }catch(e){}
+    if(!saved){
+      saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+    applyTheme(saved);
+  }
+  window.toggleTheme = function(){
+    var cur = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(cur);
+  };
+
+  // ---- Font scale ----
+  function applyFont(scale){
+    scale = Math.min(1.6, Math.max(0.75, scale));
+    root.style.setProperty('--font-scale', scale);
+    try{ localStorage.setItem(LS_FONT, scale); }catch(e){}
+  }
+  function initFont(){
+    var saved = null;
+    try{ saved = parseFloat(localStorage.getItem(LS_FONT)); }catch(e){}
+    applyFont(saved && !isNaN(saved) ? saved : 1);
+  }
+  window.bumpFont = function(delta){
+    var cur = parseFloat(getComputedStyle(root).getPropertyValue('--font-scale')) || 1;
+    applyFont(cur + delta);
+  };
+
+  // ---- Expand / collapse all ----
+  window.setAllDetails = function(open){
+    document.querySelectorAll('details').forEach(function(d){ d.open = open; });
+  };
+
+  // ---- Search ----
+  var searchCache = null;
+  function buildCache(){
+    searchCache = [];
+    document.querySelectorAll('.searchable').forEach(function(el){
+      searchCache.push({el: el, text: el.textContent.toLowerCase()});
+    });
+  }
+  var debounceTimer = null;
+  function doSearch(q){
+    if(!searchCache) buildCache();
+    q = q.trim().toLowerCase();
+    var countEl = document.getElementById('searchCount');
+    var emptyMsg = document.getElementById('emptyMsg');
+    var chapters = document.querySelectorAll('.chapter');
+    if(!q){
+      searchCache.forEach(function(item){ item.el.classList.remove('hidden'); });
+      chapters.forEach(function(ch){ ch.classList.remove('hidden'); });
+      if(countEl) countEl.textContent = '';
+      if(emptyMsg) emptyMsg.classList.add('hidden');
+      return;
+    }
+    var matches = 0;
+    var chapterHasMatch = new Map();
+    searchCache.forEach(function(item){
+      var hit = item.text.indexOf(q) !== -1;
+      item.el.classList.toggle('hidden', !hit);
+      if(hit){
+        matches++;
+        var ch = item.el.closest('.chapter');
+        if(ch){ chapterHasMatch.set(ch, true); if(!ch.open) ch.open = true; }
+      }
+    });
+    chapters.forEach(function(ch){
+      ch.classList.toggle('hidden', !chapterHasMatch.get(ch));
+    });
+    if(countEl) countEl.textContent = matches + ' match' + (matches===1?'':'es');
+    if(emptyMsg) emptyMsg.classList.toggle('hidden', matches !== 0);
+  }
+  window.onSearchInput = function(val){
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function(){ doSearch(val); }, 220);
+  };
+
+  // ---- Mobile TOC toggle ----
+  window.toggleToc = function(){
+    var toc = document.getElementById('tocPanel');
+    if(toc) toc.classList.toggle('collapsed');
+  };
+
+  // ---- Back to top ----
+  function initBackTop(){
+    var btn = document.getElementById('backTop');
+    if(!btn) return;
+    window.addEventListener('scroll', function(){
+      btn.classList.toggle('show', window.scrollY > 500);
+    });
+    btn.addEventListener('click', function(){
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    initTheme();
+    initFont();
+    initBackTop();
+    var input = document.getElementById('searchInput');
+    if(input){
+      input.addEventListener('input', function(){ window.onSearchInput(input.value); });
+    }
+  });
+})();
+</script>
+</body>
+</html>
