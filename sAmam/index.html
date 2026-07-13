@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Malolan • Samavedic Text Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">sAmaveda-kauthuma</a>
+    <a href="https://malolan05.github.io/texts" class="nav-texts-link">Texts</a>
+
+    <div class="nav-search-wrap" id="global-search-wrap">
+      <span class="search-icon-left">⌕</span>
+      <input id="global-search" type="text" placeholder="Search all texts… (press / to focus)" autocomplete="off">
+      <span id="global-search-count"></span>
+
+      <!-- Sitewide results dropdown (homepage mode) -->
+      <div id="sitewide-results">
+        <div id="sw-loading-bar" class="sw-loading-bar" style="display:none"></div>
+        <div id="sw-content"></div>
+        <div class="sw-footer">
+          <span><kbd>↑</kbd><kbd>↓</kbd> navigate &nbsp; <kbd>↵</kbd> open &nbsp; <kbd>Esc</kbd> close</span>
+          <span id="sw-total-count"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="index-status">
+      <div class="mini-spinner"></div>
+      <span>Indexing…</span>
+    </div>
+    <div id="nav-file-badge"></div>
+  </div>
+</nav>
+
+<div id="status-overlay">
+  <div class="spinner"></div>
+  <p class="status-text" id="status-text">Loading sacred texts…</p>
+</div>
+
+<div id="homepage-view">
+  <div class="home-hero">
+    <h1>Samavedic Text Explorer</h1>
+    <div class="gold-rule"></div>
+    <p>Browse, read, and search the sacred recensions of the Samaveda — structured by Adhyāya, Khaṇḍa, and Ṛk, with each Sāman displayed in its commentarial tradition.</p>
+    <p class="search-hint">Press <kbd>/</kbd> to search across all texts instantly</p>
+  </div>
+  <div class="file-grid" id="file-list"></div>
+</div>
+
+<div id="reader-view">
+  <a href="index.html" class="back-btn" id="back-btn">← All datasets</a>
+  <div class="reader-layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">Contents</div>
+      <div id="sidebar-tree"></div>
+    </aside>
+    <main class="reader-content">
+      <div class="view-mode-bar">
+        <button class="view-btn active" id="btn-reader">Reader view</button>
+        <button class="view-btn" id="btn-table">Table view</button>
+      </div>
+      <div id="reader-body"></div>
+      <div id="table-fallback">
+        <div class="table-wrap">
+          <table id="raw-table"></table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+(function() {
+  const FILES = [
+    { name: "AgnEyam-text.tsv", label: "Āgneya", fileNum: 1, icon: "🔥" },
+    { name: "Aindram-text.tsv", label: "Āindra",  fileNum: 2, icon: "⚡" },
+  ];
+  const DATA_FOLDER = "../data/sAmam/";
+  const SITEWIDE_MAX_RESULTS_PER_FILE = 15;
+  const SNIPPET_CONTEXT = 60; // chars around match
+
+  const COL_ALIASES = {
+    ref:       ["ref","reference","id","num","number","sr","sno","sl"],
+    rik:       ["rik","rik_text","text","mantra","samhita","samhita_text","verse"],
+    padapatha: ["padapatha","pada","padapaatha","padap"],
+    rishi:     ["rishi","rsi","seer","drashta","drsta","sage"],
+    chandas:   ["chandas","chhandas","meter","chhanda"],
+    devata:    ["devata","deity","deva","god","devataa"],
+    notes:     ["notes","note","commentary","remarks","gloss","tikka"],
+  };
+
+  // ---- State ----
+  let allData = [];             // loaded file data (reader mode)
+  let sitewideIndex = [];       // [{fileObj, rows:[{ref, texts:[]}]}, ...]
+  let sitewideIndexReady = false;
+  let sitewideIndexLoading = false;
+  let currentFile = null;
+  let viewMode = "reader";
+  let searchMatches = [];
+  let searchPointer = -1;
+  let currentQuery = "";
+  let swResults = [];
+  let swPointer = -1;
+  let isHomepage = false;
+  let searchDebounceTimer = null;
+
+  // ---- DOM refs ----
+  const homepageView      = document.getElementById('homepage-view');
+  const readerView        = document.getElementById('reader-view');
+  const fileListEl        = document.getElementById('file-list');
+  const sidebarTree       = document.getElementById('sidebar-tree');
+  const readerBody        = document.getElementById('reader-body');
+  const tableFallback     = document.getElementById('table-fallback');
+  const rawTable          = document.getElementById('raw-table');
+  const statusOverlay     = document.getElementById('status-overlay');
+  const statusText        = document.getElementById('status-text');
+  const navBadge          = document.getElementById('nav-file-badge');
+  const globalSearch      = document.getElementById('global-search');
+  const globalSearchWrap  = document.getElementById('global-search-wrap');
+  const globalSearchCount = document.getElementById('global-search-count');
+  const btnReader         = document.getElementById('btn-reader');
+  const btnTable          = document.getElementById('btn-table');
+  const sidebar           = document.querySelector('.sidebar');
+  const sitewideResultsEl = document.getElementById('sitewide-results');
+  const swContent         = document.getElementById('sw-content');
+  const swTotalCount      = document.getElementById('sw-total-count');
+  const swLoadingBar      = document.getElementById('sw-loading-bar');
+  const indexStatus       = document.getElementById('index-status');
+
+  function showStatus(msg) { statusText.textContent = msg; statusOverlay.classList.add('visible'); }
+  function hideStatus()    { statusOverlay.classList.remove('visible'); }
+
+  // ============================================================
+  // ROUTING
+  // ============================================================
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const f = params.get('file');
+    const match = FILES.find(x => x.name === f);
+    if (match) {
+      isHomepage = false;
+      loadFile(match);
+      // Still build sitewide index in background for in-reader cross-search
+      buildSitewideIndex();
+    } else {
+      isHomepage = true;
+      renderHome();
+      buildSitewideIndex(); // eager load on homepage
+    }
+  });
+
+  // ============================================================
+  // HOMEPAGE
+  // ============================================================
+  function renderHome() {
+    homepageView.style.display = 'block';
+    readerView.style.display = 'none';
+    globalSearch.placeholder = 'Search all texts… (press / to focus)';
+    fileListEl.innerHTML = '';
+    FILES.forEach(f => {
+      const a = document.createElement('a');
+      a.href = `?file=${encodeURIComponent(f.name)}`;
+      a.className = 'file-card';
+      a.innerHTML = `
+        <div class="file-icon">${f.icon}</div>
+        <div style="flex:1">
+          <div class="file-name">${f.label}</div>
+          <div class="file-meta">${f.name}</div>
+        </div>
+        <div class="file-arrow">→</div>
+      `;
+      fileListEl.appendChild(a);
+    });
+  }
+
+  // ============================================================
+  // SITEWIDE INDEX  (loads all files in background)
+  // ============================================================
+  function buildSitewideIndex() {
+    if (sitewideIndexLoading || sitewideIndexReady) return;
+    sitewideIndexLoading = true;
+    indexStatus.classList.add('visible');
+
+    let pending = FILES.length;
+    sitewideIndex = [];
+
+    FILES.forEach(fileObj => {
+      fetch(DATA_FOLDER + fileObj.name)
+        .then(r => r.ok ? r.text() : Promise.reject())
+        .then(txt => new Promise(resolve => {
+          Papa.parse(txt, {
+            delimiter: "\t", skipEmptyLines: true,
+            complete: res => resolve(res.data),
+            error: () => resolve([]),
+          });
+        }))
+        .then(data => {
+          if (data.length > 1) {
+            const headers = data[0];
+            const rows = data.slice(1);
+            const cols = resolveColumns(headers);
+            const indexedRows = rows.map(row => {
+              const ref = row[cols.ref] || '';
+              // Collect all searchable text fields
+              const texts = [
+                cols.rik       !== undefined ? row[cols.rik]       : '',
+                cols.padapatha !== undefined ? row[cols.padapatha] : '',
+                cols.notes     !== undefined ? row[cols.notes]     : '',
+                cols.rishi     !== undefined ? row[cols.rishi]     : '',
+                cols.devata    !== undefined ? row[cols.devata]    : '',
+              ].filter(Boolean);
+              return { ref, texts, rawRow: row, headers };
+            });
+            sitewideIndex.push({ fileObj, rows: indexedRows });
+          }
+        })
+        .catch(() => {}) // silently skip missing files
+        .finally(() => {
+          pending--;
+          if (pending === 0) {
+            sitewideIndexReady = true;
+            sitewideIndexLoading = false;
+            indexStatus.classList.remove('visible');
+            // If user was already typing, run search now
+            if (currentQuery && isHomepage) {
+              doSitewideSearch(currentQuery);
+            }
+          }
+        });
+    });
+  }
+
+  // ============================================================
+  // SITEWIDE SEARCH (homepage dropdown)
+  // ============================================================
+  function doSitewideSearch(query) {
+    query = query.trim().toLowerCase();
+    if (!query) {
+      closeSitewideResults();
+      return;
+    }
+
+    swResults = [];
+    swPointer = -1;
+
+    openSitewideResults();
+
+    if (!sitewideIndexReady) {
+      swContent.innerHTML = `<div class="sw-status"><div class="sw-spinner"></div> Indexing texts, please wait…</div>`;
+      swLoadingBar.style.display = 'block';
+      return;
+    }
+
+    swLoadingBar.style.display = 'none';
+
+    // Search across all indexed files
+    let totalMatches = 0;
+    const groupedHtml = [];
+
+    sitewideIndex.forEach(({ fileObj, rows }) => {
+      const fileResults = [];
+      rows.forEach(row => {
+        // Find the first matching text field and build a snippet
+        let matchField = null;
+        let matchText = null;
+        for (const t of row.texts) {
+          if (t.toLowerCase().includes(query)) { matchField = t; matchText = t; break; }
+        }
+        if (!matchText) return;
+
+        const lower = matchText.toLowerCase();
+        const idx = lower.indexOf(query);
+        const start = Math.max(0, idx - SNIPPET_CONTEXT);
+        const end   = Math.min(matchText.length, idx + query.length + SNIPPET_CONTEXT);
+        let snippet = (start > 0 ? '…' : '') + escHtml(matchText.slice(start, idx))
+          + `<mark>${escHtml(matchText.slice(idx, idx + query.length))}</mark>`
+          + escHtml(matchText.slice(idx + query.length, end))
+          + (end < matchText.length ? '…' : '');
+
+        fileResults.push({ ref: row.ref, snippet, fileObj });
+      });
+
+      if (!fileResults.length) return;
+      totalMatches += fileResults.length;
+      const shown = fileResults.slice(0, SITEWIDE_MAX_RESULTS_PER_FILE);
+      swResults.push(...shown.map(r => ({ ...r })));
+
+      let groupHtml = `<div class="sw-group-header">
+        <span>${fileObj.icon} ${fileObj.label}</span>
+        <span class="sw-group-count">${fileResults.length} match${fileResults.length !== 1 ? 'es' : ''}</span>
+      </div>`;
+      shown.forEach((r, i) => {
+        const globalIdx = swResults.length - shown.length + i;
+        groupHtml += `<div class="sw-result" data-idx="${globalIdx}">
+          <div class="sw-result-ref">${escHtml(r.ref)}</div>
+          <div class="sw-result-snippet">${r.snippet}</div>
+        </div>`;
+      });
+      if (fileResults.length > SITEWIDE_MAX_RESULTS_PER_FILE) {
+        groupHtml += `<div class="sw-status" style="padding:0.5rem 1.1rem; font-style:italic">
+          … and ${fileResults.length - SITEWIDE_MAX_RESULTS_PER_FILE} more in ${fileObj.label}
+        </div>`;
+      }
+      groupedHtml.push(groupHtml);
+    });
+
+    if (swResults.length === 0) {
+      swContent.innerHTML = `<div class="sw-no-results">No results for "<strong>${escHtml(query)}</strong>" across all texts.</div>`;
+    } else {
+      swContent.innerHTML = groupedHtml.join('');
+      swTotalCount.textContent = `${totalMatches} total match${totalMatches !== 1 ? 'es' : ''}`;
+      // Attach click handlers
+      swContent.querySelectorAll('.sw-result').forEach(el => {
+        el.addEventListener('mousedown', e => {
+          e.preventDefault();
+          const idx = parseInt(el.dataset.idx);
+          openSwResult(idx);
+        });
+      });
+    }
+  }
+
+  function openSwResult(idx) {
+    const r = swResults[idx];
+    if (!r) return;
+    // Navigate to the file, passing query as a param so we can highlight on load
+    const url = `?file=${encodeURIComponent(r.fileObj.name)}&q=${encodeURIComponent(currentQuery)}`;
+    window.location.href = url;
+  }
+
+  function openSitewideResults() {
+    sitewideResultsEl.classList.add('open');
+    globalSearch.classList.add('results-open');
+  }
+
+  function closeSitewideResults() {
+    sitewideResultsEl.classList.remove('open');
+    globalSearch.classList.remove('results-open');
+    swContent.innerHTML = '';
+    swTotalCount.textContent = '';
+    swLoadingBar.style.display = 'none';
+    swResults = [];
+    swPointer = -1;
+  }
+
+  // Keyboard navigation for sitewide dropdown
+  function swNavigate(dir) {
+    const items = swContent.querySelectorAll('.sw-result');
+    if (!items.length) return;
+    items.forEach(el => el.classList.remove('active'));
+    swPointer = (swPointer + dir + items.length) % items.length;
+    items[swPointer].classList.add('active');
+    items[swPointer].scrollIntoView({ block: 'nearest' });
+  }
+
+  // ============================================================
+  // GLOBAL SEARCH INPUT handler — routes between modes
+  // ============================================================
+  globalSearch.addEventListener('input', e => {
+    currentQuery = e.target.value;
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      if (isHomepage) {
+        doSitewideSearch(currentQuery);
+      } else {
+        doInPageSearch(currentQuery);
+      }
+    }, 180);
+  });
+
+  globalSearch.addEventListener('keydown', e => {
+    if (isHomepage) {
+      // Dropdown keyboard nav
+      if (e.key === 'ArrowDown') { e.preventDefault(); swNavigate(1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); swNavigate(-1); }
+      else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (swPointer >= 0 && swResults[swPointer]) {
+          openSwResult(swPointer);
+        } else if (swResults.length > 0) {
+          openSwResult(0);
+        }
+      }
+      else if (e.key === 'Escape') { closeSitewideResults(); globalSearch.blur(); }
+    } else {
+      // In-page nav
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (searchMatches.length) navigateSearch(e.shiftKey ? -1 : 1);
+      } else if (e.key === 'Escape') { clearInPageSearch(); }
+    }
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('mousedown', e => {
+    if (!globalSearchWrap.contains(e.target)) {
+      closeSitewideResults();
+    }
+  });
+
+  // "/" shortcut to focus search
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== globalSearch) {
+      e.preventDefault(); globalSearch.focus();
+      if (isHomepage && currentQuery) openSitewideResults();
+    }
+  });
+
+  // ============================================================
+  // FILE READER
+  // ============================================================
+  function loadFile(fileObj) {
+    showStatus("Loading " + fileObj.label + "…");
+    homepageView.style.display = 'none';
+    readerView.style.display = 'block';
+    navBadge.textContent = fileObj.label;
+    navBadge.style.display = 'block';
+    globalSearch.placeholder = `Search in ${fileObj.label}…`;
+    currentFile = fileObj;
+
+    fetch(DATA_FOLDER + fileObj.name)
+      .then(r => { if (!r.ok) throw new Error('not found'); return r.text(); })
+      .then(txt => {
+        Papa.parse(txt, {
+          delimiter: "\t", skipEmptyLines: true,
+          complete: res => {
+            processData(res.data, fileObj);
+            hideStatus();
+            // Auto-search if query param present (coming from sitewide result)
+            const params = new URLSearchParams(window.location.search);
+            const q = params.get('q');
+            if (q) {
+              globalSearch.value = q;
+              currentQuery = q;
+              setTimeout(() => doInPageSearch(q), 100);
+            }
+          },
+          error: () => { showStatus("Parse error."); }
+        });
+      })
+      .catch(() => showStatus('Could not load "' + fileObj.name + '"'));
+  }
+
+  function processData(data, fileObj) {
+    if (!data.length) return;
+    const headers = data[0];
+    const rows = data.slice(1);
+    const cols = resolveColumns(headers);
+    const parsed = rows.map(row => parseRow(row, headers, cols, fileObj));
+    const hierarchy = buildHierarchy(parsed);
+    const entry = { headers, rows, parsed, hierarchy, cols, file: fileObj };
+    allData = [entry];
+    renderSidebar(hierarchy);
+    renderReader(hierarchy, entry);
+    renderTable(headers, rows);
+    setViewMode('reader');
+  }
+
+  function resolveColumns(headers) {
+    const map = {};
+    const nh = h => String(h||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    const lc = headers.map(nh);
+    for (const [key, aliases] of Object.entries(COL_ALIASES)) {
+      for (const alias of aliases) {
+        const idx = lc.indexOf(nh(alias));
+        if (idx !== -1) { map[key] = idx; break; }
+      }
+    }
+    if (map.ref === undefined) map.ref = 0;
+    return map;
+  }
+
+  function parseRef(refStr) {
+    if (!refStr) return null;
+    const parts = String(refStr).trim().split('.');
+    if (parts.length < 4) return null;
+    return {
+      file:    parseInt(parts[0]) || 0,
+      adhyaya: parseInt(parts[1]) || 0,
+      khanda:  parseInt(parts[2]) || 0,
+      rik:     parseInt(parts[3]) || 0,
+      saaman:  parts.length >= 5 ? parseInt(parts[4]) : 0,
+      raw:     refStr,
+    };
+  }
+
+  function parseRow(row, headers, cols, fileObj) {
+    const get = key => (cols[key] !== undefined ? (row[cols[key]] || '') : '');
+    const ref = parseRef(get('ref'));
+    return {
+      ref, rawRef: get('ref'),
+      rik: get('rik'), padapatha: get('padapatha'),
+      rishi: get('rishi'), chandas: get('chandas'),
+      devata: get('devata'), notes: get('notes'),
+      rawRow: row, headers,
+      isRik:    ref && ref.saaman === 0,
+      isSaaman: ref && ref.saaman > 0,
+    };
+  }
+
+  function buildHierarchy(rows) {
+    const hier = {};
+    rows.forEach(r => {
+      if (!r.ref) return;
+      const { adhyaya, khanda, rik, saaman } = r.ref;
+      if (!hier[adhyaya]) hier[adhyaya] = {};
+      if (!hier[adhyaya][khanda]) hier[adhyaya][khanda] = { riks: [], byRik: {} };
+      const kh = hier[adhyaya][khanda];
+      if (saaman === 0) {
+        if (!kh.byRik[rik]) { kh.byRik[rik] = { rik: r, saamans: [] }; kh.riks.push(rik); }
+        else kh.byRik[rik].rik = r;
+      } else {
+        if (!kh.byRik[rik]) { kh.byRik[rik] = { rik: null, saamans: [] }; kh.riks.push(rik); }
+        kh.byRik[rik].saamans.push(r);
+      }
+    });
+    return hier;
+  }
+
+  function renderSidebar(hier) {
+    sidebarTree.innerHTML = '';
+    Object.keys(hier).sort((a,b)=>+a-+b).forEach(adh => {
+      const khandas = Object.keys(hier[adh]).sort((a,b)=>+a-+b);
+      const section = document.createElement('div');
+      section.className = 'sidebar-section';
+      const adhBtn = document.createElement('div');
+      adhBtn.className = 'sidebar-adhyaya';
+      adhBtn.innerHTML = `<span>Adhyāya ${adh}</span><span class="sidebar-chevron">▶</span>`;
+      section.appendChild(adhBtn);
+      const khandasEl = document.createElement('div');
+      khandasEl.className = 'sidebar-khandas';
+      khandas.forEach(kh => {
+        const khBtn = document.createElement('div');
+        khBtn.className = 'sidebar-khanda';
+        khBtn.textContent = `Khaṇḍa ${kh}`;
+        khBtn.dataset.adhyaya = adh;
+        khBtn.dataset.khanda = kh;
+        khBtn.addEventListener('click', () => {
+          scrollToSection(adh, kh);
+          document.querySelectorAll('.sidebar-khanda').forEach(el => el.classList.remove('active'));
+          khBtn.classList.add('active');
+        });
+        khandasEl.appendChild(khBtn);
+      });
+      section.appendChild(khandasEl);
+      adhBtn.addEventListener('click', () => {
+        const open = khandasEl.classList.toggle('open');
+        adhBtn.classList.toggle('active', open);
+        adhBtn.querySelector('.sidebar-chevron').style.transform = open ? 'rotate(90deg)' : '';
+      });
+      sidebarTree.appendChild(section);
+    });
+  }
+
+  function scrollToSection(adh, kh) {
+    const el = document.getElementById(`section-${adh}-${kh}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderReader(hier, entry) {
+    readerBody.innerHTML = '';
+    const fileLabel = entry.file.label;
+    const fileNum = entry.file.fileNum;
+    Object.keys(hier).sort((a,b)=>+a-+b).forEach(adh => {
+      const adhEl = document.createElement('div');
+      adhEl.id = `adhyaya-${adh}`;
+      adhEl.style.marginBottom = '3rem';
+      const heading = document.createElement('div');
+      heading.className = 'section-heading';
+      heading.innerHTML = `<h2>Adhyāya ${adh} — ${fileLabel}</h2><span class="section-badge">${fileNum}.${adh}</span>`;
+      adhEl.appendChild(heading);
+      const khandas = Object.keys(hier[adh]).sort((a,b)=>+a-+b);
+      khandas.forEach(kh => {
+        const khEl = document.createElement('div');
+        khEl.className = 'khanda-block';
+        khEl.id = `section-${adh}-${kh}`;
+        const khLabel = document.createElement('div');
+        khLabel.className = 'khanda-label';
+        khLabel.textContent = `Khaṇḍa ${kh}`;
+        khEl.appendChild(khLabel);
+        const khData = hier[adh][kh];
+        khData.riks.sort((a,b)=>a-b).forEach(rikNum => {
+          const { rik, saamans } = khData.byRik[rikNum];
+          khEl.appendChild(buildRikCard(rik, saamans, fileNum, adh, kh, rikNum));
+        });
+        adhEl.appendChild(khEl);
+      });
+      readerBody.appendChild(adhEl);
+    });
+  }
+
+  function buildRikCard(rik, saamans, fileNum, adh, kh, rikNum) {
+    const card = document.createElement('div');
+    card.className = 'rik-card';
+    card.dataset.adh = adh; card.dataset.kh = kh; card.dataset.rik = rikNum;
+    card.id = `rik-${adh}-${kh}-${rikNum}`;
+    const refStr = `${fileNum}.${adh}.${kh}.${rikNum}.0`;
+    let metaTags = '';
+    if (rik) {
+      if (rik.rishi)   metaTags += `<span class="meta-tag"><span>Ṛṣi</span>${escHtml(rik.rishi)}</span>`;
+      if (rik.chandas) metaTags += `<span class="meta-tag"><span>Chandas</span>${escHtml(rik.chandas)}</span>`;
+      if (rik.devata)  metaTags += `<span class="meta-tag"><span>Devatā</span>${escHtml(rik.devata)}</span>`;
+    }
+    card.innerHTML = `
+      <div class="rik-header">
+        <span class="rik-ref">${escHtml(rik ? rik.rawRef : refStr)}</span>
+        <div class="rik-meta-tags">${metaTags}</div>
+      </div>
+      <div class="rik-body">
+        ${rik && rik.rik ? `<div class="rik-text" data-searchable>${escHtml(rik.rik)}</div>` : ''}
+        ${rik && rik.padapatha ? `
+          <div class="rik-padapatha">
+            <div class="padapatha-label">Padapāṭha</div>
+            <div data-searchable>${escHtml(rik.padapatha)}</div>
+          </div>` : ''}
+        ${rik && rik.notes ? `<div class="rik-notes" data-searchable>${escHtml(rik.notes)}</div>` : ''}
+      </div>
+      ${saamans.length ? buildSaamansHtml(saamans) : ''}
+    `;
+    return card;
+  }
+
+  function buildSaamansHtml(saamans) {
+    const items = saamans.sort((a,b)=>(a.ref?.saaman||0)-(b.ref?.saaman||0)).map(s => {
+      let mt = '';
+      if (s.rishi)   mt += `<span class="meta-tag"><span>Ṛṣi</span>${escHtml(s.rishi)}</span>`;
+      if (s.chandas) mt += `<span class="meta-tag"><span>Chandas</span>${escHtml(s.chandas)}</span>`;
+      if (s.devata)  mt += `<span class="meta-tag"><span>Devatā</span>${escHtml(s.devata)}</span>`;
+      const sNum = s.ref ? s.ref.saaman : '?';
+      return `
+        <div class="saaman-item">
+          <div class="saaman-header">
+            <span class="saaman-num">Sāman ${sNum}</span>
+            <span class="saaman-ref">${escHtml(s.rawRef)}</span>
+          </div>
+          ${s.rik ? `<div class="saaman-text" data-searchable>${escHtml(s.rik)}</div>` : ''}
+          ${s.notes ? `<div class="rik-notes" style="padding-left:0.5rem" data-searchable>${escHtml(s.notes)}</div>` : ''}
+          ${mt ? `<div class="saaman-meta">${mt}</div>` : ''}
+        </div>`;
+    }).join('');
+    return `<div class="saamans-wrap"><div class="saamans-label">Sāmans of this Ṛk</div>${items}</div>`;
+  }
+
+  function renderTable(headers, rows) {
+    let html = '<thead><tr>' + headers.map(h => `<th>${escHtml(h)}</th>`).join('') + '</tr></thead><tbody>';
+    rows.forEach(row => {
+      html += '<tr>' + row.map(cell => `<td>${escHtml(cell)}</td>`).join('') + '</tr>';
+    });
+    rawTable.innerHTML = html + '</tbody>';
+  }
+
+  function setViewMode(mode) {
+    viewMode = mode;
+    if (mode === 'reader') {
+      btnReader.classList.add('active'); btnTable.classList.remove('active');
+      readerBody.style.display = ''; tableFallback.style.display = 'none';
+      sidebar.style.display = ''; readerView.classList.remove('table-mode');
+    } else {
+      btnTable.classList.add('active'); btnReader.classList.remove('active');
+      readerBody.style.display = 'none'; tableFallback.style.display = 'block';
+      sidebar.style.display = 'none'; readerView.classList.add('table-mode');
+    }
+  }
+
+  btnReader.addEventListener('click', () => setViewMode('reader'));
+  btnTable.addEventListener('click', () => setViewMode('table'));
+
+  // ============================================================
+  // IN-PAGE SEARCH (reader/table mode)
+  // ============================================================
+  function doInPageSearch(query) {
+    const q = query.trim().toLowerCase();
+    // Clear previous highlights
+    document.querySelectorAll('.rik-card').forEach(c => c.classList.remove('highlighted'));
+    document.querySelectorAll('mark.hl').forEach(m => {
+      m.parentNode.replaceChild(document.createTextNode(m.textContent), m);
+    });
+    document.querySelectorAll('[data-searchable]').forEach(el => el.normalize());
+    if (viewMode === 'table') {
+      document.querySelectorAll('#raw-table td').forEach(td => {
+        td.querySelectorAll('mark.hl').forEach(m => {
+          m.parentNode.replaceChild(document.createTextNode(m.textContent), m);
+        });
+        td.normalize();
+      });
+    }
+
+    searchMatches = []; searchPointer = -1;
+    if (!q) { globalSearchCount.textContent = ''; return; }
+
+    document.querySelectorAll('[data-searchable]').forEach(el => highlightInNode(el, q));
+    if (viewMode === 'table') {
+      document.querySelectorAll('#raw-table td').forEach(td => highlightInNode(td, q));
+    }
+
+    searchMatches = Array.from(document.querySelectorAll('mark.hl'));
+    if (searchMatches.length) { searchPointer = 0; scrollToMatch(0); }
+    globalSearchCount.textContent = searchMatches.length
+      ? `${searchPointer+1}/${searchMatches.length}`
+      : '0 results';
+  }
+
+  function navigateSearch(dir) {
+    if (!searchMatches.length) return;
+    searchPointer = (searchPointer + dir + searchMatches.length) % searchMatches.length;
+    scrollToMatch(searchPointer);
+    globalSearchCount.textContent = `${searchPointer+1}/${searchMatches.length}`;
+  }
+
+  function scrollToMatch(idx) {
+    const el = searchMatches[idx];
+    if (!el) return;
+    document.querySelectorAll('.rik-card').forEach(c => c.classList.remove('highlighted'));
+    const card = el.closest('.rik-card');
+    if (card) { card.classList.add('highlighted'); card.classList.add('search-flash'); setTimeout(() => card.classList.remove('search-flash'), 700); }
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function clearInPageSearch() {
+    globalSearch.value = '';
+    doInPageSearch('');
+  }
+
+  function highlightInNode(container, query) {
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let node;
+    while ((node = walker.nextNode())) nodes.push(node);
+    nodes.forEach(textNode => {
+      const text = textNode.nodeValue;
+      const lower = text.toLowerCase();
+      let idx = lower.indexOf(query);
+      if (idx === -1) return;
+      const frag = document.createDocumentFragment();
+      let last = 0;
+      while (idx !== -1) {
+        if (idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+        const mark = document.createElement('mark');
+        mark.className = 'hl';
+        mark.textContent = text.slice(idx, idx + query.length);
+        frag.appendChild(mark);
+        last = idx + query.length;
+        idx = lower.indexOf(query, last);
+      }
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      textNode.parentNode.replaceChild(frag, textNode);
+    });
+  }
+
+  // ============================================================
+  // UTILS
+  // ============================================================
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+})();
+</script>
+</body>
+</html>

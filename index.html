@@ -17,6 +17,7 @@
     <span></span><span></span><span></span>
   </button>
   <a class="topbar-title" href="./"><span class="accent">Mālola</span> Archive</a>
+  <a class="topbar-texts-link" href="https://malolan05.github.io/texts">Texts</a>
 </div>
 
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -37,6 +38,7 @@
 </header>
 
 <main class="body-wrap">
+
 
   <!-- SEARCH -->
   <section aria-labelledby="search-label">
@@ -60,12 +62,14 @@
 
     <div class="search-status" id="search-status" role="status" aria-live="polite">
       <span class="status-dot loading" id="status-dot"></span>
-      <span id="status-text">Loading directory index…</span>
+      <span id="status-text">Loading data files…</span>
     </div>
 
     <div class="search-filters" id="filter-row" role="group" aria-label="Filter by collection">
       <button class="filter-btn active" data-repo="all">All collections</button>
-      <!-- Per-collection buttons are appended here once index.txt has been parsed -->
+      <button class="filter-btn" data-repo="sAmam">sAmam <span class="count"></span></button>
+      <button class="filter-btn" data-repo="Agama">Āgama <span class="count"></span></button>
+      <button class="filter-btn" data-repo="srivaishnavam">Śrīvaiṣṇava <span class="count"></span></button>
     </div>
 
     <div id="results-count" class="results-count" hidden></div>
@@ -75,8 +79,19 @@
   <!-- COLLECTIONS -->
   <section aria-labelledby="proj-label">
     <p class="sec-label" id="proj-label">Collections</p>
-    <div class="projects-grid" id="projects-grid">
-      <!-- Populated dynamically from index.txt -->
+    <div class="projects-grid">
+      <a class="project-card" href="sAmam/">
+        <span class="project-name">sAmam</span>
+        <span class="project-desc">Sāmaveda — hymns, melodies, and structure.</span>
+      </a>
+      <a class="project-card" href="Agama/">
+        <span class="project-name">Āgama</span>
+        <span class="project-desc">Vaiṣṇava Āgama texts, digitised from OCR of Sanskrit manuscripts.</span>
+      </a>
+      <a class="project-card" href="srivaishnavam/">
+        <span class="project-name">Śrīvaiṣṇava</span>
+        <span class="project-desc">Śrīvaiṣṇava texts, digitised from OCR of Sanskrit sources.</span>
+      </a>
     </div>
   </section>
 
@@ -100,46 +115,106 @@
 /* =============================================================
    MĀLOLA ARCHIVE — Search engine + Sitewide Sidebar Nav
 
-   New layout — everything now lives directly under this single page.
-   There are no more per-collection reader apps (sAmam/index.html,
-   Agama/index.html, etc.) — every individual text is now its own
-   plain .html file, and the whole tree is described by one file:
+   Single-repo layout — everything lives under malolan05.github.io/texts:
 
-     /index.html   (this hub page — the only app)
-     /index.txt    (indented plain-text directory tree, e.g.:
+     /index.html              (this hub page)
+     /sAmam/index.html          subsection app
+     /Agama/index.html          subsection app
+     /srivaishnavam/index.html  subsection app
+     /data/sAmam/...            data for the sAmam subsection
+     /data/Agama/...            data for the Agama subsection
+     /data/srivaishnavam/...    data for the srivaishnavam subsection
 
-         data
-              sAmam
-                   agneyam.html
-                   aindram.html
-              Agama
-                   samhita-1.html
-     )
+   sAmam
+     data/sAmam/AgnEyam-text.tsv   (Āgneya, ~293 rows)
+     data/sAmam/Aindram-text.tsv   (Āindra, ~985 rows)
+     TSV columns: Ref No | Prapāthaka-Ard | Text | Ṛṣi | Chandas | Dēvata | padapāṭha--rik | Notes
 
-   Each text .html file's *internal* markup is not standardized —
-   it varies file to file (different OCR/typesetting jobs). So
-   instead of a per-format parser (TSV columns, a documented JSON
-   verse schema, …), this page indexes the *rendered text content*
-   of every .html file generically:
+   Agama
+     data/Agama/agama-pramanyam.json
+     data/Agama/aniruddha-samhita.json
+     data/Agama/lakshmi-tantram.json
+     data/Agama/paramapurusha-samhita.json
+     data/Agama/paushkara-samhita.json
+     data/Agama/sriprashna-samhita.json
+     data/Agama/sri-vishvaksena-samhita.json
+     data/Agama/vishnu-samhita.json
+     data/Agama/sri-parameshvara-samhita.json
+     JSON shape: { metadata, content: { title, sections: [{ title, number, verses: [{ verse_number, original_text, commentaries }] }] } }
 
-     - fetch the raw HTML
-     - parse it into a detached DOM
-     - walk it in document order, splitting into "sections" at each
-       heading (h1–h6) it finds (or treating the whole file as one
-       section if it has no headings)
-     - each section's plain text becomes one searchable record
-
-   Search results link straight to the source .html file (optionally
-   with a browser "scroll-to-text" fragment, #:~:text=…, so a
-   supporting browser jumps straight to the match).
+   srivaishnavam
+     data/srivaishnavam/gitarthasangraha.json
+     JSON shape: same as Agama
    ============================================================= */
 
-  const INDEX_TXT_URL = 'index.txt';
+  // ── Repo manifest ──────────────────────────────────────────────────────────
+  const REPOS = [
+    {
+      name:    'sAmam',
+      label:   'sAmam',
+      baseUrl: 'sAmam/',
+      files: [
+        { path: 'data/sAmam/AgnEyam-text.tsv', type: 'tsv', label: 'Āgneya' },
+        { path: 'data/sAmam/Aindram-text.tsv',  type: 'tsv', label: 'Āindra'  },
+      ],
+    },
+    {
+      name:    'Agama',
+      label:   'Āgama',
+      baseUrl: 'Agama/',
+      files: [
+        { path: 'data/Agama/agama-pramanyam.json',        type: 'json' },
+        { path: 'data/Agama/aniruddha-samhita.json',       type: 'json' },
+        { path: 'data/Agama/lakshmi-tantram.json',          type: 'json' },
+        { path: 'data/Agama/paramapurusha-samhita.json',    type: 'json' },
+        { path: 'data/Agama/paushkara-samhita.json',        type: 'json' },
+        { path: 'data/Agama/sriprashna-samhita.json',       type: 'json' },
+        { path: 'data/Agama/sri-vishvaksena-samhita.json',  type: 'json' },
+        { path: 'data/Agama/vishnu-samhita.json',           type: 'json' },
+        { path: 'data/Agama/sri-parameshvara-samhita.json', type: 'json' },
+      ],
+    },
+    {
+      name:    'srivaishnavam',
+      label:   'Śrīvaiṣṇava',
+      baseUrl: 'srivaishnavam/',
+      files: [
+        { path: 'data/srivaishnavam/brahma-sutra-adhyaya-one.json',           type: 'json' },
+        { path: 'data/srivaishnavam/brahma-sutra-adhyaya-two.json',           type: 'json' },
+        { path: 'data/srivaishnavam/brahma-sutra-adhyaya-three.json',         type: 'json' },
+        { path: 'data/srivaishnavam/brahma-sutra-adhyaya-four.json',          type: 'json' },
+        { path: 'data/srivaishnavam/gitarthasangraha.json',                   type: 'json' },
+        { path: 'data/srivaishnavam/brihadaranyaka-upanishad.json',           type: 'json' },
+        { path: 'data/srivaishnavam/chandogya-upanishad.json',                type: 'json' },
+        { path: 'data/srivaishnavam/katha-upanishad.json',                    type: 'json' },
+        { path: 'data/srivaishnavam/kaushitaki-upanishad.json',               type: 'json' },
+        { path: 'data/srivaishnavam/shvetasvatara-upanishad.json',            type: 'json' },
+        { path: 'data/srivaishnavam/taittiriya-upanishad.json',               type: 'json' },
+        { path: 'data/srivaishnavam/upanishad-one.json',                      type: 'json' },
+        { path: 'data/srivaishnavam/mimamsa-paribasha.json',                  type: 'json' },
+        { path: 'data/srivaishnavam/mundaka-upanishad.json',                  type: 'json' },
+        { path: 'data/srivaishnavam/natvacandrika-pramukhacapetika.json',     type: 'json' },
+        { path: 'data/srivaishnavam/purushakara-mimamsa.json',                type: 'json' },
+        { path: 'data/srivaishnavam/rahasyatrayasara.json',                   type: 'json' },
+        { path: 'data/srivaishnavam/rahasyatrayasararthasangraha.json',       type: 'json' },
+        { path: 'data/srivaishnavam/shatadushani.json',                       type: 'json' },
+        { path: 'data/srivaishnavam/smritimuktaphalam.json',                  type: 'json' },
+        { path: 'data/srivaishnavam/stotraratna.json',                        type: 'json' },
+        { path: 'data/srivaishnavam/tarkasangraha.json',                      type: 'json' },
+        { path: 'data/srivaishnavam/tattvamuktakalapam.json',                 type: 'json' },
+        { path: 'data/srivaishnavam/vedarthasangraha.json',                   type: 'json' },
+        { path: 'data/srivaishnavam/bhavaprakasha-ked.json',                   type: 'json' },
+        { path: 'data/srivaishnavam/yatindramatadipika.json',                  type: 'json' },
+        { path: 'data/srivaishnavam/mata-prakriya.json',                       type: 'json' },
+        { path: 'data/srivaishnavam/siddhanta-ratnavali-and-vedanta-karika.json', type: 'json'},
+        { path: 'data/srivaishnavam/paratattvanirnaya-prameyamala.json',       type: 'json' },
+      ],
+    },
+  ];
 
   // ── State ──────────────────────────────────────────────────────────────────
-  let COLLECTIONS   = [];   // [{ name, label, files:[{path,name}] }]
-  let allRecords    = [];
-  let activeFilter  = 'all';
+  let allRecords   = [];
+  let activeFilter = 'all';
   let searchDebounce = null;
   const SNIPPET_WINDOW = 160;
 
@@ -150,7 +225,6 @@
   const resultsEl     = document.getElementById('results-container');
   const resultsCount  = document.getElementById('results-count');
   const filterRow     = document.getElementById('filter-row');
-  const projectsGrid  = document.getElementById('projects-grid');
 
   // Sidebar DOM
   const navToggle      = document.getElementById('nav-toggle');
@@ -164,18 +238,13 @@
   function esc(s)   { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 
-  function prettify(name) {
-    const base = name.replace(/\.[a-z0-9]+$/i, '');
-    // Only reformat names that use dash/underscore separators (e.g. file
-    // names like "agama-pramanyam"). Leave mixed/camel-case directory names
-    // (e.g. "sAmam", "vishishtAdvaita") exactly as given — they're
-    // deliberate transliteration spellings, not something to re-capitalize.
-    if (!/[-_]/.test(base)) return base;
-    return base
-      .replace(/[-_]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .replace(/\b\w/g, c => c.toUpperCase());
+  // Builds the URL to open a given file inside its collection reader.
+  // The sub-page readers (sAmam/, Agama/, srivaishnavam/) support a `file`
+  // query param that auto-opens that text, e.g.:
+  //   Agama/?file=agama-pramanyam.json
+  //   sAmam/?file=AgnEyam-text.tsv
+  function deepLink(baseUrl, fileName) {
+    return `${baseUrl}?file=${encodeURIComponent(fileName)}`;
   }
 
   function setStatus(state, msg) {
@@ -185,128 +254,246 @@
 
   function updateFilterCount(repoName) {
     const n  = allRecords.filter(r => r.repo === repoName).length;
-    const el = filterRow.querySelector(`[data-repo="${CSS.escape(repoName)}"] .count`);
+    const el = filterRow.querySelector(`[data-repo="${repoName}"] .count`);
     if (el) el.textContent = n > 0 ? `(${n.toLocaleString()})` : '';
   }
 
-  // Deep link straight to the source .html file. When we know which term(s)
-  // matched, append a browser "scroll-to-text-fragment" so supporting
-  // browsers land right on the passage (gracefully ignored elsewhere).
-  function deepLink(filePath, terms) {
-    let url = filePath;
-    if (terms && terms.length) {
-      url += `#:~:text=${encodeURIComponent(terms[0])}`;
-    }
-    return url;
+  function rawUrl(repo, filePath) {
+    // Everything lives in this same repo, so the file path
+    // (e.g. "data/sAmam/AgnEyam-text.tsv") is already site-relative.
+    return filePath;
   }
 
-  // ── index.txt parser ────────────────────────────────────────────────────────
-  // Indented plain-text tree. Each line's leading whitespace determines its
-  // depth; deeper indentation = child of the most recent shallower line.
-  // Lines ending in a file extension are treated as files, everything else
-  // as a directory.
-  function parseIndexTree(raw) {
-    const lines = raw.replace(/\r\n/g, '\n').split('\n');
-    const root = { indent: -1, name: '', path: '', isFile: false, children: [] };
-    const stack = [root];
+  // ── TSV parser ─────────────────────────────────────────────────────────────
+  // Columns: Ref No | Prapāthaka-Ard | Text | Ṛṣi | Chandas | Dēvata | padapāṭha--rik | Notes
+  function parseTSV(raw, repo, file) {
+    const lines = raw.trim().split('\n');
+    if (lines.length < 2) return [];
 
-    for (const rawLine of lines) {
-      if (!rawLine.trim()) continue;
-      const indent = rawLine.match(/^\s*/)[0].length;
-      const name = rawLine.trim();
+    const headers = lines[0].split('\t').map(h => h.trim());
+    const idxOf   = name => headers.findIndex(h => h === name);
 
-      while (stack.length > 1 && stack[stack.length - 1].indent >= indent) stack.pop();
-      const parent = stack[stack.length - 1];
-      const path = parent.path ? `${parent.path}/${name}` : name;
-      const node = { indent, name, path, isFile: /\.[a-z0-9]+$/i.test(name), children: [] };
-      parent.children.push(node);
-      stack.push(node);
+    const iRef   = idxOf('Ref No');
+    const iPrap  = idxOf('Prapāthaka-Ard');
+    const iText  = idxOf('Text');
+    const iRsi   = headers.findIndex(h => h.startsWith('R'));  // Ṛṣi — Unicode prefix varies
+    const iChan  = idxOf('Chandas');
+    const iDev   = idxOf('Dēvata');
+    const iPada  = idxOf('padapāṭha--rik');
+    const iNotes = idxOf('Notes');
+
+    const records = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      // Respect quoted fields (TSV may have "…" cells)
+      const cells = splitTSVLine(lines[i]);
+      if (!cells.length) continue;
+
+      const refNo  = (cells[iRef]   ?? '').trim();
+      const prap   = (cells[iPrap]  ?? '').trim();
+      const text   = (cells[iText]  ?? '').trim();
+      const rsi    = (cells[iRsi]   ?? '').trim();
+      const chan   = (cells[iChan]  ?? '').trim();
+      const dev    = (cells[iDev]   ?? '').trim();
+      const pada   = (cells[iPada]  ?? '').trim();
+      const notes  = (cells[iNotes] ?? '').trim();
+
+      // Combine searchable fields; Text is the main one
+      const searchText = [text, pada, notes].filter(Boolean).join(' ');
+      if (!searchText.trim()) continue;
+
+      const display = [];
+      if (file.label) display.push(file.label);
+      if (refNo)  display.push(`Ref: ${refNo}`);
+      if (prap)   display.push(`Prapaṭhaka: ${prap}`);
+      if (rsi)    display.push(`Ṛṣi: ${rsi.substring(0,40)}`);
+      if (chan)   display.push(`Chandas: ${chan}`);
+      if (dev)    display.push(`Devatā: ${dev.substring(0,40)}`);
+
+      records.push({
+        repo:      repo.name,
+        repoLabel: repo.label,
+        repoUrl:   repo.baseUrl,
+        file:      file.path.split('/').pop(),
+        fileLabel: file.label || file.path.split('/').pop().replace(/\.[a-z]+$/i,''),
+        section:   prap,
+        verseNum:  refNo,
+        text:      searchText,
+        display,
+      });
     }
-    return root;
+    return records;
   }
 
-  function flattenFiles(node) {
-    let out = [];
-    for (const child of node.children) {
-      if (child.isFile) out.push({ path: child.path, name: child.name });
-      else out = out.concat(flattenFiles(child));
-    }
-    return out;
-  }
-
-  // Collections = the top-level directories in the tree (skipping past a
-  // wrapping "data" root directory if the tree has one).
-  function buildCollections(tree) {
-    let base = tree;
-    if (tree.children.length === 1 && !tree.children[0].isFile) {
-      base = tree.children[0]; // e.g. skip the outer "data" directory
-    }
-    const dirs = base.children.filter(c => !c.isFile);
-    return dirs.map(dir => ({
-      name:  dir.name,
-      label: prettify(dir.name),
-      files: flattenFiles(dir),
-    }));
-  }
-
-  // ── Generic HTML content parser ─────────────────────────────────────────────
-  // Individual text files have no fixed schema, so this walks the rendered
-  // DOM in document order and buckets text into "sections" split at each
-  // heading (h1–h6). Files with no headings become a single section.
-  function parseHTMLGeneric(raw, repo, file) {
-    let doc;
-    try { doc = new DOMParser().parseFromString(raw, 'text/html'); }
-    catch (e) { return []; }
-
-    doc.querySelectorAll('script,style,noscript').forEach(el => el.remove());
-    const body = doc.body || doc.documentElement;
-    if (!body) return [];
-
-    const fileLabel = (doc.title && doc.title.trim()) || prettify(file.name);
-    const HEAD_RE = /^H[1-6]$/;
-
-    const sections = [];
-    let current = { title: fileLabel, parts: [] };
-    const pushCurrent = () => {
-      const text = current.parts.join(' ').replace(/\s+/g, ' ').trim();
-      if (text) sections.push({ title: current.title, text });
-    };
-
-    const walker = doc.createTreeWalker(body, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
-    let node;
-    while ((node = walker.nextNode())) {
-      if (node.nodeType === 1 && HEAD_RE.test(node.tagName)) {
-        pushCurrent();
-        const headTitle = node.textContent.replace(/\s+/g, ' ').trim();
-        current = { title: headTitle ? headTitle.slice(0, 120) : fileLabel, parts: [] };
-      } else if (node.nodeType === 3) {
-        if (node.parentElement && HEAD_RE.test(node.parentElement.tagName)) continue; // avoid double-counting heading text
-        const t = node.textContent.trim();
-        if (t) current.parts.push(t);
+  // Handle quoted TSV cells (e.g. "text with\nnewline")
+  function splitTSVLine(line) {
+    const cells = [];
+    let cur = '';
+    let inQ  = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+        else inQ = !inQ;
+      } else if (ch === '\t' && !inQ) {
+        cells.push(cur); cur = '';
+      } else {
+        cur += ch;
       }
     }
-    pushCurrent();
-    if (!sections.length) return [];
+    cells.push(cur);
+    return cells;
+  }
 
-    return sections.map(s => ({
-      repo:      repo.name,
-      repoLabel: repo.label,
-      file:      file.path,
-      fileName:  file.name,
-      fileLabel,
-      section:   s.title,
-      text:      s.text,
-      display:   [fileLabel, s.title && s.title !== fileLabel ? s.title : null].filter(Boolean),
-    }));
+  // ── JSON parser ─────────────────────────────────────────────────────────────
+  // Tries the documented shape first:
+  //   { metadata, content: { title, sections: [{ title, number, verses: [{ verse_number, original_text, commentaries:[{author,commentary}] }] }] } }
+  // If the strict parser finds nothing, falls back to a schema-agnostic
+  // walker that finds verse/commentary-like text wherever it lives in the
+  // tree, regardless of exact key names or nesting depth. This keeps the fast
+  // path for files that DO match the documented shape, while no longer going
+  // silently blank for files that don't.
+  function parseJSON(data, repo, file) {
+    let records = parseJSONStrict(data, repo, file);
+    if (records.length === 0) {
+      records = parseJSONGeneric(data, repo, file);
+      if (records.length > 0) {
+        console.log(`[${repo.name}] ${file.path} — documented schema didn't match (0 records); used generic fallback parser instead (${records.length} records).`);
+      } else {
+        console.warn(`[${repo.name}] ${file.path} — neither the strict nor the generic parser found any text. Top-level keys:`, Object.keys(data || {}));
+      }
+    }
+    return records;
+  }
+
+  function parseJSONStrict(data, repo, file) {
+    const records = [];
+
+    const meta        = data.metadata || {};
+    const scriptName  = meta.scripture_name || file.path.split('/').pop().replace('.json','');
+    const content     = data.content || {};
+    const sections    = content.sections || [];
+
+    for (const section of sections) {
+      const sectionTitle = section.title || `Section ${section.number ?? ''}`;
+      const verses       = section.verses || [];
+
+      for (const verse of verses) {
+        const vNum        = verse.verse_number ?? '';
+        const originalTxt = (verse.original_text || '').trim();
+        // Collect commentary text
+        const commentaryParts = (verse.commentaries || []).map(c => c.commentary || '').filter(Boolean);
+        const fullText = [originalTxt, ...commentaryParts].join('\n');
+
+        if (!fullText.trim()) continue;
+
+        const display = [];
+        display.push(scriptName.substring(0, 50));
+        if (sectionTitle) display.push(sectionTitle.substring(0, 50));
+        if (vNum !== '') display.push(`Verse ${vNum}`);
+
+        records.push({
+          repo:      repo.name,
+          repoLabel: repo.label,
+          repoUrl:   repo.baseUrl,
+          file:      file.path.split('/').pop(),
+          fileLabel: scriptName,
+          section:   sectionTitle,
+          verseNum:  String(vNum),
+          text:      fullText,
+          display,
+        });
+      }
+    }
+
+    return records;
+  }
+
+  // ── Generic recursive JSON walker (fallback) ────────────────────────────────
+  // Walks the entire JSON tree regardless of how it's organized. Any object
+  // that carries meaningful text becomes one searchable record, while a
+  // breadcrumb of title-like fields keeps results readable
+  // (e.g. "Aniruddha Samhita › Chapter 3 › #12").
+  function walkJSONGeneric(node, breadcrumb, repo, file, records, depth) {
+    if (node == null || depth > 25) return;
+
+    if (Array.isArray(node)) {
+      for (const item of node) walkJSONGeneric(item, breadcrumb, repo, file, records, depth + 1);
+      return;
+    }
+    if (typeof node !== 'object') return;
+
+    const stringFields = [];
+    let titleLike  = null;
+    let numberLike = null;
+
+    for (const [key, val] of Object.entries(node)) {
+      if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (!trimmed) continue;
+        stringFields.push(trimmed);
+        if (titleLike === null && /title|name/i.test(key) && trimmed.length < 120) {
+          titleLike = trimmed;
+        }
+      } else if (typeof val === 'number' && numberLike === null && /number|num\b|index|^id$/i.test(key)) {
+        numberLike = val;
+      }
+    }
+
+    // Any object carrying real text (not just a number/id) becomes a record.
+    const textyFields = stringFields.filter(s => s.length > 3);
+    if (textyFields.length > 0) {
+      const display = breadcrumb.filter(Boolean).slice(-3).map(s => s.substring(0, 50));
+      if (numberLike !== null) display.push(`#${numberLike}`);
+
+      const fileLabelFallback = (breadcrumb[0] || file.path.split('/').pop().replace('.json',''));
+      const sectionTitle = breadcrumb.slice(1).join(' › ') || breadcrumb.join(' › ');
+
+      records.push({
+        repo:      repo.name,
+        repoLabel: repo.label,
+        repoUrl:   repo.baseUrl,
+        file:      file.path.split('/').pop(),
+        fileLabel: fileLabelFallback,
+        section:   sectionTitle,
+        verseNum:  numberLike !== null ? String(numberLike) : '',
+        text:      textyFields.join('\n'),
+        display,
+      });
+    }
+
+    const nextBreadcrumb = titleLike ? [...breadcrumb, titleLike] : breadcrumb;
+    for (const val of Object.values(node)) {
+      if (Array.isArray(val) || (val && typeof val === 'object')) {
+        walkJSONGeneric(val, nextBreadcrumb, repo, file, records, depth + 1);
+      }
+    }
+  }
+
+  function parseJSONGeneric(data, repo, file) {
+    const records = [];
+    const scriptName = (data && data.metadata && data.metadata.scripture_name)
+      || file.path.split('/').pop().replace('.json', '');
+    walkJSONGeneric(data, [scriptName], repo, file, records, 0);
+    return records;
   }
 
   // ── Load a single file (with one retry on transient failure) ───────────────
   async function loadFile(repo, file, attempt = 0) {
+    const url = rawUrl(repo, file.path);
     try {
-      const res = await fetch(file.path, { cache: 'force-cache' });
-      if (!res.ok) throw new Error(`HTTP ${res.status} – ${file.path}`);
+      const res = await fetch(url, { cache: 'force-cache' });
+      if (!res.ok) throw new Error(`HTTP ${res.status} – ${url}`);
       const raw = await res.text();
-      return parseHTMLGeneric(raw, repo, file);
+
+      if (file.type === 'tsv') {
+        return parseTSV(raw, repo, file);
+      } else {
+        let data;
+        try { data = JSON.parse(raw); }
+        catch (e) { throw new Error(`JSON parse error in ${file.path}: ${e.message}`); }
+        return parseJSON(data, repo, file);
+      }
     } catch (e) {
       if (attempt < 1) return loadFile(repo, file, attempt + 1);
       throw e;
@@ -314,6 +501,10 @@
   }
 
   // ── Concurrency-limited task runner ─────────────────────────────────────────
+  // Runs `tasks` (an array of functions returning promises) with at most
+  // `limit` in flight at once, calling onSettle(result|error, isError) as
+  // each one finishes — so the UI (status line, filter counts) can update
+  // progressively instead of waiting for the very last file to land.
   async function runPool(tasks, limit, onSettle) {
     let i = 0;
     const workers = new Array(Math.min(limit, tasks.length)).fill(0).map(async () => {
@@ -330,65 +521,23 @@
     await Promise.all(workers);
   }
 
-  // ── Build filter buttons + collection cards from the parsed tree ──────────
-  function renderCollectionChrome() {
-    filterRow.querySelectorAll('.filter-btn:not([data-repo="all"])').forEach(b => b.remove());
-    for (const col of COLLECTIONS) {
-      const btn = document.createElement('button');
-      btn.className = 'filter-btn';
-      btn.dataset.repo = col.name;
-      btn.innerHTML = `${esc(col.label)} <span class="count"></span>`;
-      filterRow.appendChild(btn);
-    }
-
-    projectsGrid.innerHTML = COLLECTIONS.map(col => `
-      <button class="project-card" type="button" data-repo="${esc(col.name)}">
-        <span class="project-name">${esc(col.label)}</span>
-        <span class="project-desc">${col.files.length.toLocaleString()} text${col.files.length !== 1 ? 's' : ''} in this collection.</span>
-      </button>`).join('');
-  }
-
-  projectsGrid.addEventListener('click', e => {
-    const card = e.target.closest('.project-card');
-    if (!card) return;
-    filterRow.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    const btn = filterRow.querySelector(`[data-repo="${CSS.escape(card.dataset.repo)}"]`);
-    if (btn) btn.classList.add('active');
-    activeFilter = card.dataset.repo;
-    searchInput.focus();
-    runSearch();
-  });
-
-  // ── Load everything ──────────────────────────────────────────────────────
+  // ── Load all repos in parallel ──────────────────────────────────────────────
+  // Every file, across every collection, is fetched concurrently (capped pool)
+  // rather than one-at-a-time per repo — this is the main speedup, since the
+  // previous version awaited each of the ~35 files sequentially even though
+  // they're all independent same-origin requests.
   async function loadAll() {
-    setStatus('loading', 'Loading directory index…');
+    setStatus('loading', 'Loading data files…');
 
-    let tree;
-    try {
-      const res = await fetch(INDEX_TXT_URL, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status} – ${INDEX_TXT_URL}`);
-      tree = parseIndexTree(await res.text());
-    } catch (e) {
-      console.error('Failed to load index.txt:', e);
-      setStatus('error', 'Could not load index.txt — check the console for details.');
-      sidebarStatus.textContent = 'No collections could be loaded.';
-      return;
-    }
-
-    COLLECTIONS = buildCollections(tree);
-    renderCollectionChrome();
-
+    // Flatten every (repo, file) pair into one job list so the whole archive
+    // loads on one shared pool instead of collection-by-collection.
     const jobs = [];
-    for (const col of COLLECTIONS) for (const file of col.files) jobs.push({ repo: col, file });
-
-    if (!jobs.length) {
-      setStatus('error', 'index.txt contained no files.');
-      sidebarStatus.textContent = 'No collections could be loaded.';
-      return;
+    for (const repo of REPOS) {
+      for (const file of repo.files) jobs.push({ repo, file });
     }
 
-    const repoCounts = Object.fromEntries(COLLECTIONS.map(c => [c.name, 0]));
-    const repoFails  = Object.fromEntries(COLLECTIONS.map(c => [c.name, 0]));
+    const repoCounts  = Object.fromEntries(REPOS.map(r => [r.name, 0]));
+    const repoFails   = Object.fromEntries(REPOS.map(r => [r.name, 0]));
     let done = 0;
 
     const CONCURRENCY = 8;
@@ -402,9 +551,12 @@
           repoFails[repo.name]++;
           console.warn(`[${repo.name}] failed ${file.path}:`, err.message);
         } else {
+          // Precompute the lowercase text once, up front, so every keystroke
+          // during search doesn't re-lowercase the same string repeatedly.
           for (const r of recs) r.textLC = r.text.toLowerCase();
           allRecords.push(...recs);
           repoCounts[repo.name] += recs.length;
+          console.log(`[${repo.name}] ${file.path} → ${recs.length} records`);
         }
         setStatus('loading', `Indexing… ${done.toLocaleString()}/${jobs.length} files (${allRecords.length.toLocaleString()} records)`);
         updateFilterCount(repo.name);
@@ -412,9 +564,10 @@
     );
 
     const total = allRecords.length;
-    const loadedRepos  = COLLECTIONS.filter(c => repoCounts[c.name] > 0).length;
-    const failedRepos  = COLLECTIONS.filter(c => repoCounts[c.name] === 0).length;
-    const partialRepos = COLLECTIONS.filter(c => repoFails[c.name] > 0 && repoCounts[c.name] > 0).length;
+    const loadedRepos = REPOS.filter(r => repoCounts[r.name] > 0).length;
+    const failedRepos = REPOS.filter(r => repoCounts[r.name] === 0).length;
+    const partialRepos = REPOS.filter(r => repoFails[r.name] > 0 && repoCounts[r.name] > 0).length;
+    console.log(`Total records indexed: ${total}`);
 
     if (total === 0) {
       setStatus('error', 'Could not load any data — check the console for details.');
@@ -425,12 +578,15 @@
       setStatus('ready', `${total.toLocaleString()} records indexed across ${loadedRepos} collection${loadedRepos !== 1 ? 's' : ''}`);
     }
 
+    // Run any pending search
     if (searchInput.value.trim().length >= 2) runSearch();
+
+    // Build the sidebar tree from whatever got loaded
     buildSidebarTree();
   }
 
   // ── Search & render ────────────────────────────────────────────────────────
-  const MAX_RENDERED = 300;
+  const MAX_RENDERED = 300; // cap DOM writes; searching stays exhaustive, rendering doesn't
 
   function buildSnippet(text, textLC, terms) {
     if (!text) return '';
@@ -439,10 +595,10 @@
       const idx = textLC.indexOf(t);
       if (idx !== -1 && idx < first) first = idx;
     }
-    const start = Math.max(0, first - 40);
-    const end   = Math.min(text.length, start + SNIPPET_WINDOW);
-    let snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
-    let html    = esc(snippet);
+    const start   = Math.max(0, first - 40);
+    const end     = Math.min(text.length, start + SNIPPET_WINDOW);
+    let snippet   = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
+    let html      = esc(snippet);
     for (const t of terms) {
       const re = new RegExp(`(${escRe(esc(t))})`, 'gi');
       html = html.replace(re, '<mark>$1</mark>');
@@ -458,11 +614,16 @@
       return;
     }
 
+    // Parse quoted phrases and bare words, lowercase once up front since
+    // every record's text is already cached lowercase (r.textLC).
     const termMatches = raw.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g);
     if (!termMatches) { resultsEl.innerHTML = ''; resultsCount.hidden = true; return; }
     const terms = termMatches.map(t => t.replace(/^['"]|['"]$/g, '').trim().toLowerCase()).filter(Boolean);
     if (!terms.length) { resultsEl.innerHTML = ''; resultsCount.hidden = true; return; }
 
+    // Single pass: filter-by-collection and term-match together, instead of
+    // building an intermediate filtered array first. r.textLC is precomputed
+    // at load time, so no per-keystroke re-lowercasing of the whole corpus.
     const matches = [];
     const filterAll = activeFilter === 'all';
     for (let i = 0; i < allRecords.length; i++) {
@@ -494,12 +655,12 @@
       const pills   = (r.display || []).filter(Boolean)
         .map(d => `<span class="result-meta-pill">${esc(d)}</span>`)
         .join('');
-      const url = deepLink(r.file, terms);
+      const url = deepLink(r.repoUrl, r.file);
       return `
         <a class="result-card" href="${esc(url)}">
           <div class="result-header">
             <span class="result-repo">${esc(r.repoLabel)}</span>
-            <span class="result-file">${esc(r.fileLabel)}</span>
+            <span class="result-file">${esc(r.file)}</span>
           </div>
           <div class="result-body">${snippet}</div>
           ${pills ? `<div class="result-meta">${pills}</div>` : ''}
@@ -527,62 +688,69 @@
     runSearch();
   });
 
-  // ── Sitewide sidebar: Collections → Files → (Sections, if any) ────────────
+  // ── Sitewide sidebar: build a Collections → Files → Chapters tree ─────────
+  // Reuses allRecords (already parsed for search) so no extra network
+  // requests are needed. Chapters/sections are de-duplicated per file,
+  // preserving the order they first appear in the source data.
   function buildSidebarTree() {
-    if (!COLLECTIONS.length) {
+    if (!allRecords.length) {
       sidebarStatus.textContent = 'No collections could be loaded.';
       return;
     }
-    sidebarStatus.textContent = `${COLLECTIONS.length} collection${COLLECTIONS.length !== 1 ? 's' : ''}`;
+    sidebarStatus.textContent = `${REPOS.length} collections`;
 
-    const html = COLLECTIONS.map(col => {
-      const filesHtml = col.files.map(file => {
-        const fileRecords = allRecords.filter(r => r.repo === col.name && r.file === file.path);
+    const html = REPOS.map(repo => {
+      // group this repo's records by file, preserving file order from REPOS.files
+      const filesHtml = repo.files.map(fileDef => {
+        const fileName = fileDef.path.split('/').pop();
+        const fileRecords = allRecords.filter(r => r.repo === repo.name && r.file === fileName);
         if (!fileRecords.length) return '';
 
-        const fileLabel = fileRecords[0].fileLabel || prettify(file.name);
+        const fileLabel = fileDef.label || fileRecords[0].fileLabel || fileName.replace(/\.[a-z]+$/i, '');
 
+        // de-dupe sections/chapters, preserve first-seen order
         const seen = new Set();
-        const sections = [];
+        const chapters = [];
         for (const r of fileRecords) {
           const key = r.section || '';
-          if (!key || key === fileLabel || seen.has(key)) continue;
+          if (!key || seen.has(key)) continue;
           seen.add(key);
-          sections.push(key);
+          chapters.push(key);
         }
 
-        const fileId = `f-${col.name}-${file.name}`.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const fileOpenUrl = esc(file.path);
+        const fileId = `f-${repo.name}-${fileName}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const fileOpenUrl = deepLink(repo.baseUrl, fileName);
 
-        const sectionLinks = sections.length
-          ? sections.slice(0, 400).map(sec =>
-              `<a class="tree-chapter-link" href="${esc(deepLink(file.path, [sec]))}" title="${esc(sec)}">${esc(sec)}</a>`
+        const chapterLinks = chapters.length
+          ? chapters.slice(0, 400).map(ch =>
+              `<a class="tree-chapter-link" href="${esc(fileOpenUrl)}" title="${esc(ch)}">${esc(ch)}</a>`
             ).join('')
-          : `<div class="tree-empty">No named sections</div>`;
+          : `<div class="tree-empty">No named chapters</div>`;
 
         return `
           <div class="tree-file">
             <button class="tree-row tree-file-row" data-target="${fileId}">
               <span class="tree-caret">▶</span>
               <span>${esc(fileLabel)}</span>
-              <span class="tree-count">${sections.length || fileRecords.length}</span>
+              <span class="tree-count">${chapters.length || fileRecords.length}</span>
             </button>
             <div class="tree-children" id="${fileId}">
-              <a class="tree-view-all" href="${fileOpenUrl}">Open ${esc(fileLabel)} →</a>
-              ${sectionLinks}
+              <a class="tree-view-all" href="${esc(fileOpenUrl)}">Open ${esc(fileLabel)} →</a>
+              ${chapterLinks}
             </div>
           </div>`;
       }).join('');
 
-      const repoId = `r-${col.name}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const repoId = `r-${repo.name}`.replace(/[^a-zA-Z0-9_-]/g, '_');
 
       return `
         <div class="tree-collection">
           <button class="tree-row collection-row" data-target="${repoId}">
             <span class="tree-caret">▶</span>
-            <span>${esc(col.label)}</span>
+            <span>${esc(repo.label)}</span>
           </button>
           <div class="tree-children" id="${repoId}">
+            <a class="tree-view-all" href="${esc(repo.baseUrl)}">Open ${esc(repo.label)} collection →</a>
             ${filesHtml || '<div class="tree-empty">No files loaded</div>'}
           </div>
         </div>`;
@@ -591,6 +759,7 @@
     sidebarTree.innerHTML = html;
   }
 
+  // expand/collapse on click, delegated so it works for dynamically-added rows
   sidebarTree.addEventListener('click', e => {
     const row = e.target.closest('.tree-row');
     if (!row) return;
@@ -602,6 +771,7 @@
     if (caret) caret.classList.toggle('rotated', isOpen);
   });
 
+  // sidebar open/close
   function openSidebar() {
     sidebar.classList.add('open');
     sidebarOverlay.classList.add('open');
