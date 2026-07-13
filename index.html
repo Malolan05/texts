@@ -359,9 +359,14 @@
     filterRow.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     const btn = filterRow.querySelector(`[data-repo="${CSS.escape(card.dataset.repo)}"]`);
     if (btn) btn.classList.add('active');
+    projectsGrid.querySelectorAll('.project-card').forEach(c => c.classList.toggle('active', c === card));
     activeFilter = card.dataset.repo;
-    searchInput.focus();
-    runSearch();
+
+    // Clear any stale search text so the full, ordered text list for this
+    // collection is what's shown (rather than leftover search results).
+    searchInput.value = '';
+    renderCollectionBrowse(activeFilter);
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   // ── Load everything ──────────────────────────────────────────────────────
@@ -455,11 +460,44 @@
     return html;
   }
 
+  // Show every text in a single collection, in the same order they appear
+  // in index.txt, each linking straight to its own .html file. This is what
+  // powers clicking a collection name (in the filter bar or the Collections
+  // grid) before/without typing a search query.
+  function renderCollectionBrowse(repoName) {
+    const col = COLLECTIONS.find(c => c.name === repoName);
+    if (!col) return;
+
+    resultsCount.hidden = false;
+    resultsCount.innerHTML = `<strong>${col.files.length.toLocaleString()}</strong> text${col.files.length !== 1 ? 's' : ''} in <strong>${esc(col.label)}</strong>`;
+
+    if (!col.files.length) {
+      resultsEl.innerHTML = `<p class="no-results">No texts found in ${esc(col.label)}.</p>`;
+      return;
+    }
+
+    resultsEl.innerHTML = col.files.map(file => {
+      const rec   = allRecords.find(r => r.repo === repoName && r.file === file.path);
+      const label = (rec && rec.fileLabel) || prettify(file.name);
+      return `
+        <a class="result-card" href="${esc(file.path)}">
+          <div class="result-header">
+            <span class="result-repo">${esc(col.label)}</span>
+            <span class="result-file">${esc(label)}</span>
+          </div>
+        </a>`;
+    }).join('');
+  }
+
   function runSearch() {
     const raw = searchInput.value.trim();
     if (raw.length < 2) {
-      resultsEl.innerHTML = '';
-      resultsCount.hidden = true;
+      if (activeFilter !== 'all') {
+        renderCollectionBrowse(activeFilter);
+      } else {
+        resultsEl.innerHTML = '';
+        resultsCount.hidden = true;
+      }
       return;
     }
 
@@ -529,7 +567,18 @@
     filterRow.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     activeFilter = btn.dataset.repo;
-    runSearch();
+    projectsGrid.querySelectorAll('.project-card').forEach(c => {
+      c.classList.toggle('active', c.dataset.repo === activeFilter);
+    });
+
+    if (searchInput.value.trim().length >= 2) {
+      runSearch();
+    } else if (activeFilter === 'all') {
+      resultsEl.innerHTML = '';
+      resultsCount.hidden = true;
+    } else {
+      renderCollectionBrowse(activeFilter);
+    }
   });
 
   // ── Sitewide sidebar: Collections → Files → (Sections, if any) ────────────
