@@ -16,10 +16,10 @@ sAmam
     AgnEyam-text.html
     Aindram-text.html
 srivaishnavam
-    brahma-sutra-adhyaya-four.html
     brahma-sutra-adhyaya-one.html
-    brahma-sutra-adhyaya-three.html
     brahma-sutra-adhyaya-two.html
+    brahma-sutra-adhyaya-three.html
+    brahma-sutra-adhyaya-four.html
     brihadaranyaka-upanishad.html
     chandogya-upanishad.html
     katha-upanishad.html
