@@ -585,11 +585,82 @@
    ============================================================= */
 
   // The site is deployed at https://malolan05.github.io/texts/, not at the
-  // domain root, so index.txt must be addressed relative to that subpath
-  // rather than an assumed root ('/index.txt' would incorrectly resolve to
-  // https://malolan05.github.io/index.txt instead).
+  // domain root, so any relative file the tree below points to (e.g.
+  // "Agama/agama-pramanyam.html") resolves against that subpath rather than
+  // an assumed root.
   const BASE_PATH = '/texts/';
-  const INDEX_TXT_URL = BASE_PATH + 'index.txt';
+
+  // ===========================================================================
+  // INDEX_TXT — formerly a separate index.txt file, now embedded directly
+  // here so the whole site is a single index.html.
+  //
+  // >>> TO ADD A NEW TEXT: <<<
+  //   1. Find (or add) the collection line for it below (e.g. "Agama",
+  //      "sAmanyam", "sAmam", "srivaishnavam"). Collection names are
+  //      top-level, NOT indented.
+  //   2. Add a new line UNDER that collection, indented with the same
+  //      leading whitespace as its sibling files, containing just the
+  //      .html filename (e.g. "new-text-name.html").
+  //   3. Make sure that .html file actually exists alongside this
+  //      index.html (e.g. Agama/new-text-name.html), and that it has a
+  //      <header class="doc-header"> block like the other texts so the
+  //      search index can pick up its title/author/category.
+  //   4. To add a brand-new collection (top-level category), add a new
+  //      un-indented line with the collection's folder name, then list its
+  //      files indented beneath it, same as the existing ones.
+  //
+  // Indentation is what defines the tree — it is parsed the same way the
+  // old index.txt was (see parseIndexTree below): any line's leading
+  // whitespace determines its depth, and it becomes a child of the most
+  // recent line with less indentation. Files are any line ending in an
+  // extension (e.g. ".html"); everything else is treated as a directory.
+  // ===========================================================================
+  const INDEX_TXT = `
+Agama
+    agama-pramanyam.html
+    aniruddha-samhita.html
+    lakshmi-tantram.html
+    paramapurusha-samhita.html
+    paushkara-samhita.html
+    sri-parameshvara-samhita.html
+    sri-vishvaksena-samhita.html
+    sriprashna-samhita.html
+    vishnu-samhita.html
+sAmAnyam
+    mimamsa-paribasha.html
+    smritimuktaphalam.html
+    tarkasangraha.html
+sAmam
+    AgnEyam-text.html
+    Aindram-text.html
+srivaishnavam
+    brahma-sutra-adhyaya-one.html
+    brahma-sutra-adhyaya-two.html
+    brahma-sutra-adhyaya-three.html
+    brahma-sutra-adhyaya-four.html
+    brihadaranyaka-upanishad.html
+    chandogya-upanishad.html
+    katha-upanishad.html
+    kaushitaki-upanishad.html
+    mundaka-upanishad.html
+    shvetasvatara-upanishad.html
+    taittiriya-upanishad.html
+    upanishad-one.html
+    vedarthasangraha.html
+    yatindramatadipika.html
+    mata-prakriya.html
+    bhavaprakasha-ked.html
+    gitarthasangraha.html
+    natvacandrika-pramukhacapetika.html
+    shatadushani.html
+    paratattvanirnaya-prameyamala.html
+    purushakara-mimamsa.html
+    rahasyatrayasara.html
+    rahasyatrayasararthasangraha.html
+    siddhanta-ratnavali-and-vedanta-karika.html
+    stotraratna.html
+    tattvamuktakalapam.html
+`;
 
   // ── State ──────────────────────────────────────────────────────────────────
   let COLLECTIONS   = [];   // [{ name, label, files:[{path,name}] }]
@@ -890,12 +961,13 @@
 
     let tree;
     try {
-      const res = await fetch(INDEX_TXT_URL, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status} – ${INDEX_TXT_URL}`);
-      tree = parseIndexTree(await res.text());
+      // Parsed from the INDEX_TXT constant declared above (no network
+      // request needed anymore — see the "TO ADD A NEW TEXT" comment above
+      // INDEX_TXT for how to register new files).
+      tree = parseIndexTree(INDEX_TXT);
     } catch (e) {
-      console.error('Failed to load index.txt:', e);
-      setStatus('error', 'Could not load index.txt — check the console for details.');
+      console.error('Failed to parse INDEX_TXT:', e);
+      setStatus('error', 'Could not parse the embedded directory index — check the console for details.');
       sidebarStatus.textContent = 'No collections could be loaded.';
       return;
     }
