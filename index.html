@@ -7,7 +7,452 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css">
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+/* --- Styles from index.html --- */
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    :root {
+      --night: #120e04;
+      --parchment: #faf4e1;
+      --parchment-dim: #f0e6c8;
+      --ink: #1c160a;
+      --ink-soft: #4a3a10;
+      --saffron: #e6a817;
+      --sage: #7c9a5e;
+      --sage-lt: #eef2df;
+      --star: #ecdfb0;
+      --cinzel: 'Cinzel', Georgia, serif;
+      --lora: 'EB Garamond', serif;
+      --mono: 'JetBrains Mono', monospace;
+      --sidebar-w: 300px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--parchment);
+      color: var(--ink);
+      font-family: var(--lora);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    /* ---- Sitewide top bar ---- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      background: rgba(18, 14, 4, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 20px;
+      border-bottom: none; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .nav-toggle {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      width: 34px;
+      height: 30px;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .nav-toggle span {
+      display: block;
+      height: 2px;
+      width: 18px;
+      margin: 0 auto;
+      background: var(--parchment);
+      border-radius: 2px;
+    }
+    .topbar-title {
+      font-family: var(--cinzel);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--parchment);
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+    .topbar-title .accent { color: var(--saffron); }
+    .topbar-texts-link {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--star);
+      opacity: 0.75;
+      text-decoration: none;
+      padding: 5px 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      transition: opacity 0.15s, border-color 0.15s;
+    }
+    .topbar-texts-link:hover { opacity: 1; border-color: var(--saffron); color: var(--saffron); }
+
+    /* ---- Sidebar ---- */
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 70;
+    }
+    .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: var(--sidebar-w);
+      max-width: 86vw;
+      background: var(--night);
+      z-index: 80;
+      transform: translateX(-100%);
+      transition: transform 0.22s ease;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 2px 0 24px rgba(0,0,0,0.3);
+    }
+    .sidebar.open { transform: translateX(0); }
+
+    .sidebar-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 28px;
+      border-bottom: none; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      flex-shrink: 0;
+    }
+    .sidebar-head-title {
+      font-family: var(--cinzel);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--parchment);
+    }
+    .sidebar-close {
+      background: none;
+      border: none;
+      color: var(--star);
+      font-size: 1.1rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+      opacity: 0.7;
+    }
+    .sidebar-close:hover { opacity: 1; }
+
+    .sidebar-body {
+      overflow-y: auto;
+      padding: 10px 8px 24px;
+      flex: 1;
+    }
+    .sidebar-status {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--star);
+      opacity: 0.55;
+      padding: 6px 12px 10px;
+    }
+
+    /* tree */
+    .tree-collection { margin-bottom: 4px; }
+    .tree-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      background: none;
+      border: none;
+      text-align: left;
+      cursor: pointer;
+      color: var(--parchment);
+      font-family: var(--lora);
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+    }
+    .tree-row:hover { background: rgba(255,255,255,0.06); }
+    .tree-row.collection-row {
+      font-family: var(--cinzel);
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--saffron);
+    }
+    .tree-caret {
+      display: inline-block;
+      width: 10px;
+      flex-shrink: 0;
+      transition: transform 0.15s ease;
+      color: var(--star);
+      opacity: 0.6;
+      font-size: 0.7rem;
+    }
+    .tree-caret.rotated { transform: rotate(90deg); }
+    .tree-caret.spacer { visibility: hidden; }
+
+    .tree-children {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.2s ease;
+      padding-left: 14px;
+      border-left: 1px solid rgba(255,255,255,0.08);
+      margin-left: 18px;
+    }
+    .tree-children.open { max-height: 3000px; }
+
+    .tree-file-row { font-size: 0.88rem; color: var(--star); }
+    .tree-file-row .tree-count { font-family: var(--mono); font-size: 9.5px; opacity: 0.5; margin-left: auto; }
+
+    .tree-chapter-link {
+      display: block;
+      padding: 6px 10px 6px 32px;
+      font-family: var(--lora);
+      font-size: 0.82rem;
+      color: var(--star);
+      opacity: 0.8;
+      text-decoration: none;
+      border-radius: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tree-chapter-link:hover { background: rgba(255,255,255,0.06); opacity: 1; }
+    .tree-view-all {
+      display: block;
+      margin: 2px 0 4px 32px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--saffron);
+      opacity: 0.85;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .tree-empty {
+      padding: 6px 10px 6px 32px;
+      font-family: var(--lora);
+      font-size: 0.8rem;
+      font-style: italic;
+      color: var(--star);
+      opacity: 0.4;
+    }
+
+    /* push page content a bit since topbar is sticky, no extra offset needed since it's in normal flow */
+
+    /* ---- Header (plain, no drama) ---- */
+    header.hero {
+      background: var(--night);
+      padding: 44px 32px 36px;
+    }
+    .hero-inner { max-width: 760px; margin: 0 auto; }
+    .hero-name {
+      font-family: var(--cinzel);
+      font-size: clamp(1.7rem, 4vw, 2.3rem);
+      font-weight: 700;
+      color: var(--parchment);
+      margin-bottom: 10px;
+    }
+    .hero-name .accent { color: var(--saffron); }
+    .hero-tagline {
+      font-family: var(--lora);
+      font-size: 0.98rem;
+      color: var(--star);
+      max-width: 560px;
+    }
+
+    .body-wrap { max-width: 760px; margin: 0 auto; padding: 44px 32px 80px; }
+    .sec-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: 16px;
+    }
+    section { margin-bottom: 48px; }
+    .lede { font-size: 1rem; color: var(--ink-soft); max-width: 680px; }
+    .lede strong { color: var(--ink); font-weight: 600; }
+
+    /* ---- Collections ---- */
+    .projects-grid { display: flex; flex-direction: column; gap: 8px; }
+    .project-card { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
+      background: white;
+      border: 1px solid transparent; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border-radius: 8px;
+      padding: 24px 28px;
+      text-decoration: none;
+      color: var(--ink);
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .project-card:hover { border-color: var(--saffron); transform: translateY(-4px); box-shadow: 0 12px 24px rgba(230, 168, 23, 0.15); }
+    .project-name { font-family: var(--cinzel); font-size: 1rem; font-weight: 600; color: var(--ink); }
+    .project-desc { font-family: var(--lora); font-size: 0.88rem; color: var(--ink-soft); }
+
+    /* ---- Contact ---- */
+    .contact-grid { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+    .contact-link {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--ink-soft);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .contact-link:hover { color: var(--ink); }
+
+    footer {
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--ink-soft);
+      opacity: 0.5;
+      padding: 28px 20px 40px;
+      border-top: 1px solid var(--parchment-dim);
+    }
+
+    /* ---- Search (simplified) ---- */
+    .search-wrapper { position: relative; margin-bottom: 14px; }
+    .search-input {
+      width: 100%;
+      padding: 13px 46px 13px 16px;
+      font-family: var(--lora);
+      font-size: 1rem;
+      background: white;
+      border: 1px solid transparent; box-shadow: 0 2px 8px rgba(0,0,0,0.04); background: #ffffff;
+      border-radius: 10px;
+      color: var(--ink);
+      outline: none;
+    }
+    .search-input::placeholder { color: var(--ink-soft); font-style: italic; opacity: 0.7; }
+    .search-input:focus { border-color: var(--saffron); }
+    .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); pointer-events: none; opacity: 0.5; }
+
+    .search-status {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--ink-soft);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--parchment-dim); flex-shrink: 0; }
+    .status-dot.loading { background: var(--saffron); }
+    .status-dot.ready  { background: var(--sage); }
+    .status-dot.error  { background: #c0392b; }
+
+    .search-filters { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
+    .filter-btn {
+      padding: 0;
+      font-family: var(--mono);
+      font-size: 11px;
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: none;
+      color: var(--ink-soft);
+      cursor: pointer;
+    }
+    .filter-btn.active { border-color: var(--saffron); color: var(--ink); }
+    .filter-btn .count { opacity: 0.6; }
+
+    .results-container { display: flex; flex-direction: column; gap: 10px; }
+    .result-card { transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      background: white;
+      border: 1px solid transparent; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border-radius: 10px;
+      padding: 24px 28px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .result-card:hover { border-color: var(--saffron); transform: translateY(-2px); box-shadow: 0 8px 16px rgba(230, 168, 23, 0.1); }
+    .result-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+    .result-repo { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--saffron); flex-shrink: 0; }
+    .result-file { font-family: var(--mono); font-size: 9.5px; color: var(--ink-soft); opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .result-body { font-family: var(--lora); font-size: 0.875rem; line-height: 1.6; color: var(--ink); }
+    .result-body mark { background: rgba(232,160,32,0.3); color: var(--ink); border-radius: 2px; padding: 0 2px; }
+    .result-meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .result-meta-pill { font-family: var(--mono); font-size: 9px; padding: 2px 7px; background: var(--parchment); border-radius: 2px; color: var(--ink-soft); }
+    .no-results { font-family: var(--lora); font-style: italic; color: var(--ink-soft); text-align: center; padding: 30px 0; font-size: 0.95rem; }
+    .results-count { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-bottom: 12px; }
+    .results-count strong { color: var(--ink); }
+
+    @media (max-width: 640px) {
+      header.hero { padding: 40px 24px 32px; }
+      .body-wrap { padding: 44px 24px 72px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+    /* ---- Category / Author badges ---- */
+    .badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .badge-category, .badge-author {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      letter-spacing: 0.04em;
+      padding: 3px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .badge-category { background: var(--sage-lt); color: var(--sage); border: 1px solid rgba(124,154,94,0.35); }
+    .badge-author { background: var(--parchment-dim); color: var(--ink-soft); border: 1px solid rgba(74,58,16,0.15); }
+    .badge-author::before { content: "✍ "; opacity: 0.7; }
+    .badge-category::before { content: "◆ "; opacity: 0.7; }
+
+    .project-card { align-items: flex-start !important; flex-direction: column; gap: 6px !important; }
+    .project-meta-row { display: flex; flex-wrap: wrap; gap: 5px; }
+    .project-cat-chip {
+      font-family: var(--mono);
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 20px;
+      background: var(--sage-lt);
+      color: var(--sage);
+    }
+
+    /* ---- Sidebar dropdown (collection/category filter) ---- */
+    .sidebar-dropdown-wrap { padding: 4px 12px 14px; }
+    .sidebar-dropdown {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--parchment);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      outline: none;
+    }
+    .sidebar-dropdown:focus { border-color: var(--saffron); }
+    .sidebar-dropdown option { background: var(--night); color: var(--parchment); }
+
+    .tree-file-meta {
+      font-family: var(--mono);
+      font-size: 9px;
+      opacity: 0.55;
+      display: block;
+      margin-top: 1px;
+      white-space: normal;
+      line-height: 1.4;
+    }
+    .tree-file-row { align-items: flex-start; }
+    .tree-file-row .tree-file-label { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+
+</style>
 </head>
 <body>
 
@@ -26,6 +471,11 @@
     <button class="sidebar-close" id="sidebar-close" aria-label="Close navigation">✕</button>
   </div>
   <div class="sidebar-status" id="sidebar-status">Loading collections…</div>
+  <div class="sidebar-dropdown-wrap">
+    <select class="sidebar-dropdown" id="sidebar-dropdown" aria-label="Jump to a collection">
+      <option value="all">Jump to collection…</option>
+    </select>
+  </div>
   <div class="sidebar-body" id="sidebar-tree"></div>
 </nav>
 
@@ -164,6 +614,7 @@
   const sidebarClose    = document.getElementById('sidebar-close');
   const sidebarTree     = document.getElementById('sidebar-tree');
   const sidebarStatus   = document.getElementById('sidebar-status');
+  const sidebarDropdown = document.getElementById('sidebar-dropdown');
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   function esc(s)   { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -181,6 +632,13 @@
       .replace(/\s+/g, ' ')
       .trim()
       .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  function badgeRow(category, author) {
+    if (!category && !author) return '';
+    const cat = category ? `<span class="badge-category">${esc(category)}</span>` : '';
+    const auth = author ? `<span class="badge-author">${esc(author)}</span>` : '';
+    return `<div class="badge-row">${cat}${auth}</div>`;
   }
 
   function setStatus(state, msg) {
@@ -258,16 +716,53 @@
   // Individual text files have no fixed schema, so this walks the rendered
   // DOM in document order and buckets text into "sections" split at each
   // heading (h1–h6). Files with no headings become a single section.
+  // Reads the <header class="doc-header"> block that each text file carries,
+  // e.g.:
+  //   <div class="doc-meta">
+  //     <span><b>Author:</b> Śrī Bādarāyaṇa Vyāsa</span>
+  //     <span><b>Category:</b> Vedānta</span>
+  //     ...
+  //   </div>
+  // Keys are whatever <b> labels the file uses (author, category, composed,
+  // language, chapters, verses, …) — read generically rather than hardcoding
+  // only two fields, so any future label still surfaces without a code change.
+  function parseDocMeta(doc) {
+    const header = doc.querySelector('.doc-header');
+    if (!header) return null;
+    const titleEl = header.querySelector('.doc-title');
+    const descEl  = header.querySelector('.doc-desc');
+    const fields  = {};
+    header.querySelectorAll('.doc-meta span').forEach(span => {
+      const b = span.querySelector('b');
+      if (!b) return;
+      const key = b.textContent.replace(/:\s*$/, '').trim().toLowerCase();
+      const clone = span.cloneNode(true);
+      const cb = clone.querySelector('b');
+      if (cb) cb.remove();
+      const val = clone.textContent.replace(/\s+/g, ' ').trim();
+      if (key && val) fields[key] = val;
+    });
+    return {
+      title: titleEl ? titleEl.textContent.replace(/\s+/g, ' ').trim() : '',
+      desc:  descEl  ? descEl.textContent.replace(/\s+/g, ' ').trim()  : '',
+      fields,
+    };
+  }
+
   function parseHTMLGeneric(raw, repo, file) {
     let doc;
     try { doc = new DOMParser().parseFromString(raw, 'text/html'); }
     catch (e) { return []; }
 
+    const docMeta = parseDocMeta(doc);
+
     doc.querySelectorAll('script,style,noscript').forEach(el => el.remove());
     const body = doc.body || doc.documentElement;
     if (!body) return [];
 
-    const fileLabel = (doc.title && doc.title.trim()) || prettify(file.name);
+    const fileLabel = (docMeta && docMeta.title) || (doc.title && doc.title.trim()) || prettify(file.name);
+    const author   = docMeta && docMeta.fields.author;
+    const category = docMeta && docMeta.fields.category;
     const HEAD_RE = /^H[1-6]$/;
 
     const sections = [];
@@ -299,6 +794,8 @@
       file:      file.path,
       fileName:  file.name,
       fileLabel,
+      author:    author || null,
+      category:  category || null,
       section:   s.title,
       text:      s.text,
       display:   [fileLabel, s.title && s.title !== fileLabel ? s.title : null].filter(Boolean),
@@ -350,7 +847,25 @@
       <button class="project-card" type="button" data-repo="${esc(col.name)}">
         <span class="project-name">${esc(col.label)}</span>
         <span class="project-desc">${col.files.length.toLocaleString()} text${col.files.length !== 1 ? 's' : ''} in this collection.</span>
+        <span class="project-meta-row" data-meta-row="${esc(col.name)}"></span>
       </button>`).join('');
+  }
+
+  // Called once files have loaded, so we can show the distinct categories
+  // and how many authors are represented in each collection.
+  function enrichCollectionChrome() {
+    for (const col of COLLECTIONS) {
+      const recs = allRecords.filter(r => r.repo === col.name);
+      const categories = [...new Set(recs.map(r => r.category).filter(Boolean))];
+      const authors     = new Set(recs.map(r => r.author).filter(Boolean));
+      const row = projectsGrid.querySelector(`[data-meta-row="${CSS.escape(col.name)}"]`);
+      if (!row) continue;
+      const chips = categories.slice(0, 6)
+        .map(c => `<span class="project-cat-chip">${esc(c)}</span>`).join('');
+      const authorNote = authors.size
+        ? `<span class="project-cat-chip">${authors.size} author${authors.size !== 1 ? 's' : ''}</span>` : '';
+      row.innerHTML = chips + authorNote;
+    }
   }
 
   projectsGrid.addEventListener('click', e => {
@@ -436,8 +951,46 @@
     }
 
     if (searchInput.value.trim().length >= 2) runSearch();
+    enrichCollectionChrome();
     buildSidebarTree();
+    populateSidebarDropdown();
   }
+
+  // Sidebar dropdown: lets a visitor jump straight to a collection without
+  // hunting through the tree — the "functional dropdown" companion to the
+  // expandable tree below it.
+  function populateSidebarDropdown() {
+    sidebarDropdown.innerHTML = '<option value="all">Jump to collection…</option>' +
+      COLLECTIONS.map(c => `<option value="${esc(c.name)}">${esc(c.label)} (${c.files.length})</option>`).join('');
+  }
+
+  sidebarDropdown.addEventListener('change', () => {
+    const val = sidebarDropdown.value;
+    if (val === 'all') return;
+
+    // Open the matching branch in the tree below and scroll it into view.
+    const repoId = `r-${val}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const branch = document.getElementById(repoId);
+    if (branch) {
+      branch.classList.add('open');
+      const row = sidebarTree.querySelector(`.tree-row[data-target="${repoId}"]`);
+      if (row) {
+        row.querySelector('.tree-caret')?.classList.add('rotated');
+        row.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // Also mirror the choice into the main-page filter + browse view.
+    filterRow.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    const btn = filterRow.querySelector(`[data-repo="${CSS.escape(val)}"]`);
+    if (btn) btn.classList.add('active');
+    projectsGrid.querySelectorAll('.project-card').forEach(c => c.classList.toggle('active', c.dataset.repo === val));
+    activeFilter = val;
+    searchInput.value = '';
+    renderCollectionBrowse(val);
+    closeSidebar();
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
   // ── Search & render ────────────────────────────────────────────────────────
   const MAX_RENDERED = 300;
@@ -485,6 +1038,7 @@
             <span class="result-repo">${esc(col.label)}</span>
             <span class="result-file">${esc(label)}</span>
           </div>
+          ${rec ? badgeRow(rec.category, rec.author) : ''}
         </a>`;
     }).join('');
   }
@@ -544,6 +1098,7 @@
             <span class="result-repo">${esc(r.repoLabel)}</span>
             <span class="result-file">${esc(r.fileLabel)}</span>
           </div>
+          ${badgeRow(r.category, r.author)}
           <div class="result-body">${snippet}</div>
           ${pills ? `<div class="result-meta">${pills}</div>` : ''}
         </a>`;
@@ -614,11 +1169,16 @@
             ).join('')
           : `<div class="tree-empty">No named sections</div>`;
 
+        const metaBits = [fileRecords[0].category, fileRecords[0].author].filter(Boolean).join(' · ');
+
         return `
           <div class="tree-file">
             <button class="tree-row tree-file-row" data-target="${fileId}">
               <span class="tree-caret">▶</span>
-              <span>${esc(fileLabel)}</span>
+              <span class="tree-file-label">
+                <span>${esc(fileLabel)}</span>
+                ${metaBits ? `<span class="tree-file-meta">${esc(metaBits)}</span>` : ''}
+              </span>
               <span class="tree-count">${sections.length || fileRecords.length}</span>
             </button>
             <div class="tree-children" id="${fileId}">
