@@ -452,88 +452,6 @@
     .tree-file-row { align-items: flex-start; }
     .tree-file-row .tree-file-label { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
 
-    /* ---- In-page reader (modern "open without leaving" view) ---- */
-    .reader-overlay {
-      position: fixed; inset: 0; z-index: 90;
-      background: var(--parchment);
-      opacity: 0; pointer-events: none; transform: translateY(14px);
-      transition: opacity 0.22s ease, transform 0.22s ease;
-      display: flex; justify-content: center;
-    }
-    .reader-overlay.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
-    body.reader-open { overflow: hidden; }
-
-    .reader-panel { width: 100%; max-width: 880px; height: 100%; display: flex; flex-direction: column; }
-
-    .reader-topbar {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 20px;
-      background: rgba(18,14,4,0.92); backdrop-filter: blur(10px);
-      flex-shrink: 0;
-    }
-    .reader-back {
-      display: flex; align-items: center; gap: 6px;
-      background: none; border: 1px solid rgba(255,255,255,0.18);
-      color: var(--star); font-family: var(--mono); font-size: 11.5px;
-      letter-spacing: 0.03em; padding: 7px 12px; border-radius: 20px; cursor: pointer;
-      flex-shrink: 0;
-    }
-    .reader-back:hover { border-color: var(--saffron); color: var(--saffron); }
-    .reader-crumb {
-      flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-      font-family: var(--mono); font-size: 10.5px; color: var(--star); opacity: 0.65; letter-spacing: 0.03em;
-    }
-    .reader-actions { display: flex; gap: 6px; flex-shrink: 0; }
-    .reader-icon-btn {
-      display: flex; align-items: center; justify-content: center;
-      width: 32px; height: 32px; border-radius: 8px;
-      background: none; border: 1px solid rgba(255,255,255,0.15);
-      color: var(--star); cursor: pointer; text-decoration: none;
-    }
-    .reader-icon-btn:hover { border-color: var(--saffron); color: var(--saffron); }
-    .reader-icon-btn.copied { border-color: var(--sage); color: var(--sage); }
-
-    .reader-progress { height: 2px; background: rgba(0,0,0,0.06); flex-shrink: 0; }
-    .reader-progress::after {
-      content: ''; display: block; height: 100%; width: var(--reader-progress, 0%);
-      background: var(--saffron); transition: width 0.1s linear;
-    }
-
-    .reader-body { flex: 1; overflow-y: auto; padding: 40px 32px 100px; }
-    .reader-loading {
-      display: none;
-      font-family: var(--mono); font-size: 11px; color: var(--ink-soft);
-      text-align: center; padding: 60px 0; letter-spacing: 0.05em;
-    }
-    .reader-body.loading .reader-loading { display: block; }
-    .reader-body.loading .reader-content { display: none; }
-
-    .reader-content { max-width: 680px; margin: 0 auto; font-family: var(--lora); color: var(--ink); }
-    .reader-content .doc-header { margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--parchment-dim); }
-    .reader-content .doc-title { font-family: var(--cinzel); font-size: clamp(1.4rem, 3.2vw, 1.9rem); font-weight: 700; color: var(--ink); margin-bottom: 10px; line-height: 1.3; }
-    .reader-content .doc-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 10px; }
-    .reader-content .doc-meta span { font-family: var(--mono); font-size: 10.5px; color: var(--ink-soft); }
-    .reader-content .doc-meta b { color: var(--ink); font-weight: 600; }
-    .reader-content .doc-desc { font-style: italic; color: var(--ink-soft); font-size: 0.95rem; }
-    .reader-content h1, .reader-content h2, .reader-content h3,
-    .reader-content h4, .reader-content h5, .reader-content h6 {
-      font-family: var(--cinzel); color: var(--ink); margin: 32px 0 14px; line-height: 1.4;
-    }
-    .reader-content h1 { font-size: 1.4rem; } .reader-content h2 { font-size: 1.2rem; }
-    .reader-content h3, .reader-content h4, .reader-content h5, .reader-content h6 { font-size: 1.05rem; color: var(--ink-soft); }
-    .reader-content p { margin-bottom: 16px; font-size: 1.02rem; }
-    .reader-content ol, .reader-content ul { margin: 0 0 16px 22px; }
-    .reader-content li { margin-bottom: 6px; }
-    .reader-content table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.92rem; }
-    .reader-content td, .reader-content th { padding: 8px 10px; border: 1px solid var(--parchment-dim); text-align: left; }
-    .reader-content mark.reader-hit { background: rgba(230,168,23,0.4); color: var(--ink); border-radius: 2px; padding: 0 2px; }
-    .reader-content a { color: var(--sage); }
-
-    @media (max-width: 640px) {
-      .reader-body { padding: 28px 20px 90px; }
-      .reader-crumb { display: none; }
-    }
-
 </style>
 </head>
 <body>
@@ -560,33 +478,6 @@
   </div>
   <div class="sidebar-body" id="sidebar-tree"></div>
 </nav>
-
-<!-- IN-PAGE READER: opens a text without leaving the archive shell -->
-<div class="reader-overlay" id="reader-overlay" aria-hidden="true">
-  <div class="reader-panel" role="dialog" aria-modal="true" aria-labelledby="reader-title-text">
-    <div class="reader-topbar">
-      <button class="reader-back" id="reader-back" aria-label="Back to archive">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-        Archive
-      </button>
-      <div class="reader-crumb" id="reader-crumb"></div>
-      <div class="reader-actions">
-        <button class="reader-icon-btn" id="reader-copy-link" title="Copy link to this text" aria-label="Copy link">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        </button>
-        <a class="reader-icon-btn" id="reader-open-raw" target="_blank" rel="noopener" title="Open raw file" aria-label="Open raw file in a new tab">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
-        </a>
-        <button class="reader-icon-btn reader-close" id="reader-close" aria-label="Close reader">✕</button>
-      </div>
-    </div>
-    <div class="reader-progress" id="reader-progress"></div>
-    <div class="reader-body" id="reader-body">
-      <div class="reader-loading" id="reader-loading">Opening text…</div>
-      <div class="reader-content" id="reader-content"></div>
-    </div>
-  </div>
-</div>
 
 <header class="hero" role="banner">
   <div class="hero-inner">
@@ -724,18 +615,6 @@
   const sidebarTree     = document.getElementById('sidebar-tree');
   const sidebarStatus   = document.getElementById('sidebar-status');
   const sidebarDropdown = document.getElementById('sidebar-dropdown');
-
-  // Reader DOM
-  const readerOverlay = document.getElementById('reader-overlay');
-  const readerBody     = document.getElementById('reader-body');
-  const readerContent  = document.getElementById('reader-content');
-  const readerCrumb    = document.getElementById('reader-crumb');
-  const readerBack     = document.getElementById('reader-back');
-  const readerClose    = document.getElementById('reader-close');
-  const readerOpenRaw  = document.getElementById('reader-open-raw');
-  const readerCopyLink = document.getElementById('reader-copy-link');
-  const readerProgress = document.getElementById('reader-progress');
-  let readerPushed = false; // whether the reader added a history entry
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   function esc(s)   { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -1154,7 +1033,7 @@
       const rec   = allRecords.find(r => r.repo === repoName && r.file === file.path);
       const label = (rec && rec.fileLabel) || prettify(file.name);
       return `
-        <a class="result-card" href="${esc(file.path)}" data-doc="${esc(file.path)}">
+        <a class="result-card" href="${esc(file.path)}">
           <div class="result-header">
             <span class="result-repo">${esc(col.label)}</span>
             <span class="result-file">${esc(label)}</span>
@@ -1214,7 +1093,7 @@
         .join('');
       const url = deepLink(r.file, terms);
       return `
-        <a class="result-card" href="${esc(url)}" data-doc="${esc(r.file)}" data-terms="${esc(terms.join(' '))}">
+        <a class="result-card" href="${esc(url)}">
           <div class="result-header">
             <span class="result-repo">${esc(r.repoLabel)}</span>
             <span class="result-file">${esc(r.fileLabel)}</span>
@@ -1286,7 +1165,7 @@
 
         const sectionLinks = sections.length
           ? sections.slice(0, 400).map(sec =>
-              `<a class="tree-chapter-link" href="${esc(deepLink(file.path, [sec]))}" data-doc="${esc(file.path)}" data-terms="${esc(sec)}" title="${esc(sec)}">${esc(sec)}</a>`
+              `<a class="tree-chapter-link" href="${esc(deepLink(file.path, [sec]))}" title="${esc(sec)}">${esc(sec)}</a>`
             ).join('')
           : `<div class="tree-empty">No named sections</div>`;
 
@@ -1303,7 +1182,7 @@
               <span class="tree-count">${sections.length || fileRecords.length}</span>
             </button>
             <div class="tree-children" id="${fileId}">
-              <a class="tree-view-all" href="${fileOpenUrl}" data-doc="${fileOpenUrl}">Open ${esc(fileLabel)} →</a>
+              <a class="tree-view-all" href="${fileOpenUrl}">Open ${esc(fileLabel)} →</a>
               ${sectionLinks}
             </div>
           </div>`;
@@ -1355,156 +1234,6 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && sidebar.classList.contains('open')) closeSidebar();
   });
-
-  // ── In-page reader ──────────────────────────────────────────────────────
-  // Modern replacement for "click a search result → leave the app and land
-  // on a bare, unstyled .html file". Instead we fetch that file's markup,
-  // drop it into the archive's own reading chrome, highlight the terms that
-  // brought the person here, and keep the URL shareable/back-button-able
-  // via history.pushState — without a real page navigation.
-  const docCache = new Map();
-
-  function highlightTerms(root, terms) {
-    if (!terms || !terms.length) return null;
-    const cleanTerms = terms.filter(Boolean).map(t => t.toLowerCase());
-    if (!cleanTerms.length) return null;
-    const re = new RegExp('(' + cleanTerms.map(escRe).join('|') + ')', 'ig');
-    let first = null;
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-      acceptNode(n) {
-        if (!n.nodeValue || !re.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
-        re.lastIndex = 0;
-        return NodeFilter.FILTER_ACCEPT;
-      }
-    });
-    const hits = [];
-    let node;
-    while ((node = walker.nextNode())) hits.push(node);
-    for (const textNode of hits) {
-      const span = document.createElement('span');
-      span.innerHTML = esc(textNode.nodeValue).replace(re, '<mark class="reader-hit">$1</mark>');
-      textNode.replaceWith(span);
-      if (!first) first = span.querySelector('mark');
-    }
-    return first;
-  }
-
-  function readerCrumbText(path) {
-    const parts = path.split('/');
-    return parts.map(p => prettify(p)).join(' › ');
-  }
-
-  async function openReader(path, terms, opts = {}) {
-    readerOverlay.classList.add('open');
-    readerOverlay.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('reader-open');
-    readerBody.classList.add('loading');
-    readerBody.scrollTop = 0;
-    readerCrumb.textContent = readerCrumbText(path);
-    readerOpenRaw.href = path;
-    closeSidebar();
-
-    if (!opts.fromPopState) {
-      const url = new URL(location.href);
-      url.searchParams.set('doc', path);
-      if (terms && terms.length) url.searchParams.set('q', terms.join(' ')); else url.searchParams.delete('q');
-      history.pushState({ reader: true, path, terms }, '', url);
-      readerPushed = true;
-    }
-
-    try {
-      let raw = docCache.get(path);
-      if (!raw) {
-        const res = await fetch(path);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        raw = await res.text();
-        docCache.set(path, raw);
-      }
-      const doc = new DOMParser().parseFromString(raw, 'text/html');
-      doc.querySelectorAll('script,style,noscript,link').forEach(el => el.remove());
-      const body = doc.body || doc.documentElement;
-
-      readerContent.innerHTML = body ? body.innerHTML : '<p>This text could not be displayed.</p>';
-      readerCrumb.textContent = (doc.title && doc.title.trim()) || readerCrumbText(path);
-
-      const termList = (terms || '').toString().trim();
-      const firstHit = termList ? highlightTerms(readerContent, termList.split(/\s+/)) : null;
-      readerBody.classList.remove('loading');
-      requestAnimationFrame(() => {
-        if (firstHit) firstHit.scrollIntoView({ block: 'center' });
-        else readerBody.scrollTop = 0;
-      });
-    } catch (e) {
-      console.error('Reader failed to load', path, e);
-      readerBody.classList.remove('loading');
-      readerContent.innerHTML = `<p class="no-results">Couldn't load this text (${esc(e.message)}). <a href="${esc(path)}">Try opening it directly →</a></p>`;
-    }
-  }
-
-  function closeReader(opts = {}) {
-    readerOverlay.classList.remove('open');
-    readerOverlay.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('reader-open');
-    if (!opts.fromPopState && readerPushed) {
-      history.back();
-    } else {
-      const url = new URL(location.href);
-      url.searchParams.delete('doc');
-      url.searchParams.delete('q');
-      history.replaceState({}, '', url);
-    }
-    readerPushed = false;
-  }
-
-  // Delegate clicks on any element carrying data-doc — result cards, sidebar
-  // tree links, "open full text" links — into the in-page reader. Plain
-  // middle-click / cmd-click / ctrl-click still opens the real file in a new
-  // tab as usual, so the underlying href stays a fully working link.
-  document.addEventListener('click', e => {
-    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    const el = e.target.closest('[data-doc]');
-    if (!el) return;
-    e.preventDefault();
-    const terms = el.dataset.terms ? el.dataset.terms.split(/\s+/) : null;
-    openReader(el.dataset.doc, terms);
-  });
-
-  readerBack.addEventListener('click', () => closeReader());
-  readerClose.addEventListener('click', () => closeReader());
-  readerOverlay.addEventListener('click', e => { if (e.target === readerOverlay) closeReader(); });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && readerOverlay.classList.contains('open')) closeReader();
-  });
-  readerCopyLink.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(location.href);
-      readerCopyLink.classList.add('copied');
-      setTimeout(() => readerCopyLink.classList.remove('copied'), 1200);
-    } catch (e) { /* clipboard unavailable — silently ignore */ }
-  });
-  readerBody.addEventListener('scroll', () => {
-    const max = readerBody.scrollHeight - readerBody.clientHeight;
-    const pct = max > 0 ? Math.min(100, (readerBody.scrollTop / max) * 100) : 0;
-    readerProgress.style.setProperty('--reader-progress', pct + '%');
-  });
-
-  window.addEventListener('popstate', e => {
-    const params = new URL(location.href).searchParams;
-    const doc = params.get('doc');
-    if (doc) {
-      const q = params.get('q');
-      openReader(doc, q ? q.split(/\s+/) : null, { fromPopState: true });
-    } else if (readerOverlay.classList.contains('open')) {
-      closeReader({ fromPopState: true });
-    }
-  });
-
-  // Deep-linkable on first load too: /?doc=sAmam/agneyam.html&q=agni
-  (function openFromInitialURL() {
-    const params = new URL(location.href).searchParams;
-    const doc = params.get('doc');
-    if (doc) openReader(doc, (params.get('q') || '').split(/\s+/).filter(Boolean), { fromPopState: true });
-  })();
 
   // ── Boot ───────────────────────────────────────────────────────────────────
   loadAll();
