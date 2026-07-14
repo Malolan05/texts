@@ -284,24 +284,6 @@
     .lede { font-size: 1rem; color: var(--ink-soft); max-width: 680px; }
     .lede strong { color: var(--ink); font-weight: 600; }
 
-    /* ---- Collections ---- */
-    .projects-grid { display: flex; flex-direction: column; gap: 8px; }
-    .project-card { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
-      background: white;
-      border: 1px solid transparent; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-      border-radius: 8px;
-      padding: 24px 28px;
-      text-decoration: none;
-      color: var(--ink);
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .project-card:hover { border-color: var(--saffron); transform: translateY(-4px); box-shadow: 0 12px 24px rgba(230, 168, 23, 0.15); }
-    .project-name { font-family: var(--cinzel); font-size: 1rem; font-weight: 600; color: var(--ink); }
-    .project-desc { font-family: var(--lora); font-size: 0.88rem; color: var(--ink-soft); }
-
     /* ---- Contact ---- */
     .contact-grid { display: flex; flex-wrap: wrap; gap: 8px 20px; }
     .contact-link {
@@ -412,17 +394,6 @@
     .badge-author::before { content: "✍ "; opacity: 0.7; }
     .badge-category::before { content: "◆ "; opacity: 0.7; }
 
-    .project-card { align-items: flex-start !important; flex-direction: column; gap: 6px !important; }
-    .project-meta-row { display: flex; flex-wrap: wrap; gap: 5px; }
-    .project-cat-chip {
-      font-family: var(--mono);
-      font-size: 9px;
-      padding: 2px 7px;
-      border-radius: 20px;
-      background: var(--sage-lt);
-      color: var(--sage);
-    }
-
     /* ---- Sidebar dropdown (collection/category filter) ---- */
     .sidebar-dropdown-wrap { padding: 4px 12px 14px; }
     .sidebar-dropdown {
@@ -451,6 +422,60 @@
     }
     .tree-file-row { align-items: flex-start; }
     .tree-file-row .tree-file-label { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+
+    /* ---- Browse the Archive: group-by dropdown + accordion ---- */
+    .browse-controls {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 18px;
+      margin-bottom: 18px;
+    }
+    .browse-control { display: flex; align-items: center; gap: 8px; }
+    .browse-control span {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--ink-soft); opacity: 0.75;
+    }
+    .browse-select {
+      font-family: var(--lora); font-size: 0.85rem; color: var(--ink);
+      background: #ffffff; border: 1px solid transparent;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      padding: 7px 10px; border-radius: 8px; cursor: pointer; outline: none;
+    }
+    .browse-select:focus { border-color: var(--saffron); }
+    .browse-summary { font-family: var(--mono); font-size: 10.5px; color: var(--ink-soft); opacity: 0.75; margin-left: auto; }
+
+    .browse-accordion { display: flex; flex-direction: column; gap: 8px; }
+    .browse-group {
+      background: #ffffff; border-radius: 10px; overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .browse-group-header {
+      display: flex; align-items: center; gap: 10px; width: 100%;
+      background: none; border: none; cursor: pointer;
+      padding: 16px 20px; text-align: left;
+      font-family: var(--cinzel); font-size: 0.95rem; font-weight: 600; color: var(--ink);
+    }
+    .browse-group-header:hover { background: var(--parchment-dim); }
+    .browse-group-header .tree-caret { color: var(--saffron); opacity: 1; }
+    .browse-group-title { flex: 1; }
+    .browse-group-count {
+      font-family: var(--mono); font-size: 10px; color: var(--ink-soft); opacity: 0.7;
+      background: var(--parchment); padding: 2px 8px; border-radius: 20px;
+    }
+    .browse-group-body {
+      max-height: 0; overflow: hidden; transition: max-height 0.25s ease;
+      border-top: 1px solid transparent;
+    }
+    .browse-group-body.open { max-height: 4000px; border-top-color: var(--parchment-dim); }
+    .browse-item {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px;
+      padding: 12px 20px 12px 44px;
+      text-decoration: none; color: var(--ink);
+      border-bottom: 1px solid var(--parchment-dim);
+      font-family: var(--lora); font-size: 0.9rem;
+    }
+    .browse-item:last-child { border-bottom: none; }
+    .browse-item:hover { background: var(--parchment-dim); }
+    .browse-item-title { flex: 1; min-width: 160px; }
+    .browse-item .badge-row { margin-top: 0; }
 
     /* ---- In-page reader (modern "open without leaving" view) ---- */
     .reader-overlay {
@@ -631,11 +656,32 @@
     <div id="results-container" class="results-container" aria-live="polite" aria-label="Search results"></div>
   </section>
 
-  <!-- COLLECTIONS -->
-  <section aria-labelledby="proj-label">
-    <p class="sec-label" id="proj-label">Collections</p>
-    <div class="projects-grid" id="projects-grid">
-      <!-- Populated dynamically from index.txt -->
+  <!-- BROWSE -->
+  <section aria-labelledby="browse-label">
+    <p class="sec-label" id="browse-label">Browse the Archive</p>
+
+    <div class="browse-controls">
+      <label class="browse-control">
+        <span>Group by</span>
+        <select id="browse-groupby" class="browse-select">
+          <option value="collection">Collection</option>
+          <option value="category">Category</option>
+          <option value="author">Author</option>
+        </select>
+      </label>
+      <label class="browse-control">
+        <span>Sort</span>
+        <select id="browse-sort" class="browse-select">
+          <option value="az">A → Z</option>
+          <option value="za">Z → A</option>
+          <option value="count">Largest first</option>
+        </select>
+      </label>
+      <span class="browse-summary" id="browse-summary"></span>
+    </div>
+
+    <div class="browse-accordion" id="browse-accordion">
+      <!-- Populated dynamically once index.txt has been parsed and loaded -->
     </div>
   </section>
 
@@ -650,6 +696,75 @@
   </section>
 
 </main>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ARCHIVE INDEX — the whole site's directory tree, inline.
+
+     This used to be a separate index.txt fetched at runtime; it now lives
+     right here so the site is a single file. Format is unchanged: an
+     indented plain-text tree — each top-level (non-indented) line is a
+     COLLECTION, and each indented line under it is a FILE in that
+     collection (a real .html file that lives alongside this index.html,
+     e.g. "Agama/agama-pramanyam.html").
+
+     TO ADD A NEW TEXT:
+       1. Drop the new .html file into its collection's folder (or make a
+          new folder for a new collection).
+       2. Add one line here with the file's path, indented to match its
+          siblings (tabs or spaces both work — only the indentation
+          *amount*, relative to the line above, matters).
+       3. Give the new file a <header class="doc-header"> with Author /
+          Category / etc. spans (see any existing file for the pattern) —
+          that's what powers the Author/Category badges and the
+          "Group by" dropdown below.
+     Nothing else needs to change; the JS re-parses this block on load.
+     ═══════════════════════════════════════════════════════════════════ -->
+<script type="text/plain" id="archive-index">
+Agama
+    agama-pramanyam.html
+    aniruddha-samhita.html
+    lakshmi-tantram.html
+    paramapurusha-samhita.html
+    paushkara-samhita.html
+    sri-parameshvara-samhita.html
+    sri-vishvaksena-samhita.html
+    sriprashna-samhita.html
+    vishnu-samhita.html
+sAmAnyam
+    mimamsa-paribasha.html
+    smritimuktaphalam.html
+    tarkasangraha.html
+sAmam
+    AgnEyam-text.html
+    Aindram-text.html
+srivaishnavam
+    brahma-sutra-adhyaya-one.html
+    brahma-sutra-adhyaya-two.html
+    brahma-sutra-adhyaya-three.html
+    brahma-sutra-adhyaya-four.html
+    brihadaranyaka-upanishad.html
+    chandogya-upanishad.html
+    katha-upanishad.html
+    kaushitaki-upanishad.html
+    mundaka-upanishad.html
+    shvetasvatara-upanishad.html
+    taittiriya-upanishad.html
+    upanishad-one.html
+    vedarthasangraha.html
+    yatindramatadipika.html
+    mata-prakriya.html
+    bhavaprakasha-ked.html
+    gitarthasangraha.html
+    natvacandrika-pramukhacapetika.html
+    shatadushani.html
+    paratattvanirnaya-prameyamala.html
+    purushakara-mimamsa.html
+    rahasyatrayasara.html
+    rahasyatrayasararthasangraha.html
+    siddhanta-ratnavali-and-vedanta-karika.html
+    stotraratna.html
+    tattvamuktakalapam.html
+</script>
 
 <footer>
   Mālola Digitized Text Archive · malolan05.github.io · Built with HTML &amp; GitHub Pages
@@ -697,8 +812,11 @@
   // domain root, so index.txt must be addressed relative to that subpath
   // rather than an assumed root ('/index.txt' would incorrectly resolve to
   // https://malolan05.github.io/index.txt instead).
-  const BASE_PATH = '/texts/';
-  const INDEX_TXT_URL = BASE_PATH + 'index.txt';
+  // The directory tree used to be fetched from a separate index.txt at
+  // runtime; it's now embedded directly in this page (see the
+  // <script type="text/plain" id="archive-index"> block above) so the whole
+  // site is one file. See that block's comment for how to add new texts.
+  const ARCHIVE_INDEX_EL_ID = 'archive-index';
 
   // ── State ──────────────────────────────────────────────────────────────────
   let COLLECTIONS   = [];   // [{ name, label, files:[{path,name}] }]
@@ -714,7 +832,6 @@
   const resultsEl     = document.getElementById('results-container');
   const resultsCount  = document.getElementById('results-count');
   const filterRow     = document.getElementById('filter-row');
-  const projectsGrid  = document.getElementById('projects-grid');
 
   // Sidebar DOM
   const navToggle      = document.getElementById('nav-toggle');
@@ -953,7 +1070,7 @@
     await Promise.all(workers);
   }
 
-  // ── Build filter buttons + collection cards from the parsed tree ──────────
+  // ── Build search-scope filter chips from the parsed tree ──────────────────
   function renderCollectionChrome() {
     filterRow.querySelectorAll('.filter-btn:not([data-repo="all"])').forEach(b => b.remove());
     for (const col of COLLECTIONS) {
@@ -963,47 +1080,107 @@
       btn.innerHTML = `${esc(col.label)} <span class="count"></span>`;
       filterRow.appendChild(btn);
     }
-
-    projectsGrid.innerHTML = COLLECTIONS.map(col => `
-      <button class="project-card" type="button" data-repo="${esc(col.name)}">
-        <span class="project-name">${esc(col.label)}</span>
-        <span class="project-desc">${col.files.length.toLocaleString()} text${col.files.length !== 1 ? 's' : ''} in this collection.</span>
-        <span class="project-meta-row" data-meta-row="${esc(col.name)}"></span>
-      </button>`).join('');
   }
 
-  // Called once files have loaded, so we can show the distinct categories
-  // and how many authors are represented in each collection.
-  function enrichCollectionChrome() {
+  // ── Browse the Archive: group-by dropdown + collapsible accordion ─────────
+  // Replaces the old flat "Collections" grid. Groups every file by
+  // Collection (folder), Category, or Author (whichever the person picks),
+  // each group collapsible, each file opening straight in the reader.
+  const browseGroupBySelect = document.getElementById('browse-groupby');
+  const browseSortSelect    = document.getElementById('browse-sort');
+  const browseAccordion     = document.getElementById('browse-accordion');
+  const browseSummary       = document.getElementById('browse-summary');
+  const browseOpenGroups    = new Set(); // remembers which groups are expanded across re-renders
+
+  // One row per file (not per searchable section) — folded from whatever
+  // has loaded so far in allRecords, falling back to the plain filename
+  // for files metadata hasn't arrived for yet.
+  function buildFileIndex() {
+    const map = new Map();
     for (const col of COLLECTIONS) {
-      const recs = allRecords.filter(r => r.repo === col.name);
-      const categories = [...new Set(recs.map(r => r.category).filter(Boolean))];
-      const authors     = new Set(recs.map(r => r.author).filter(Boolean));
-      const row = projectsGrid.querySelector(`[data-meta-row="${CSS.escape(col.name)}"]`);
-      if (!row) continue;
-      const chips = categories.slice(0, 6)
-        .map(c => `<span class="project-cat-chip">${esc(c)}</span>`).join('');
-      const authorNote = authors.size
-        ? `<span class="project-cat-chip">${authors.size} author${authors.size !== 1 ? 's' : ''}</span>` : '';
-      row.innerHTML = chips + authorNote;
+      for (const file of col.files) {
+        map.set(file.path, {
+          path: file.path, name: file.name, label: prettify(file.name),
+          category: null, author: null, repoName: col.name, repoLabel: col.label,
+        });
+      }
     }
+    for (const r of allRecords) {
+      const entry = map.get(r.file);
+      if (!entry) continue;
+      entry.label    = r.fileLabel || entry.label;
+      entry.category = r.category  || entry.category;
+      entry.author   = r.author    || entry.author;
+    }
+    return [...map.values()];
   }
 
-  projectsGrid.addEventListener('click', e => {
-    const card = e.target.closest('.project-card');
-    if (!card) return;
-    filterRow.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    const btn = filterRow.querySelector(`[data-repo="${CSS.escape(card.dataset.repo)}"]`);
-    if (btn) btn.classList.add('active');
-    projectsGrid.querySelectorAll('.project-card').forEach(c => c.classList.toggle('active', c === card));
-    activeFilter = card.dataset.repo;
+  function renderBrowseAccordion() {
+    const groupBy = browseGroupBySelect.value;
+    const sortMode = browseSortSelect.value;
+    const files = buildFileIndex();
 
-    // Clear any stale search text so the full, ordered text list for this
-    // collection is what's shown (rather than leftover search results).
-    searchInput.value = '';
-    renderCollectionBrowse(activeFilter);
-    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const groups = new Map();
+    for (const f of files) {
+      const key = groupBy === 'category' ? (f.category || 'Uncategorized')
+                : groupBy === 'author'   ? (f.author   || 'Unknown author')
+                : f.repoName;
+      const label = groupBy === 'collection' ? f.repoLabel : key;
+      if (!groups.has(key)) groups.set(key, { key, label, items: [] });
+      groups.get(key).items.push(f);
+    }
+
+    let entries = [...groups.values()];
+    if (sortMode === 'count') entries.sort((a, b) => b.items.length - a.items.length);
+    else entries.sort((a, b) => a.label.localeCompare(b.label) * (sortMode === 'za' ? -1 : 1));
+    // Collection order defaults to index-file order unless the person
+    // explicitly asked for A→Z / Z→A / largest-first via the sort dropdown.
+    if (groupBy === 'collection' && sortMode === 'az' && !browseSortSelect.dataset.touched) {
+      entries.sort((a, b) => COLLECTIONS.findIndex(c => c.name === a.key) - COLLECTIONS.findIndex(c => c.name === b.key));
+    }
+
+    const groupNoun = groupBy === 'collection' ? 'collections' : groupBy === 'category' ? 'categories' : 'authors';
+    browseSummary.textContent = `${files.length.toLocaleString()} text${files.length !== 1 ? 's' : ''} across ${entries.length.toLocaleString()} ${groupNoun}`;
+
+    browseAccordion.innerHTML = entries.map(g => {
+      const groupId = `bg-${groupBy}-${g.key}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const isOpen = browseOpenGroups.has(groupId);
+      const items = [...g.items].sort((a, b) => a.label.localeCompare(b.label));
+      const itemsHtml = items.map(f => {
+        const showCat  = groupBy !== 'category' ? f.category : null;
+        const showAuth = groupBy !== 'author'   ? f.author   : null;
+        return `
+          <a class="browse-item" href="${esc(f.path)}" data-doc="${esc(f.path)}">
+            <span class="browse-item-title">${esc(f.label)}</span>
+            ${badgeRow(showCat, showAuth)}
+          </a>`;
+      }).join('');
+      return `
+        <div class="browse-group">
+          <button class="browse-group-header" data-target="${groupId}" aria-expanded="${isOpen}">
+            <span class="tree-caret${isOpen ? ' rotated' : ''}">▶</span>
+            <span class="browse-group-title">${esc(g.label)}</span>
+            <span class="browse-group-count">${g.items.length}</span>
+          </button>
+          <div class="browse-group-body${isOpen ? ' open' : ''}" id="${groupId}">${itemsHtml}</div>
+        </div>`;
+    }).join('');
+  }
+
+  browseAccordion.addEventListener('click', e => {
+    const header = e.target.closest('.browse-group-header');
+    if (!header) return;
+    const targetId = header.dataset.target;
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    const isOpen = target.classList.toggle('open');
+    header.querySelector('.tree-caret')?.classList.toggle('rotated', isOpen);
+    header.setAttribute('aria-expanded', String(isOpen));
+    if (isOpen) browseOpenGroups.add(targetId); else browseOpenGroups.delete(targetId);
   });
+
+  browseGroupBySelect.addEventListener('change', () => { browseOpenGroups.clear(); renderBrowseAccordion(); });
+  browseSortSelect.addEventListener('change', () => { browseSortSelect.dataset.touched = '1'; renderBrowseAccordion(); });
 
   // ── Load everything ──────────────────────────────────────────────────────
   async function loadAll() {
@@ -1011,18 +1188,19 @@
 
     let tree;
     try {
-      const res = await fetch(INDEX_TXT_URL, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status} – ${INDEX_TXT_URL}`);
-      tree = parseIndexTree(await res.text());
+      const el = document.getElementById(ARCHIVE_INDEX_EL_ID);
+      if (!el) throw new Error('embedded archive-index block is missing from the page');
+      tree = parseIndexTree(el.textContent);
     } catch (e) {
-      console.error('Failed to load index.txt:', e);
-      setStatus('error', 'Could not load index.txt — check the console for details.');
+      console.error('Failed to read embedded archive index:', e);
+      setStatus('error', 'Could not read the archive index — check the console for details.');
       sidebarStatus.textContent = 'No collections could be loaded.';
       return;
     }
 
     COLLECTIONS = buildCollections(tree);
     renderCollectionChrome();
+    renderBrowseAccordion();
 
     const jobs = [];
     for (const col of COLLECTIONS) for (const file of col.files) jobs.push({ repo: col, file });
@@ -1072,7 +1250,7 @@
     }
 
     if (searchInput.value.trim().length >= 2) runSearch();
-    enrichCollectionChrome();
+    renderBrowseAccordion();
     buildSidebarTree();
     populateSidebarDropdown();
   }
@@ -1089,7 +1267,7 @@
     const val = sidebarDropdown.value;
     if (val === 'all') return;
 
-    // Open the matching branch in the tree below and scroll it into view.
+    // Open the matching branch in the sitewide tree and scroll it into view.
     const repoId = `r-${val}`.replace(/[^a-zA-Z0-9_-]/g, '_');
     const branch = document.getElementById(repoId);
     if (branch) {
@@ -1101,16 +1279,19 @@
       }
     }
 
-    // Also mirror the choice into the main-page filter + browse view.
+    // Also mirror the choice into the main page: switch the Browse
+    // accordion to Collection grouping and pop that one group open.
     filterRow.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    const btn = filterRow.querySelector(`[data-repo="${CSS.escape(val)}"]`);
-    if (btn) btn.classList.add('active');
-    projectsGrid.querySelectorAll('.project-card').forEach(c => c.classList.toggle('active', c.dataset.repo === val));
+    const filterBtn = filterRow.querySelector(`[data-repo="${CSS.escape(val)}"]`);
+    if (filterBtn) filterBtn.classList.add('active');
     activeFilter = val;
-    searchInput.value = '';
-    renderCollectionBrowse(val);
+
+    browseGroupBySelect.value = 'collection';
+    const groupId = `bg-collection-${val}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+    browseOpenGroups.add(groupId);
+    renderBrowseAccordion();
     closeSidebar();
-    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById(groupId)?.closest('.browse-group')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   // ── Search & render ────────────────────────────────────────────────────────
@@ -1243,9 +1424,6 @@
     filterRow.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     activeFilter = btn.dataset.repo;
-    projectsGrid.querySelectorAll('.project-card').forEach(c => {
-      c.classList.toggle('active', c.dataset.repo === activeFilter);
-    });
 
     if (searchInput.value.trim().length >= 2) {
       runSearch();
